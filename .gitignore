@@ -43,3 +43,4 @@ logs/
 
 # Docker
 .dockerignore
+code/looks_optimizer.db
