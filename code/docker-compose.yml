@@ -1,0 +1,64 @@
+version: '3.8'
+
+networks:
+  lookcoach-network:
+    driver: bridge
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: lookcoach-backend
+    ports:
+      - "8001:8000"
+    volumes:
+      - ./backend:/app
+      - uploads:/app/uploads
+    environment:
+      - DATABASE_URL=sqlite:///./looks_optimizer.db
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - OLLAMA_BASE_URL=http://ollama:11434
+    env_file:
+      - ./backend/.env
+    networks:
+      - lookcoach-network
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    depends_on:
+      - ollama
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: lookcoach-frontend
+    ports:
+      - "5175:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - VITE_API_URL=http://localhost:8001
+    networks:
+      - lookcoach-network
+    depends_on:
+      - backend
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: lookcoach-ollama
+    ports:
+      - "11437:11434"
+    volumes:
+      - ollama-data:/usr/share/ollama
+    networks:
+      - lookcoach-network
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+      - OLLAMA_PORT=11434
+    # Pull a default model on first run (optional)
+    # command: serve
+
+volumes:
+  uploads:
+  ollama-data:
