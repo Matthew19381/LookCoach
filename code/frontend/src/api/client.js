@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:8001",
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:8003",
   timeout: 60000,
 });
 
@@ -27,11 +27,7 @@ export const uploadPhoto = (file, photoType) => {
   formData.append("file", file);
   formData.append("photo_type", photoType);
   formData.append("user_id", getUserId());
-  return axios.post(
-    `${api.defaults.baseURL}/api/photos/upload`,
-    formData,
-    { headers: { "Content-Type": "multipart/form-data" } }
-  ).then(r => r.data);
+  return api.post("/api/photos/upload", formData).then(r => r);
 };
 
 export const getPhotos = () =>
@@ -54,8 +50,8 @@ export const getTimeline = () =>
 
 export const comparePhotos = (beforeId, afterId) =>
   api.post(`/api/progress/compare`, {
-    photo_before_id: beforeId,
-    photo_after_id: afterId,
+    photo_before_id: parseInt(beforeId),
+    photo_after_id: parseInt(afterId),
   });
 
 export const getProfile = () =>

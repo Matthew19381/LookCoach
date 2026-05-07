@@ -32,13 +32,20 @@ async def get_latest_analysis(user_id: int = 1, db: Session = Depends(get_db)):
         }
 
     result = {}
-    photo_map = {p.photo_type: p for p in photos}
+    photo_map = {}
+    for p in photos:
+        # Keep the most recent photo for each type
+        if p.photo_type not in photo_map or p.uploaded_at > photo_map[p.photo_type].uploaded_at:
+            photo_map[p.photo_type] = p
+
     scores = []
 
     for ptype in ["front", "side", "back"]:
         if ptype in photo_map:
             analysis = (
-                db.query(Analysis).filter(Analysis.photo_id == photo_map[ptype].id).first()
+                db.query(Analysis)
+                .filter(Analysis.photo_id == photo_map[ptype].id)
+                .first()
             )
             if analysis:
                 if ptype == "front":
@@ -85,6 +92,7 @@ async def analyze_photo(photo_id: int, db: Session = Depends(get_db)):
 
     try:
         image_bytes = Path(photo.file_path).read_bytes()
+
         analysis = Analysis(photo_id=photo.id)
 
         if photo.photo_type == "front":

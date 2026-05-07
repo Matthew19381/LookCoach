@@ -1,4 +1,5 @@
 import os
+import time
 from pathlib import Path
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from sqlalchemy.orm import Session
@@ -22,7 +23,7 @@ async def upload_photo(
         raise HTTPException(400, "photo_type must be front, side, or back")
 
     file_ext = Path(file.filename).suffix or ".jpg"
-    file_path = UPLOAD_DIR / f"{photo_type}_{user_id}_{len(os.listdir(UPLOAD_DIR))}{file_ext}"
+    file_path = UPLOAD_DIR / f"{photo_type}_{user_id}_{int(time.time())}{file_ext}"
 
     content = await file.read()
     file_path.write_bytes(content)

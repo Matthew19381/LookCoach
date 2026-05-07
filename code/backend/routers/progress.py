@@ -1,10 +1,16 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from ..database import get_db
 from ..models.photo import Photo
 from ..models.progress import ProgressLog
 
 router = APIRouter()
+
+
+class CompareRequest(BaseModel):
+    photo_before_id: int
+    photo_after_id: int
 
 
 @router.get("/timeline")
@@ -28,18 +34,12 @@ async def get_timeline(user_id: int = 1, db: Session = Depends(get_db)):
 
 
 @router.post("/compare")
-async def compare_photos(body: dict, db: Session = Depends(get_db)):
-    photo_before_id = body.get("photo_before_id")
-    photo_after_id = body.get("photo_after_id")
-
-    if not photo_before_id or not photo_after_id:
-        return {"error": "Missing photo IDs"}
-
-    before = db.query(Photo).filter(Photo.id == photo_before_id).first()
-    after = db.query(Photo).filter(Photo.id == photo_after_id).first()
+async def compare_photos(body: CompareRequest, db: Session = Depends(get_db)):
+    before = db.query(Photo).filter(Photo.id == body.photo_before_id).first()
+    after = db.query(Photo).filter(Photo.id == body.photo_after_id).first()
 
     if not before or not after:
-        return {"error": "Photos not found"}
+        raise HTTPException(404, "Photos not found")
 
     return {
         "before": {"id": before.id, "url": f"/uploads/{Path(before.file_path).name}"},

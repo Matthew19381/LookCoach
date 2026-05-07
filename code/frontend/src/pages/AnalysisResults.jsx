@@ -73,18 +73,20 @@ export default function AnalysisResults() {
         <p className="text-5xl font-bold text-blue-600 mt-2">{analysis.overall_score}</p>
       </div>
 
-      {analysis.lever && (
+      {analysis.lever && analysis.lever.primary_lever && (
         <div className="bg-green-50 border border-green-200 rounded-lg p-6">
           <h3 className="text-lg font-semibold text-green-900">Primary Focus: {analysis.lever.primary_lever}</h3>
           <p className="text-green-700 mt-1">{analysis.lever.reason}</p>
-          <div className="mt-3">
-            <p className="text-sm font-medium text-green-800">Secondary levers:</p>
-            <div className="flex gap-2 mt-1">
-              {analysis.lever.secondary_levers.map((l) => (
-                <span key={l} className="px-2 py-1 bg-green-100 text-green-800 rounded text-sm">{l}</span>
-              ))}
+          {analysis.lever.secondary_levers && (
+            <div className="mt-3">
+              <p className="text-sm font-medium text-green-800">Secondary levers:</p>
+              <div className="flex gap-2 mt-1">
+                {analysis.lever.secondary_levers.map((l) => (
+                  <span key={l} className="px-2 py-1 bg-green-100 text-green-800 rounded text-sm">{l}</span>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       )}
 

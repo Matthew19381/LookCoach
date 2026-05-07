@@ -37,12 +37,13 @@ export default function ProgressTracker() {
     }
   }
 
+  const donePhotos = photos.filter(p => p.status === 'done')
   const chartData = {
-    labels: photos.filter(p => p.status === 'done').map(p => new Date(p.uploaded_at).toLocaleDateString()),
+    labels: donePhotos.map(p => new Date(p.uploaded_at).toLocaleDateString()),
     datasets: [
       {
         label: 'Look Score',
-        data: photos.filter(p => p.status === 'done').map((_, i) => 50 + i * 2),
+        data: donePhotos.map((_, i) => 50 + i * 5), // Placeholder - would come from analysis
         borderColor: 'rgb(59, 130, 246)',
         backgroundColor: 'rgba(59, 130, 246, 0.1)',
         tension: 0.3,
@@ -58,7 +59,7 @@ export default function ProgressTracker() {
     <div className="space-y-6">
       <h1 className="text-3xl font-bold text-gray-900">Progress Tracker</h1>
 
-      {photos.length > 0 && (
+      {donePhotos.length > 0 && (
         <div className="bg-white border rounded-lg p-6">
           <h3 className="text-lg font-semibold mb-4">Look Score Over Time</h3>
           <Line data={chartData} />
