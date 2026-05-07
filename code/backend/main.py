@@ -13,7 +13,7 @@ load_dotenv()
 from .database import get_db, init_db
 
 # Routers
-from .routers import photos, analysis, recommendations, progress, profile, skincare, integration
+from .routers import photos, analysis, recommendations, progress, profile, skincare, integration, video_learning, event_mode, confidence
 
 UPLOAD_DIR = Path("uploads")
 UPLOAD_DIR.mkdir(exist_ok=True)
@@ -68,6 +68,9 @@ app.include_router(progress.router, prefix="/api/progress", tags=["progress"])
 app.include_router(profile.router, prefix="/api/profile", tags=["profile"])
 app.include_router(skincare.router, prefix="/api/skincare", tags=["skincare"])
 app.include_router(integration.router, prefix="/api/integration", tags=["integration"])
+app.include_router(video_learning.router, prefix="/api/video-learning", tags=["video-learning"])
+app.include_router(event_mode.router, prefix="/api/event-mode", tags=["event-mode"])
+app.include_router(confidence.router, prefix="/api/confidence", tags=["confidence"])
 
 
 if __name__ == "__main__":

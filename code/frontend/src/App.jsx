@@ -5,6 +5,9 @@ import AnalysisResults from './pages/AnalysisResults'
 import Recommendations from './pages/Recommendations'
 import ProgressTracker from './pages/ProgressTracker'
 import SkincareRoutine from './pages/SkincareRoutine'
+import VideoLearning from './pages/VideoLearning'
+import EventMode from './pages/EventMode'
+import ConfidencePresence from './pages/ConfidencePresence'
 
 function App() {
   return (
@@ -15,6 +18,9 @@ function App() {
         <Route path="recommendations" element={<Recommendations />} />
         <Route path="progress" element={<ProgressTracker />} />
         <Route path="skincare" element={<SkincareRoutine />} />
+        <Route path="videos" element={<VideoLearning />} />
+        <Route path="event" element={<EventMode />} />
+        <Route path="confidence" element={<ConfidencePresence />} />
       </Route>
     </Routes>
   )

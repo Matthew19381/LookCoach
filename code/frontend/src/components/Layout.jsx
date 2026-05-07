@@ -1,5 +1,5 @@
 import { Outlet, NavLink } from 'react-router-dom'
-import { Camera, Heart, Droplets, LineChart, Moon } from 'lucide-react'
+import { Camera, Heart, Droplets, LineChart, Moon, Play } from 'lucide-react'
 
 const navItems = [
   { to: '/', label: 'Upload', icon: Camera },
@@ -7,6 +7,9 @@ const navItems = [
   { to: '/recommendations', label: 'Recommendations', icon: Droplets },
   { to: '/progress', label: 'Progress', icon: LineChart },
   { to: '/skincare', label: 'Skincare', icon: Moon },
+  { to: '/videos', label: 'Videos', icon: Play },
+  { to: '/event', label: 'Event Mode', icon: Calendar },
+  { to: '/confidence', label: 'Confidence', icon: Brain },
 ]
 
 export default function Layout() {

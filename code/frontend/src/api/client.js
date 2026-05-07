@@ -63,4 +63,28 @@ export const updateProfile = (data) =>
 export const getSkincareRoutine = () =>
   api.get(`/api/skincare/routine?user_id=${getUserId()}`);
 
+export const getRecommendedVideos = () =>
+  api.get(`/api/video-learning/videos/recommended?user_id=${getUserId()}`);
+
+export const searchVideos = (query) =>
+  api.get(`/api/video-learning/videos?query=${encodeURIComponent(query)}`);
+
+export const generateEventPlan = (eventDate, eventType) =>
+  api.post(`/api/event-mode/plan`, {
+    event_date: eventDate,
+    event_type: eventType,
+  });
+
+export const getEventTips = (eventType) =>
+  api.get(`/api/event-mode/tips/${eventType}`);
+
+export const getConfidenceAnalysis = () =>
+  api.get(`/api/confidence/analyze?user_id=${getUserId()}`);
+
+export const getActionPlan = () =>
+  api.get(`/api/confidence/action-plan`);
+
+export const getAttractivenessImpact = (confidenceScore = 70, presenceScore = 70) =>
+  api.get(`/api/confidence/attractiveness-impact?confidence_score=${confidenceScore}&presence_score=${presenceScore}`);
+
 export default api;
