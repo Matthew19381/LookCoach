@@ -53,7 +53,12 @@
 - `code/backend/.env.example`: Template with GEMINI_API_KEY, OLLAMA_BASE_URL, DATABASE_URL
 - `start.bat` / `start.ps1`: Docker Compose启动 scripts
 - Verified `docker-compose.yml` with ollama service, proper ports (8001, 5175, 11437)
-- Verified `vite.config.ts` proxy to backend
+- Updated `vite.config.ts` proxy to backend port 8002 (changed from 8001)
+- Updated `main.py` to run on port 8002 (changed from 8001)
+- Added `code/backend/__init__.py` for proper package imports
+- Backend tested: `/health` ✅, `/api/recommendations/` ✅
+- Frontend proxy tested: 5176 → 8002 ✅
+- Pytest: 38 tests, 82% coverage (exceeds 70% requirement)
 
 ### Project Structure
 ```
