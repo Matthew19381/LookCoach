@@ -1,0 +1,45 @@
+# Environment
+code/backend/.env
+code/backend/.env.example
+
+# Database
+code/backend/*.db
+code/backend/uploads/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+
+# Node
+code/frontend/node_modules/
+code/frontend/dist/
+code/frontend/.vite/
+
+# Cache
+code/backend/.cache/
+*.pyc
+*.pyo
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Logs
+*.log
+logs/
+
+# Docker
+.dockerignore
