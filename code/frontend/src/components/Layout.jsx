@@ -1,5 +1,5 @@
 import { Outlet, NavLink } from 'react-router-dom'
-import { Camera, Heart, Droplets, LineChart, Moon, Play } from 'lucide-react'
+import { Camera, Heart, Droplets, LineChart, Moon, Play, FlaskConical } from 'lucide-react'
 
 const navItems = [
   { to: '/', label: 'Upload', icon: Camera },
@@ -10,6 +10,7 @@ const navItems = [
   { to: '/videos', label: 'Videos', icon: Play },
   { to: '/event', label: 'Event Mode', icon: Calendar },
   { to: '/confidence', label: 'Confidence', icon: Brain },
+  { to: '/experiments', label: 'Experiments', icon: FlaskConical },
 ]
 
 export default function Layout() {

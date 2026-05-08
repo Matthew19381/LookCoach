@@ -87,4 +87,35 @@ export const getActionPlan = () =>
 export const getAttractivenessImpact = (confidenceScore = 70, presenceScore = 70) =>
   api.get(`/api/confidence/attractiveness-impact?confidence_score=${confidenceScore}&presence_score=${presenceScore}`);
 
+// Experiments
+export const getExperimentTemplates = () =>
+  api.get(`/api/experiments/templates`);
+
+export const startExperiment = (templateId, customName) =>
+  api.post(`/api/experiments/start`, {
+    template_id: templateId,
+    custom_name: customName,
+    user_id: getUserId(),
+  });
+
+export const getExperiment = (experimentId) =>
+  api.get(`/api/experiments/${experimentId}`);
+
+export const logDaily = (experimentId, day, rating, notes) =>
+  api.post(`/api/experiments/log`, {
+    experiment_id: experimentId,
+    day,
+    rating,
+    notes,
+  });
+
+export const getResults = (experimentId) =>
+  api.get(`/api/experiments/${experimentId}/results`);
+
+export const getActiveExperiments = () =>
+  api.get(`/api/experiments/active?user_id=${getUserId()}`);
+
+export const finishExperiment = (experimentId) =>
+  api.post(`/api/experiments/${experimentId}/finish`);
+
 export default api;

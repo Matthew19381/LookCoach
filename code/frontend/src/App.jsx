@@ -8,6 +8,7 @@ import SkincareRoutine from './pages/SkincareRoutine'
 import VideoLearning from './pages/VideoLearning'
 import EventMode from './pages/EventMode'
 import ConfidencePresence from './pages/ConfidencePresence'
+import Experiments from './pages/Experiments'
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
         <Route path="videos" element={<VideoLearning />} />
         <Route path="event" element={<EventMode />} />
         <Route path="confidence" element={<ConfidencePresence />} />
+        <Route path="experiments" element={<Experiments />} />
       </Route>
     </Routes>
   )
