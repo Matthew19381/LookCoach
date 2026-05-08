@@ -5,9 +5,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 
-# Environment variables
+# Environment variables - load .env from project root
 from dotenv import load_dotenv
-load_dotenv()
+from pathlib import Path
+PROJECT_ROOT = Path(__file__).parent.parent.parent
+load_dotenv(dotenv_path=PROJECT_ROOT / ".env")
 
 # Database
 from .database import get_db, init_db

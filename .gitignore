@@ -1,4 +1,5 @@
 # Environment
+.env
 code/backend/.env
 code/backend/.env.example
 
