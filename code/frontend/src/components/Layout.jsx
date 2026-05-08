@@ -1,5 +1,5 @@
 import { Outlet, NavLink } from 'react-router-dom'
-import { Camera, Heart, Droplets, LineChart, Moon, Play, FlaskConical } from 'lucide-react'
+import { Camera, Heart, Droplets, LineChart, Moon, Play, Calendar, Brain, FlaskConical } from 'lucide-react'
 
 const navItems = [
   { to: '/', label: 'Upload', icon: Camera },
