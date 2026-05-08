@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Stretch, AlertTriangle, CheckCircle } from 'lucide-react'
+import { StretchVertical, AlertTriangle, CheckCircle } from 'lucide-react'
 import { getPostureIssues, detectPostureIssues, getCorrectionPlan, fullPostureAssessment } from '../api/client'
 
 export default function PostureCorrection() {
@@ -54,7 +54,7 @@ export default function PostureCorrection() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
-        <Stretch size={28} className="text-green-600" />
+        <StretchVertical size={28} className="text-green-600" />
         <h1 className="text-3xl font-bold text-gray-900">Posture Correction</h1>
       </div>
 

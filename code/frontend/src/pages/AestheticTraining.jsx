@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Barbell, Target, Activity } from 'lucide-react'
+import { Dumbbell, Target, Activity } from 'lucide-react'
 import { getAvailablePlans, generateTrainingPlan, analyzePhysique } from '../api/client'
 
 export default function AestheticTraining() {
@@ -34,7 +34,7 @@ export default function AestheticTraining() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
-        <Barbell size={28} className="text-blue-600" />
+        <Dumbbell size={28} className="text-blue-600" />
         <h1 className="text-3xl font-bold text-gray-900">Aesthetic Training</h1>
       </div>
 

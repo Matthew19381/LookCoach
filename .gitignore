@@ -1,7 +1,7 @@
 # Environment
 .env
 code/backend/.env
-code/backend/.env.example
+# .env.example is committed as template (NOT ignored)
 
 # Database
 code/backend/*.db

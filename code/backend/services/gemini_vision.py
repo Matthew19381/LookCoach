@@ -9,6 +9,7 @@ import io
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
+AI_SERVICE = os.getenv("AI_SERVICE", "openrouter").lower()  # gemini, openrouter, ollama
 
 CACHE_DIR = Path(".cache")
 CACHE_DIR.mkdir(exist_ok=True)
@@ -83,8 +84,26 @@ class GeminiVisionService:
   "overall_face_score": 0-100
 }
 Respond ONLY with valid JSON."""
+        # Try selected AI service first
+        if AI_SERVICE == "openrouter":
+            result = self._call_openrouter(image_bytes, prompt)
+            if result:
+                return result
+        elif AI_SERVICE == "gemini":
+            result = self._call_gemini(image_bytes, prompt)
+            if result:
+                return result
+
+        # Fallback chain: Gemini -> OpenRouter -> Ollama
         result = self._call_gemini(image_bytes, prompt)
-        return result or self._fallback_face(image_bytes)
+        if result:
+            return result
+
+        result = self._call_openrouter(image_bytes, prompt)
+        if result:
+            return result
+
+        return self._fallback_face(image_bytes)
 
     def analyze_body(self, image_bytes: bytes) -> dict:
         prompt = """Analyze this body photo for aesthetics. Return ONLY valid JSON with:
@@ -95,8 +114,26 @@ Respond ONLY with valid JSON."""
   "overall_body_score": 0-100
 }
 Respond ONLY with valid JSON."""
+        # Try selected AI service first
+        if AI_SERVICE == "openrouter":
+            result = self._call_openrouter(image_bytes, prompt)
+            if result:
+                return result
+        elif AI_SERVICE == "gemini":
+            result = self._call_gemini(image_bytes, prompt)
+            if result:
+                return result
+
+        # Fallback chain: Gemini -> OpenRouter -> Ollama
         result = self._call_gemini(image_bytes, prompt)
-        return result or self._fallback_body(image_bytes)
+        if result:
+            return result
+
+        result = self._call_openrouter(image_bytes, prompt)
+        if result:
+            return result
+
+        return self._fallback_body(image_bytes)
 
     def analyze_skin(self, image_bytes: bytes) -> dict:
         prompt = """Analyze this skin photo. Return ONLY valid JSON with:
@@ -107,8 +144,26 @@ Respond ONLY with valid JSON."""
   "overall_skin_score": 0-100
 }
 Respond ONLY with valid JSON."""
+        # Try selected AI service first
+        if AI_SERVICE == "openrouter":
+            result = self._call_openrouter(image_bytes, prompt)
+            if result:
+                return result
+        elif AI_SERVICE == "gemini":
+            result = self._call_gemini(image_bytes, prompt)
+            if result:
+                return result
+
+        # Fallback chain: Gemini -> OpenRouter -> Ollama
         result = self._call_gemini(image_bytes, prompt)
-        return result or self._fallback_skin(image_bytes)
+        if result:
+            return result
+
+        result = self._call_openrouter(image_bytes, prompt)
+        if result:
+            return result
+
+        return self._fallback_skin(image_bytes)
 
     def analyze_hair(self, image_bytes: bytes) -> dict:
         prompt = """Analyze this hair photo. Return ONLY valid JSON with:
@@ -120,8 +175,26 @@ Respond ONLY with valid JSON."""
   "overall_hair_score": 0-100
 }
 Respond ONLY with valid JSON."""
+        # Try selected AI service first
+        if AI_SERVICE == "openrouter":
+            result = self._call_openrouter(image_bytes, prompt)
+            if result:
+                return result
+        elif AI_SERVICE == "gemini":
+            result = self._call_gemini(image_bytes, prompt)
+            if result:
+                return result
+
+        # Fallback chain: Gemini -> OpenRouter -> Ollama
         result = self._call_gemini(image_bytes, prompt)
-        return result or self._fallback_hair(image_bytes)
+        if result:
+            return result
+
+        result = self._call_openrouter(image_bytes, prompt)
+        if result:
+            return result
+
+        return self._fallback_hair(image_bytes)
 
     def _get_fallback(self):
         if self.fallback is None:

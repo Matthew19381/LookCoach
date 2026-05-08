@@ -1,5 +1,3 @@
-version: '3.8'
-
 networks:
   lookcoach-network:
     driver: bridge
@@ -20,7 +18,7 @@ services:
       - GEMINI_API_KEY=${GEMINI_API_KEY}
       - OLLAMA_BASE_URL=http://ollama:11434
     env_file:
-      - ./backend/.env
+      - ../.env
     networks:
       - lookcoach-network
     command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
