@@ -10,8 +10,17 @@ class LocalLLMService:
         self.base_url = base_url or OLLAMA_BASE_URL
         self.model = model or OLLAMA_MODEL
         self.api_url = f"{self.base_url}/api/generate"
+        self.openrouter = None
 
-    def generate_text(self, prompt: str, model: str = None) -> str:
+    def _get_openrouter(self):
+        if self.openrouter is None:
+            from .openrouter import OpenRouterService
+            self.openrouter = OpenRouterService()
+        return self.openrouter
+
+    def generate_text(self, prompt: str, model: str = None, use_openrouter: bool = True) -> str:
+        """Generate text with fallback: Ollama → OpenRouter → hardcoded."""
+        # Try Ollama first
         try:
             response = httpx.post(
                 self.api_url,
@@ -26,7 +35,16 @@ class LocalLLMService:
             return response.json().get("response", "")
         except Exception as e:
             print(f"Ollama call failed: {e}")
-            return ""
+
+        # Try OpenRouter as fallback
+        if use_openrouter:
+            try:
+                return self._get_openrouter().generate_text(prompt, model)
+            except Exception as e:
+                print(f"OpenRouter fallback failed: {e}")
+
+        # Final hardcoded fallback
+        return ""
 
     def analyze_image_fallback(self, image_bytes: bytes, analysis_type: str) -> dict:
         """Basic heuristic fallback when Gemini is unavailable."""
