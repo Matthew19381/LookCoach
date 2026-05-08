@@ -13,7 +13,7 @@ load_dotenv()
 from .database import get_db, init_db
 
 # Routers
-from .routers import photos, analysis, recommendations, progress, profile, skincare, integration, video_learning, event_mode, confidence, experiments
+from .routers import photos, analysis, recommendations, progress, profile, skincare, integration, video_learning, event_mode, confidence, experiments, aesthetic_training, posture, nutrition, sleep, stress
 
 UPLOAD_DIR = Path("uploads")
 UPLOAD_DIR.mkdir(exist_ok=True)
@@ -33,7 +33,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="LookCoach API",
     description="AI-powered Looks Optimizer",
-    version="0.1.0",
+    version="0.2.0",
     lifespan=lifespan,
 )
 
@@ -72,6 +72,11 @@ app.include_router(video_learning.router, prefix="/api/video-learning", tags=["v
 app.include_router(event_mode.router, prefix="/api/event-mode", tags=["event-mode"])
 app.include_router(confidence.router, prefix="/api/confidence", tags=["confidence"])
 app.include_router(experiments.router, prefix="/api/experiments", tags=["experiments"])
+app.include_router(aesthetic_training.router, prefix="/api/aesthetic-training", tags=["aesthetic-training"])
+app.include_router(posture.router, prefix="/api/posture", tags=["posture"])
+app.include_router(nutrition.router, prefix="/api/nutrition", tags=["nutrition"])
+app.include_router(sleep.router, prefix="/api/sleep", tags=["sleep"])
+app.include_router(stress.router, prefix="/api/stress", tags=["stress"])
 
 
 if __name__ == "__main__":

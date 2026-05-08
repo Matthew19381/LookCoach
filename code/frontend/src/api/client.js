@@ -118,4 +118,60 @@ export const getActiveExperiments = () =>
 export const finishExperiment = (experimentId) =>
   api.post(`/api/experiments/${experimentId}/finish`);
 
+// Aesthetic Training
+export const getAvailablePlans = () =>
+  api.get(`/api/aesthetic-training/plans`);
+
+export const generateTrainingPlan = (goal = "v_taper") =>
+  api.post(`/api/aesthetic-training/plan`, { goal });
+
+export const analyzePhysique = (measurements) =>
+  api.post(`/api/aesthetic-training/analyze`, { measurements });
+
+// Posture Correction
+export const getPostureIssues = () =>
+  api.get(`/api/posture/issues`);
+
+export const detectPostureIssues = (analysis) =>
+  api.post(`/api/posture/detect`, { analysis });
+
+export const getCorrectionPlan = (issueId) =>
+  api.get(`/api/posture/correction/${issueId}`);
+
+export const fullPostureAssessment = (analysis) =>
+  api.post(`/api/posture/assess`, { analysis });
+
+// Nutrition for Looks
+export const getNutritionFactors = () =>
+  api.get(`/api/nutrition/factors`);
+
+export const getNutritionRecommendations = () =>
+  api.get(`/api/nutrition/recommendations`);
+
+export const getMealPlan = (planType = "pre_event") =>
+  api.get(`/api/nutrition/meal-plan/${planType}`);
+
+export const analyzeDiet = (dietLog) =>
+  api.post(`/api/nutrition/analyze`, { diet_log: dietLog });
+
+// Sleep Optimization
+export const getSleepFactors = () =>
+  api.get(`/api/sleep/factors`);
+
+export const analyzeSleep = (sleepData) =>
+  api.post(`/api/sleep/analyze`, { sleep_data: sleepData });
+
+export const getPreEventSleepTips = (eventType = "general") =>
+  api.get(`/api/sleep/pre-event/${eventType}`);
+
+// Stress Management
+export const getStressEffects = () =>
+  api.get(`/api/stress/effects`);
+
+export const getRelaxationTechniques = () =>
+  api.get(`/api/stress/techniques`);
+
+export const analyzeStress = (stressData) =>
+  api.post(`/api/stress/analyze`, { stress_data: stressData });
+
 export default api;
