@@ -21,4 +21,10 @@ class ExplainableAI:
 - Any contraindications: {recommendation.get('contraindications', 'none')}
 
 Provide a mini-lesson (2-3 paragraphs) teaching the user about this recommendation."""
-        return self.llm.generate_text(prompt)
+        try:
+            return self.llm.generate_text(prompt)
+        except Exception:
+            name = recommendation.get("name", "this recommendation")
+            effect = recommendation.get("effect_size", 0) * 100
+            time = recommendation.get("time_to_effect", 0)
+            return f"{name} is recommended for its {effect:.0f}% effectiveness within {time} weeks. Consistent application is key to seeing results. Consult skincare or fitness professionals for personalized advice."

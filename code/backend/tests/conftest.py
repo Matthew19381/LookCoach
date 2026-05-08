@@ -1,11 +1,18 @@
 import sys
 from pathlib import Path
-sys.path.insert(0, str(Path(__file__).parent.parent))
-
 import pytest
+
+# Add code/ (parent of backend/) to path so that 'backend' is a package
+BACKEND_DIR = Path(__file__).parent.parent
+CODE_DIR = BACKEND_DIR.parent
+sys.path.insert(0, str(CODE_DIR))
+
+import os
+os.chdir(BACKEND_DIR)
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from models.base import Base
+from backend.models.base import Base
 
 TEST_DB_URL = "sqlite:///:memory:"
 

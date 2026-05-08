@@ -51,6 +51,14 @@ async def start_experiment(body: ExperimentCreate):
     return result
 
 
+@router.get("/active")
+async def get_active_experiments(user_id: int = 1):
+    return [
+        exp for exp in EXPERIMENTS.values()
+        if exp["user_id"] == user_id and exp["status"] == "active"
+    ]
+
+
 @router.get("/{experiment_id}")
 async def get_experiment(experiment_id: str):
     if experiment_id not in EXPERIMENTS:
@@ -80,14 +88,6 @@ async def get_results(experiment_id: str):
     experiment = EXPERIMENTS[experiment_id]
     from ..services.experiment_engine import PersonalExperimentEngine
     return PersonalExperimentEngine.analyze_results(experiment)
-
-
-@router.get("/active")
-async def get_active_experiments(user_id: int = 1):
-    return [
-        exp for exp in EXPERIMENTS.values()
-        if exp["user_id"] == user_id and exp["status"] == "active"
-    ]
 
 
 @router.post("/{experiment_id}/finish")

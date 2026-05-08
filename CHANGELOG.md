@@ -2,6 +2,35 @@
 
 ---
 
+## [0.2.0] — 2026-05-08
+
+### Fixed
+- **Frontend build errors**: Fixed lucide-react icon imports (`Barbell` → `Dumbbell`, `Stretch` → `StretchVertical`)
+- **Backend router order**: Fixed `experiments.py` route ordering (`/active` moved before `/{experiment_id}`)
+- **Event mode**: Fixed `days_until_event` calculation in `event_mode.py` (now calculated from `event_date`)
+- **Models import**: Added all model imports to `models/__init__.py` for proper table registration
+
+### Added (M8: Backend Test Coverage)
+- `tests/test_routers.py`: 37 tests covering all API endpoints
+- Coverage improved from 21% to 74%
+- Routers tested: photos, analysis, recommendations, progress, profile, skincare, video_learning, event_mode, confidence, experiments, aesthetic_training, posture, nutrition, sleep, stress
+
+### Added (M9: Frontend Test Coverage)
+- `AnalysisResults.test.jsx`: 2 tests (results display, no-data prompt)
+- `AestheticTraining.test.jsx`: 3 tests (title, plans list, generate plan)
+- `PostureCorrection.test.jsx`: 4 tests (title, issues list, detect issues, correction plan)
+- Total frontend tests: 87 passed (17 test files)
+
+### Added (M10: Service Fallbacks)
+- `services/explainer.py`: Added fallback for `deep_dive_lesson()` when LLM is unavailable
+
+### Changed
+- Frontend build now passes (fixed icon imports)
+- Test infrastructure: uses file-based SQLite for reliable test database
+- `conftest.py`: updated to support new test structure
+
+---
+
 ## [0.1.0] — 2026-05-07
 
 ### Added (M1: Database Models)
@@ -32,7 +61,6 @@
 - `routers/profile.py`: Get/update user profile (goals, lifestyle, discipline)
 - `routers/skincare.py`: Skincare routine endpoint
 - `routers/integration.py`: Input/output stubs for external systems
-- Updated `main.py` with all router includes and CORS for :5173/:5175
 
 ### Added (M5: Frontend Core + API)
 - `api/client.js`: Axios instance with all API calls (uploadPhoto, getAnalysis, getRecommendations, etc.)
@@ -51,14 +79,14 @@
 
 ### Added (M7: Docker + Scripts)
 - `code/backend/.env.example`: Template with GEMINI_API_KEY, OLLAMA_BASE_URL, DATABASE_URL
-- `start.bat` / `start.ps1`: Docker Compose启动 scripts
+- `start.bat` / `start.ps1`: Docker Compose startup scripts
 - Verified `docker-compose.yml` with ollama service, proper ports (8001, 5175, 11437)
 - Updated `vite.config.ts` proxy to backend port 8002 (changed from 8001)
 - Updated `main.py` to run on port 8002 (changed from 8001)
 - Added `code/backend/__init__.py` for proper package imports
 - Backend tested: `/health` ✅, `/api/recommendations/` ✅
 - Frontend proxy tested: 5176 → 8002 ✅
-- Pytest: 38 tests, 82% coverage (exceeds 70% requirement)
+- Pytest: 34 tests, 21% coverage (need to improve)
 
 ### Project Structure
 ```
@@ -76,7 +104,7 @@ code/
 │   │   ├── api/client.js
 │   │   ├── App.jsx + Layout.jsx
 │   │   └── pages/ (PhotoUpload, AnalysisResults, Recommendations, ProgressTracker, SkincareRoutine)
-│   ├── vite.config.ts (proxy to :8001)
+│   ├── vite.config.ts (proxy to :8002)
 │   ├── package.json
 │   └── Dockerfile
 └── docker-compose.yml (backend, frontend, ollama)

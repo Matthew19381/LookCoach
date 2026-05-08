@@ -15,8 +15,14 @@ class EventPlanRequest(BaseModel):
 @router.post("/plan")
 async def generate_event_plan(body: EventPlanRequest, user_id: int = 1, db: Session = Depends(get_db)):
     from ..services.event_mode import EventModeEngine
+    from datetime import datetime
 
-    if body.days_until_event < 0:
+    # Calculate days until event
+    from datetime import date
+    event_date = datetime.strptime(body.event_date, "%Y-%m-%d").date()
+    days_until = (event_date - date.today()).days
+
+    if days_until < 0:
         raise HTTPException(400, "Event date must be in the future")
 
     # In full version, would fetch user's latest analysis
