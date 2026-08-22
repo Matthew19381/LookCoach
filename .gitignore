@@ -24,8 +24,10 @@ code/frontend/.vite/
 
 # Cache
 code/backend/.cache/
-*.pyc
-*.pyo
+.pytest_cache/
+.coverage
+htmlcov/
+*.egg-info/
 
 # IDE
 .vscode/
