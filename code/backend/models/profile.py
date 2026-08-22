@@ -12,6 +12,7 @@ class UserProfile(Base):
     user_id = Column(Integer, ForeignKey("users.id"), unique=True, nullable=False)
     goals = Column(Text, default="{}")  # JSON: {face: 0.4, body: 0.3, skin: 0.3}
     lifestyle = Column(Text, default="{}")  # JSON: {sleep: 7, stress: 5, activity: 3}
+    health = Column(Text, default="{}")  # JSON: {pregnancy: false, kidney_disease: false, ...}
     discipline_score = Column(Integer, default=50)
 
     user = relationship("User", backref="profile")
@@ -27,3 +28,9 @@ class UserProfile(Base):
 
     def set_lifestyle(self, data: dict):
         self.lifestyle = json.dumps(data)
+
+    def get_health(self):
+        return json.loads(self.health)
+
+    def set_health(self, data: dict):
+        self.health = json.dumps(data)

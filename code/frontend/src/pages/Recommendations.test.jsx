@@ -94,8 +94,11 @@ describe('Recommendations', () => {
     expect(screen.getByText('meta')).toBeInTheDocument()
   })
 
-  it('displays effect size, time to effect, and ROI', async () => {
-    getRecommendations.mockResolvedValue(mockRecs)
+  it('displays qualitative potential instead of fabricated percentages', async () => {
+    getRecommendations.mockResolvedValue([
+      { ...mockRecs[0], confidence: 'high' },
+      { ...mockRecs[1], confidence: 'moderate' },
+    ])
 
     render(
       <BrowserRouter>
@@ -104,15 +107,15 @@ describe('Recommendations', () => {
     )
 
     await waitFor(() => {
-      expect(screen.getByText('80% effect')).toBeInTheDocument()
+      expect(screen.getByText('High potential')).toBeInTheDocument()
     })
-    expect(screen.getByText('90% effect')).toBeInTheDocument()
-    expect(screen.getByText('4 weeks')).toBeInTheDocument()
-    expect(screen.getByText('8 weeks')).toBeInTheDocument()
+    expect(screen.getByText('Moderate potential')).toBeInTheDocument()
+    expect(screen.getByText('~4 weeks')).toBeInTheDocument()
+    expect(screen.getByText('~8 weeks')).toBeInTheDocument()
 
-    // ROI appears twice (once per recommendation)
-    const roiElements = screen.getAllByText(/ROI:/)
-    expect(roiElements).toHaveLength(2)
+    // No fabricated precision: no raw ROI score, no "% effect" claim
+    expect(screen.queryByText(/ROI:/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/% effect/)).not.toBeInTheDocument()
   })
 
   it('displays priority badges', async () => {

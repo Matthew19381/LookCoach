@@ -402,7 +402,7 @@ Dotyczy 9 modułów bez modelu SQLAlchemy: `experiments, aesthetic_training, pos
 
 ### FAZA 5 — Rzetelność naukowa (E-1, E-2 z TASKS.md, NEURO_PLAN §4 A1-A10)
 
-- [ ] **5.1 Zrewiduj `EVIDENCE_DB` w `services/evidence_engine.py` wg audytu A1-A10 z `NEURO_PLAN.md` §4.**
+- [x] **5.1 [WYKONANE 2026-08-23] Zrewiduj `EVIDENCE_DB` w `services/evidence_engine.py` wg audytu A1-A10 z `NEURO_PLAN.md` §4.**
   Plik: `code/backend/services/evidence_engine.py`, linie 4-33.
   Konkretne poprawki zidentyfikowane w audycie:
   - `beauty_002` (Lymphatic Drainage): `evidence_level: "RCT", effect_size: 0.6` → przeklasyfikować na `"OBS"` lub `"HIPOTEZA"` zgodnie z `NEURO_PLAN.md` A8 (audyt: "ZAWYŻONE, przeklasyfikować na OBS/HIPOTEZA").
@@ -411,7 +411,7 @@ Dotyczy 9 modułów bez modelu SQLAlchemy: `experiments, aesthetic_training, pos
   Kryterium akceptacji: `grep -c '"study_url": ""' services/evidence_engine.py` — dla wszystkich wpisów oznaczonych `"RCT"` lub `"meta"` pole `study_url` musi być niepuste (realny link) albo `evidence_level` musi być obniżone do `"OBS"`/`"HIPOTEZA"`. Skrypt weryfikujący (do napisania): `code/backend/scripts/verify_evidence_db.py`, który failuje CI jeśli `evidence_level in ("RCT","meta") and study_url == ""`.
   Zależności: brak, ale wymaga researchu (człowiek lub AI z dostępem do przeszukiwania literatury — nie zgadywać).
 
-- [ ] **5.2 Usuń fabrykacje z `knowledge/SCIENTIFIC_FOUNDATION.md`.**
+- [x] **5.2 [WYKONANE 2026-08-23] Usuń fabrykacje z `knowledge/SCIENTIFIC_FOUNDATION.md`.**
   Plik: `knowledge/SCIENTIFIC_FOUNDATION.md` (plik nieśledzony przez git — sprawdź `git status` czy nadal tak jest, jeśli tak, to zmiana nie będzie widoczna w historii repo, dopisz do `.gitignore` wyjątek albo zacommituj świadomie).
   Konkretne fabrykacje do usunięcia/poprawienia (namierzone w audycie, linie orientacyjne do zweryfikowania przy edycji bo plik mógł się zmienić):
   - Linia ~152: "8+ hours sleep increases perceived attractiveness by 20%" — usuń liczbę, zastąp opisem kierunku efektu z realnym źródłem lub oznacz jako HIPOTEZA.
@@ -422,7 +422,7 @@ Dotyczy 9 modułów bez modelu SQLAlchemy: `experiments, aesthetic_training, pos
   Kryterium akceptacji: każda liczba procentowa/statystyczna w pliku ma bezpośrednio obok siebie realne źródło (autor, rok, typ badania) możliwe do zweryfikowania, albo jest jawnie oznaczona `[HIPOTEZA — niezweryfikowane]`.
   Zależności: 5.1 (spójność między plikiem wiedzy a `EVIDENCE_DB` w kodzie).
 
-- [ ] **5.3 Wprowadź widełki niepewności zamiast pojedynczego `roi_score` (LC-1).**
+- [x] **5.3 [WYKONANE 2026-08-23] Wprowadź widełki niepewności zamiast pojedynczego `roi_score` (LC-1).**
   Plik: `code/backend/services/roi_engine.py`.
   Problem: `roi_score` to pojedynczy float (np. "0.212") — fałszywa precyzja.
   Zmiana: rozszerzyć strukturę zwracaną przez ROI engine o widełki, np.:
@@ -438,7 +438,7 @@ Dotyczy 9 modułów bez modelu SQLAlchemy: `experiments, aesthetic_training, pos
   Kryterium akceptacji: żaden endpoint API zwracający ROI nie ma pojedynczego pola `roi_score` bez towarzyszących `_low`/`_high`; UI nie renderuje liczby z więcej niż 0 miejscami po przecinku (albo renderuje kategorię słowną).
   Zależności: 5.1.
 
-- [ ] **5.4 Zbuduj Health Safety Layer (F-3 / LC-8 z NEURO_PLAN, obecnie całkowicie brak).**
+- [x] **5.4 [WYKONANE 2026-08-23] Zbuduj Health Safety Layer (F-3 / LC-8 z NEURO_PLAN, obecnie całkowicie brak).**
   Nowy plik: `code/backend/services/health_safety.py`.
   Zakres minimalny: lista twardych blokad (red flags) dla rekomendacji zdrowotnych — np. rekomendacja dot. suplementów przy wskazanych przeciwwskazaniach w profilu użytkownika (pole `contraindications` już istnieje w `EVIDENCE_DB`, ale nic go dziś nie sprawdza względem profilu użytkownika), oraz automatyczne dołączanie disclaimera "skonsultuj z dermatologiem/lekarzem" przy rekomendacjach przekraczających próg ryzyka (np. Retinol, Minoxidil).
   Sygnatura przykładowa:
