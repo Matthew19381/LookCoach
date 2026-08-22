@@ -50,7 +50,7 @@ describe('getRecommendations', () => {
 
     await getRecommendations()
 
-    expect(mockGet).toHaveBeenCalledWith('/api/recommendations/?limit=10')
+    expect(mockGet).toHaveBeenCalledWith('/api/v1/recommendations/?limit=10')
   })
 
   it('calls correct endpoint with custom limit', async () => {
@@ -58,6 +58,6 @@ describe('getRecommendations', () => {
 
     await getRecommendations(5)
 
-    expect(mockGet).toHaveBeenCalledWith('/api/recommendations/?limit=5')
+    expect(mockGet).toHaveBeenCalledWith('/api/v1/recommendations/?limit=5')
   })
 })
