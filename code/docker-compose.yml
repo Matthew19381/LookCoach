@@ -5,14 +5,14 @@ networks:
 services:
   backend:
     build:
-      context: ./backend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: backend/Dockerfile
     container_name: lookcoach-backend
     ports:
-      - "8001:8000"
+      - "8010:8010"
     volumes:
-      - ./backend:/app
-      - uploads:/app/uploads
+      - ./backend:/app/backend
+      - uploads:/app/backend/uploads
     environment:
       - DATABASE_URL=sqlite:///./looks_optimizer.db
       - GEMINI_API_KEY=${GEMINI_API_KEY}
@@ -21,7 +21,7 @@ services:
       - ../.env
     networks:
       - lookcoach-network
-    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    command: uvicorn backend.main:app --host 0.0.0.0 --port 8010 --reload
     depends_on:
       - ollama
 
@@ -36,7 +36,7 @@ services:
       - ./frontend:/app
       - /app/node_modules
     environment:
-      - VITE_API_URL=http://localhost:8001
+      - VITE_API_URL=http://localhost:8010
     networks:
       - lookcoach-network
     depends_on:

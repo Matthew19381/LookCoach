@@ -1,0 +1,8 @@
+[project]
+name = "lookcoach-backend"
+version = "0.2.0"
+description = "LookCoach - evidence-based looks optimization module of Personal AI OS"
+requires-python = ">=3.12,<3.13"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

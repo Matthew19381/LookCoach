@@ -70,7 +70,7 @@ DATABASE_URL=sqlite:///./looks_optimizer.db
 
 ## Porty (izolacja per projekt)
 
-- Backend: `http://localhost:8001`  (ForgeBody: 8000, LinguaAI: 8000)
+- Backend: `http://localhost:8010`  (ForgeBody: 8000, LinguaAI: 8000)
 - Frontend: `http://localhost:5175` (ForgeBody: 5174, LinguaAI: 5173)
 - Ollama: `http://localhost:11437` (ForgeBody: 11435, LinguaAI: 11436)
 - Gemini: API (cloud)
@@ -78,7 +78,7 @@ DATABASE_URL=sqlite:///./looks_optimizer.db
 ## Development Workflow
 
 1. `docker compose up -d ollama` (pull llama2 / llama3)
-2. `uvicorn main:app --reload --port 8001` (backend)
+2. `uvicorn main:app --reload --port 8010` (backend)
 3. `npm run dev` (frontend, vite port 5175)
 4. Open `http://localhost:5175`
 

@@ -347,7 +347,7 @@ code/frontend/src/
 - API client (`client.js`) handles all server communication
 
 ### API Client (`client.js`)
-- **Base URL**: `http://localhost:8003` (configurable via `VITE_API_URL`)
+- **Base URL**: `http://localhost:8010` (configurable via `VITE_API_URL`)
 - **Timeout**: 60 seconds
 - **Response Interceptor**: Unwraps `response.data` automatically
 - **Exception**: `exportLessonPDF` and pronunciation use raw `axios` for `responseType: 'blob'`
@@ -358,7 +358,7 @@ code/frontend/src/
 
 ### Base URL
 ```
-Development: http://localhost:8003
+Development: http://localhost:8010
 Production: [Configure via CORS settings]
 ```
 
@@ -707,15 +707,15 @@ pip install fastapi uvicorn sqlalchemy python-dotenv google-generativeai
 #### 3. Run Backend
 ```bash
 # Development (with reload)
-uvicorn backend.main:app --reload --port 8003
+uvicorn backend.main:app --reload --port 8010
 
 # Production
-uvicorn backend.main:app --host 0.0.0.0 --port 8003
+uvicorn backend.main:app --host 0.0.0.0 --port 8010
 ```
 
 #### 4. Verify
 ```bash
-curl http://localhost:8003/health
+curl http://localhost:8010/health
 # {"status": "healthy", "service": "LookCoach"}
 ```
 
@@ -730,7 +730,7 @@ npm install
 #### 2. Configure Environment
 ```bash
 # Create .env
-echo "VITE_API_URL=http://localhost:8003" > .env
+echo "VITE_API_URL=http://localhost:8010" > .env
 ```
 
 #### 3. Run Development Server
@@ -797,13 +797,13 @@ GEMINI_API_KEY=your_gemini_api_key
 DATABASE_URL=sqlite:///./lingua_ai.db  # Optional, default is SQLite
 
 # Frontend (.env)
-VITE_API_URL=http://localhost:8003
+VITE_API_URL=http://localhost:8010
 ```
 
 ### Useful Commands
 ```bash
 # View API docs
-open http://localhost:8003/docs
+open http://localhost:8010/docs
 
 # Check backend logs
 tail -f logs/backend.log
@@ -819,12 +819,12 @@ cd code/frontend && npm update
 ### Troubleshooting
 
 **Backend won't start:**
-- Check Python version (3.14+ required)
+- Check Python version (3.12 required, per ecosystem standard)
 - Verify .env file exists with GEMINI_API_KEY
-- Ensure port 8003 is not in use
+- Ensure port 8010 is not in use
 
 **Frontend can't connect to backend:**
-- Verify backend is running on port 8003
+- Verify backend is running on port 8010
 - Check CORS settings in main.py
 - Ensure VITE_API_URL is correct
 

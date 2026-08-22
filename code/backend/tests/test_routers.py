@@ -117,6 +117,66 @@ class TestAnalysisRouter:
         response = client.post("/api/analysis/analyze/999")
         assert response.status_code == 404
 
+    def test_analyze_photo_happy_path(self):
+        """Happy path: existing photo with real file on disk + mocked vision service."""
+        from datetime import datetime
+        from unittest.mock import patch
+        from backend.models.photo import Photo
+
+        tmp = tempfile.NamedTemporaryFile(suffix=".jpg", delete=False)
+        tmp.write(b"\xff\xd8fakejpegdata")
+        tmp.close()
+        db = TestSessionLocal()
+        photo = Photo(
+            user_id=1,
+            photo_type="front",
+            file_path=tmp.name,
+            uploaded_at=datetime.utcnow(),
+        )
+        db.add(photo)
+        db.commit()
+        photo_id = photo.id
+        db.close()
+
+        fake_face_data = {
+            "proportions": {"score": 70, "ratios": {}, "symmetry": 70},
+            "swelling": {"level": 20, "areas": []},
+            "muscle_tension": {"level": 20, "areas": []},
+            "skin_quality": {"score": 75, "issues": []},
+            "overall_face_score": 70,
+        }
+        with patch(
+            "backend.routers.analysis.VISION_SERVICE.analyze_face",
+            return_value=fake_face_data,
+        ):
+            response = client.post(f"/api/analysis/analyze/{photo_id}")
+
+        os.unlink(tmp.name)
+        assert response.status_code == 200, response.text
+        body = response.json()
+        assert body["message"] == "Analysis complete"
+        assert isinstance(body["analysis_id"], int)
+
+    def test_analyze_photo_missing_file_fails_gracefully(self):
+        """Photo row exists but file_path points nowhere -> 500 with status 'failed'."""
+        from datetime import datetime
+        from backend.models.photo import Photo
+
+        db = TestSessionLocal()
+        photo = Photo(
+            user_id=1,
+            photo_type="front",
+            file_path="Z:/nonexistent/path/photo.jpg",
+            uploaded_at=datetime.utcnow(),
+        )
+        db.add(photo)
+        db.commit()
+        photo_id = photo.id
+        db.close()
+
+        response = client.post(f"/api/analysis/analyze/{photo_id}")
+        assert response.status_code == 500
+
 
 # ========== RECOMMENDATIONS ROUTER ==========
 class TestRecommendationsRouter:
@@ -181,8 +241,11 @@ class TestVideoLearningRouter:
 # ========== EVENT MODE ROUTER ==========
 class TestEventModeRouter:
     def test_generate_event_plan(self):
+        from datetime import date, timedelta
+        # Event date must be in the future (router rejects past dates)
+        future = (date.today() + timedelta(days=30)).isoformat()
         response = client.post("/api/event-mode/plan", json={
-            "event_date": "2026-06-01",
+            "event_date": future,
             "event_type": "wedding"
         })
         assert response.status_code == 200

@@ -8,7 +8,7 @@
 |---------|----------|---------------|-------------|
 | ForgeBody | 8000 | 5174 | 11435 |
 | LinguaAI | 8000 | 5173 | 11436 |
-| **Wyglad** | **8001** | **5175** | **11437** |
+| **LookCoach** | **8010** | **5175** | **11437** |
 
 **Uwaga:** Porty API (8000) można dzielić tylko jeśli nie uruchamia się równolegle. Dla pełnej izolacji każdy projekt ma unikalny port API.
 
