@@ -27,7 +27,6 @@ async def get_latest_analysis(user_id: int = 1, db: Session = Depends(get_db)):
             "body": None,
             "skin": None,
             "hair": None,
-            "overall_score": 0.0,
             "lever": None,
             "photos_analyzed": 0,
         }
@@ -39,8 +38,6 @@ async def get_latest_analysis(user_id: int = 1, db: Session = Depends(get_db)):
         if p.photo_type not in photo_map or p.uploaded_at > photo_map[p.photo_type].uploaded_at:
             photo_map[p.photo_type] = p
 
-    scores = []
-
     for ptype in ["front", "side", "back"]:
         if ptype in photo_map:
             analysis = (
@@ -50,33 +47,20 @@ async def get_latest_analysis(user_id: int = 1, db: Session = Depends(get_db)):
             )
             if analysis:
                 if ptype == "front":
-                    face = analysis.get_face_data()
-                    result["face"] = face
-                    if face:
-                        scores.append(face.get("overall_face_score", 0))
+                    result["face"] = analysis.get_face_data()
                 elif ptype == "side":
-                    body = analysis.get_body_data()
-                    result["body"] = body
-                    if body:
-                        scores.append(body.get("overall_body_score", 0))
+                    result["body"] = analysis.get_body_data()
                 elif ptype == "back":
-                    skin = analysis.get_skin_data()
-                    hair = analysis.get_hair_data()
-                    result["skin"] = skin
-                    result["hair"] = hair
-                    if skin:
-                        scores.append(skin.get("overall_skin_score", 0))
-                    if hair:
-                        scores.append(hair.get("overall_hair_score", 0))
+                    result["skin"] = analysis.get_skin_data()
+                    result["hair"] = analysis.get_hair_data()
 
-    overall = sum(scores) / len(scores) if scores else 0.0
     lever = AttractivenessLevers.detect_lever(
-        result.get("face"), result.get("body"), result.get("skin"), result.get("hair")
+        result.get("face") or {}, result.get("body") or {},
+        result.get("skin") or {}, result.get("hair") or {},
     )
 
     return {
         **result,
-        "overall_score": round(overall, 1),
         "lever": lever,
         "photos_analyzed": len(photos),
     }
@@ -99,19 +83,14 @@ async def analyze_photo(photo_id: int, db: Session = Depends(get_db)):
         if photo.photo_type == "front":
             data = VISION_SERVICE.analyze_face(image_bytes)
             analysis.set_face_data(data or {})
-            analysis.overall_score = (data or {}).get("overall_face_score", 0)
         elif photo.photo_type == "side":
             data = VISION_SERVICE.analyze_body(image_bytes)
             analysis.set_body_data(data or {})
-            analysis.overall_score = (data or {}).get("overall_body_score", 0)
         elif photo.photo_type == "back":
             skin_data = VISION_SERVICE.analyze_skin(image_bytes)
             hair_data = VISION_SERVICE.analyze_hair(image_bytes)
             analysis.set_skin_data(skin_data or {})
             analysis.set_hair_data(hair_data or {})
-            s = (skin_data or {}).get("overall_skin_score", 0)
-            h = (hair_data or {}).get("overall_hair_score", 0)
-            analysis.overall_score = (s + h) / 2
 
         lever = AttractivenessLevers.detect_lever(
             analysis.get_face_data(),

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, waitFor, within } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import { BrowserRouter } from 'react-router-dom'
 
 // Mock the API client
@@ -14,13 +14,13 @@ import { getConfidenceAnalysis, getActionPlan, getAttractivenessImpact } from '.
 
 const mockAnalysis = {
   posture: {
-    overall_score: 75,
+    status: 'needs_work',
     issues: ['Slouching', 'Forward head posture'],
     recommendations: ['Keep shoulders back', 'Chin tuck exercise'],
   },
   facial: {
-    overall_score: 80,
-    issues: ['Tense jaw', 'Limited eye contact'],
+    status: 'good',
+    issues: [],
     micro_habits: ['Smile at strangers', 'Practice power poses'],
   },
 }
@@ -39,10 +39,8 @@ const mockPlan = [
 ]
 
 const mockImpact = {
-  confidence_score: 76,  // unique, not 75
-  presence_score: 81,   // unique, not 80
-  attractiveness_boost_pct: 15,
-  tip: 'Confidence is key to attractiveness',
+  perception_change: 'Moderate boost',
+  tip: 'Confidence is key to presence',
 }
 
 describe('ConfidencePresence', () => {
@@ -80,7 +78,7 @@ describe('ConfidencePresence', () => {
     })
   })
 
-  it('displays posture indicators', async () => {
+  it('displays qualitative posture status instead of numeric score', async () => {
     getConfidenceAnalysis.mockResolvedValue(mockAnalysis)
     getActionPlan.mockResolvedValue({ plan: mockPlan })
     getAttractivenessImpact.mockResolvedValue(mockImpact)
@@ -95,32 +93,14 @@ describe('ConfidencePresence', () => {
       expect(screen.getByText('Posture Indicators')).toBeInTheDocument()
     })
 
-    // Posture score 75 is unique (others are 76, 80, 81)
-    expect(screen.getByText('75')).toBeInTheDocument()
+    expect(screen.getByText('Needs work')).toBeInTheDocument()
     expect(screen.getByText('• Slouching')).toBeInTheDocument()
     expect(screen.getByText('• Forward head posture')).toBeInTheDocument()
+    // No numeric rating rendered
+    expect(screen.queryByText(/Overall Score/i)).not.toBeInTheDocument()
   })
 
-  it('displays posture recommendations', async () => {
-    getConfidenceAnalysis.mockResolvedValue(mockAnalysis)
-    getActionPlan.mockResolvedValue({ plan: mockPlan })
-    getAttractivenessImpact.mockResolvedValue(mockImpact)
-
-    render(
-      <BrowserRouter>
-        <ConfidencePresence />
-      </BrowserRouter>
-    )
-
-    await waitFor(() => {
-      expect(screen.getByText('Recommendations:')).toBeInTheDocument()
-    })
-
-    expect(screen.getByText('• Keep shoulders back')).toBeInTheDocument()
-    expect(screen.getByText('• Chin tuck exercise')).toBeInTheDocument()
-  })
-
-  it('displays facial expressions', async () => {
+  it('displays facial status badge and micro-habits', async () => {
     getConfidenceAnalysis.mockResolvedValue(mockAnalysis)
     getActionPlan.mockResolvedValue({ plan: mockPlan })
     getAttractivenessImpact.mockResolvedValue(mockImpact)
@@ -135,32 +115,12 @@ describe('ConfidencePresence', () => {
       expect(screen.getByText('Facial Expressions')).toBeInTheDocument()
     })
 
-    // Facial score 80 is unique (others: 75, 76, 81)
-    expect(screen.getByText('80')).toBeInTheDocument()
-    expect(screen.getByText('• Tense jaw')).toBeInTheDocument()
-    expect(screen.getByText('• Limited eye contact')).toBeInTheDocument()
-  })
-
-  it('displays micro-habits', async () => {
-    getConfidenceAnalysis.mockResolvedValue(mockAnalysis)
-    getActionPlan.mockResolvedValue({ plan: mockPlan })
-    getAttractivenessImpact.mockResolvedValue(mockImpact)
-
-    render(
-      <BrowserRouter>
-        <ConfidencePresence />
-      </BrowserRouter>
-    )
-
-    await waitFor(() => {
-      expect(screen.getByText('Micro-Habits:')).toBeInTheDocument()
-    })
-
+    expect(screen.getByText('Good')).toBeInTheDocument()
     expect(screen.getByText('• Smile at strangers')).toBeInTheDocument()
     expect(screen.getByText('• Practice power poses')).toBeInTheDocument()
   })
 
-  it('displays attractiveness impact', async () => {
+  it('displays impact without fabricated percentage boosts', async () => {
     getConfidenceAnalysis.mockResolvedValue(mockAnalysis)
     getActionPlan.mockResolvedValue({ plan: mockPlan })
     getAttractivenessImpact.mockResolvedValue(mockImpact)
@@ -172,18 +132,14 @@ describe('ConfidencePresence', () => {
     )
 
     await waitFor(() => {
-      expect(screen.getByText('Attractiveness Impact of Confidence')).toBeInTheDocument()
+      expect(screen.getByText('Moderate boost')).toBeInTheDocument()
     })
 
-    // Confidence score 76 unique
-    expect(screen.getByText('76')).toBeInTheDocument()
-    // Presence score 81 unique
-    expect(screen.getByText('81')).toBeInTheDocument()
-    expect(screen.getByText('+15%')).toBeInTheDocument()
-    expect(screen.getByText('Confidence is key to attractiveness')).toBeInTheDocument()
+    expect(screen.getByText('Confidence is key to presence')).toBeInTheDocument()
+    expect(screen.queryByText(/\+15%/)).not.toBeInTheDocument()
   })
 
-  it('displays 7-day action plan', async () => {
+  it('displays action plan', async () => {
     getConfidenceAnalysis.mockResolvedValue(mockAnalysis)
     getActionPlan.mockResolvedValue({ plan: mockPlan })
     getAttractivenessImpact.mockResolvedValue(mockImpact)

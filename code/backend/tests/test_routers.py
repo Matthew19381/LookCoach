@@ -139,11 +139,11 @@ class TestAnalysisRouter:
         db.close()
 
         fake_face_data = {
-            "proportions": {"score": 70, "ratios": {}, "symmetry": 70},
-            "swelling": {"level": 20, "areas": []},
-            "muscle_tension": {"level": 20, "areas": []},
-            "skin_quality": {"score": 75, "issues": []},
-            "overall_face_score": 70,
+            "observations": ["mild puffiness in cheeks"],
+            "swelling": {"level": "medium", "areas": ["cheeks"]},
+            "muscle_tension": {"level": "low", "areas": []},
+            "skin_quality": {"status": "good", "issues": []},
+            "focus_areas": [{"area": "skincare", "priority": "medium", "reason": "hydration"}],
         }
         with patch(
             "backend.routers.analysis.VISION_SERVICE.analyze_face",
@@ -156,6 +156,20 @@ class TestAnalysisRouter:
         body = response.json()
         assert body["message"] == "Analysis complete"
         assert isinstance(body["analysis_id"], int)
+
+    def test_latest_analysis_has_no_numeric_person_scores(self):
+        """/api/analysis/latest must not expose numeric attractiveness ratings (LC-9)."""
+        response = client.get("/api/analysis/latest?user_id=1")
+        assert response.status_code == 200
+        body = response.json()
+        for banned in ("overall_score", "overall_face_score", "overall_body_score",
+                       "overall_skin_score", "overall_hair_score"):
+            assert banned not in body
+        for section in ("face", "body", "skin", "hair"):
+            data = body.get(section)
+            if isinstance(data, dict):
+                for key in data:
+                    assert "overall" not in key.lower() or "score" not in key.lower()
 
     def test_analyze_photo_missing_file_fails_gracefully(self):
         """Photo row exists but file_path points nowhere -> 500 with status 'failed'."""

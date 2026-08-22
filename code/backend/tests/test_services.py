@@ -38,31 +38,33 @@ def test_evidence_engine_get():
     assert "stress" in categories
 
 def test_evidence_engine_prioritization():
-    # Simulate low face score
-    analysis = {"face": {"overall_face_score": 30}, "body": {}, "skin": {}, "hair": {}}
+    # High-priority focus area from analysis drives category order
+    analysis = {"face": {"focus_areas": [{"area": "beauty_technique", "priority": "high", "reason": "tension"}]},
+                "body": {}, "skin": {}, "hair": {}}
     profile = {}
     recs = EvidenceEngine.get_recommendations(analysis, profile)
-    # Beauty techniques should be prioritized
     categories = [r["category"] for r in recs]
     assert "beauty_technique" in categories
+    # High-priority category comes before default basics (sleep/nutrition/stress)
+    assert categories.index("beauty_technique") < categories.index("sleep")
 
 def test_attractiveness_levers_face_swelling():
-    face_data = {"swelling": {"level": 70}}
+    face_data = {"swelling": {"level": "high"}}
     lever = AttractivenessLevers.detect_lever(face_data, {}, {}, {})
     assert lever["primary_lever"] == "facial_swelling"
 
 def test_attractiveness_levers_skin():
-    face_data = {"skin_quality": {"score": 30}}
+    face_data = {"skin_quality": {"status": "needs_attention"}}
     lever = AttractivenessLevers.detect_lever(face_data, {}, {}, {})
     assert lever["primary_lever"] == "skin_texture"
 
 def test_attractiveness_levers_body():
-    body_data = {"proportions": {"v_taper": 30}}
+    body_data = {"missing_muscles": [{"muscle": "delts", "priority": "high"}]}
     lever = AttractivenessLevers.detect_lever({}, body_data, {}, {})
     assert lever["primary_lever"] == "body_proportion"
 
 def test_attractiveness_levers_hair():
-    hair_data = {"density": 30, "hairline": {"recession": 60}}
+    hair_data = {"density_status": "thin", "hairline_status": "moderate_recession"}
     lever = AttractivenessLevers.detect_lever({}, {}, {}, hair_data)
     assert lever["primary_lever"] == "hair_thinning"
 
@@ -119,12 +121,12 @@ def test_skincare_generate_routine_with_lifestyle():
 def test_confidence_analyze_posture_good():
     photo_analysis = {
         "body": {
-            "proportions": {"v_taper": 70},
-            "asymmetries": []
+            "asymmetries": [],
+            "posture_notes": [],
         }
     }
     result = ConfidencePresenceEngine.analyze_posture_indicators(photo_analysis)
-    assert result["overall_score"] >= 70
+    assert result["status"] == "good"
     assert isinstance(result["issues"], list)
     assert isinstance(result["recommendations"], list)
 
@@ -132,12 +134,14 @@ def test_confidence_analyze_posture_good():
 def test_confidence_analyze_posture_poor():
     photo_analysis = {
         "body": {
-            "proportions": {"v_taper": 30},
-            "asymmetries": ["left_shoulder", "right_hip"]
+            "asymmetries": [
+                {"part": "left_shoulder", "severity": "moderate"},
+                {"part": "right_hip", "severity": "significant"},
+            ],
         }
     }
     result = ConfidencePresenceEngine.analyze_posture_indicators(photo_analysis)
-    assert result["overall_score"] < 70
+    assert result["status"] == "needs_work"
     assert len(result["issues"]) > 0
     assert len(result["recommendations"]) > 0
 
@@ -145,18 +149,19 @@ def test_confidence_analyze_posture_poor():
 def test_confidence_analyze_posture_empty():
     photo_analysis = {}
     result = ConfidencePresenceEngine.analyze_posture_indicators(photo_analysis)
-    assert result["overall_score"] == 0
+    assert result["status"] == "unknown"
     assert len(result["issues"]) == 0
 
 
 def test_confidence_analyze_facial_expressions():
     photo_analysis = {
         "face": {
-            "emotions": {"happy": 0.2, "neutral": 0.6, "sad": 0.2}
+            "muscle_tension": {"level": "high"},
+            "swelling": {"level": "medium"},
         }
     }
     result = ConfidencePresenceEngine.analyze_facial_expressions(photo_analysis)
-    assert "overall_score" in result
+    assert result["status"] == "needs_work"
     assert "expression" in result
     assert "micro_habits" in result
 

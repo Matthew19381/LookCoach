@@ -6,35 +6,32 @@ class ConfidencePresenceEngine:
 
     @staticmethod
     def analyze_posture_indicators(photo_analysis: dict) -> dict:
-        """Analyze posture based on body analysis."""
+        """Analyze posture indicators from qualitative body analysis."""
         result = {
-            "overall_score": 0,
+            "status": "unknown",
             "issues": [],
             "recommendations": [],
         }
 
-        body = photo_analysis.get("body", {})
+        body = photo_analysis.get("body") or {}
         if not body:
             return result
 
-        proportions = body.get("proportions", {})
-        asymmetries = body.get("asymmetries", [])
+        asymmetries = [
+            a for a in body.get("asymmetries", [])
+            if isinstance(a, dict) and a.get("severity") in ("moderate", "significant")
+        ]
+        posture_notes = body.get("posture_notes", [])
 
-        score = 70  # Base score
-
-        # Check for specific issues
-        if proportions.get("v_taper", 50) < 40:
-            result["issues"].append("Poor V-taper proportions affecting posture confidence")
-            score -= 10
-
-        if len(asymmetries) > 0:
+        for note in posture_notes:
+            result["issues"].append(str(note))
+        if asymmetries:
             result["issues"].append(f"Body asymmetries detected ({len(asymmetries)} areas)")
-            score -= len(asymmetries) * 5
 
-        result["overall_score"] = max(0, score)
+        has_issues = bool(result["issues"])
+        result["status"] = "needs_work" if has_issues else "good"
 
-        # Recommendations
-        if score < 60:
+        if has_issues:
             result["recommendations"].extend([
                 "Practice wall slides (3x10 reps daily)",
                 "Chin tucks for forward head posture",
@@ -50,41 +47,37 @@ class ConfidencePresenceEngine:
 
     @staticmethod
     def analyze_facial_expressions(face_analysis: dict) -> dict:
-        """Analyze facial cues for confidence perception."""
+        """Analyze facial state for confidence perception."""
         result = {
-            "overall_score": 0,
+            "status": "unknown",
             "expression": "neutral",
             "issues": [],
             "recommendations": [],
         }
 
-        face = face_analysis.get("face", {})
+        face = face_analysis.get("face") or {}
         if not face:
             return result
 
         muscle_tension = face.get("muscle_tension", {})
-        tension_level = muscle_tension.get("level", 0) if isinstance(muscle_tension, dict) else 0
+        tension_level = muscle_tension.get("level") if isinstance(muscle_tension, dict) else None
 
         swelling = face.get("swelling", {})
-        swelling_level = swelling.get("level", 0) if isinstance(swelling, dict) else 0
+        swelling_level = swelling.get("level") if isinstance(swelling, dict) else None
 
-        score = 75
-
-        if tension_level > 50:
+        if tension_level == "high":
             result["issues"].append("High facial muscle tension - appears stressed")
             result["recommendations"].extend([
                 "Practice progressive muscle relaxation",
                 "Facial massage to release tension",
                 "Jaw release exercises",
             ])
-            score -= 15
 
-        if swelling_level > 50:
-            result["issues"].append("Facial puffiness affects confidence")
+        if swelling_level in ("medium", "high"):
+            result["issues"].append("Facial puffiness affects presence")
             result["recommendations"].append("Reduce sodium 2 days before important events")
-            score -= 10
 
-        result["overall_score"] = max(0, score)
+        result["status"] = "needs_work" if result["issues"] else "good"
 
         # Micro-habits
         result["micro_habits"] = [

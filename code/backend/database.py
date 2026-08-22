@@ -1,9 +1,12 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
+from pathlib import Path
 import os
 
-load_dotenv()
+# Load the single root-level .env (same source as main.py — no CWD ambiguity)
+PROJECT_ROOT = Path(__file__).parent.parent.parent
+load_dotenv(dotenv_path=PROJECT_ROOT / ".env")
 
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./looks_optimizer.db")
 

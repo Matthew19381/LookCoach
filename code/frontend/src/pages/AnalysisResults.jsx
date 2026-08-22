@@ -68,10 +68,16 @@ export default function AnalysisResults() {
         </button>
       </div>
 
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 text-center">
-        <h2 className="text-2xl font-bold text-blue-900">Look Score</h2>
-        <p className="text-5xl font-bold text-blue-600 mt-2">{analysis.overall_score}</p>
-      </div>
+      {(analysis.face?.observations?.length || analysis.body?.observations?.length) ? (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+          <h2 className="text-2xl font-bold text-blue-900">Observations</h2>
+          <ul className="mt-2 space-y-1 text-blue-800">
+            {[...(analysis.face?.observations || []), ...(analysis.body?.observations || [])].map((obs, i) => (
+              <li key={i}>• {obs}</li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
 
       {analysis.lever && analysis.lever.primary_lever && (
         <div className="bg-green-50 border border-green-200 rounded-lg p-6">
@@ -80,7 +86,7 @@ export default function AnalysisResults() {
           {analysis.lever.secondary_levers && (
             <div className="mt-3">
               <p className="text-sm font-medium text-green-800">Secondary levers:</p>
-              <div className="flex gap-2 mt-1">
+              <div className="flex gap-2 mt-1 flex-wrap">
                 {analysis.lever.secondary_levers.map((l) => (
                   <span key={l} className="px-2 py-1 bg-green-100 text-green-800 rounded text-sm">{l}</span>
                 ))}
@@ -91,32 +97,45 @@ export default function AnalysisResults() {
       )}
 
       {analysis.face && (
-        <div className="bg-white border rounded-lg p-6">
-          <h3 className="text-xl font-semibold mb-4">Face Analysis</h3>
-          <pre className="bg-gray-50 p-4 rounded text-sm overflow-auto">{JSON.stringify(analysis.face, null, 2)}</pre>
-        </div>
+        <SectionCard title="Face Analysis" data={analysis.face} />
       )}
-
       {analysis.body && (
-        <div className="bg-white border rounded-lg p-6">
-          <h3 className="text-xl font-semibold mb-4">Body Analysis</h3>
-          <pre className="bg-gray-50 p-4 rounded text-sm overflow-auto">{JSON.stringify(analysis.body, null, 2)}</pre>
-        </div>
+        <SectionCard title="Body Analysis" data={analysis.body} />
       )}
-
       {analysis.skin && (
-        <div className="bg-white border rounded-lg p-6">
-          <h3 className="text-xl font-semibold mb-4">Skin Analysis</h3>
-          <pre className="bg-gray-50 p-4 rounded text-sm overflow-auto">{JSON.stringify(analysis.skin, null, 2)}</pre>
-        </div>
+        <SectionCard title="Skin Analysis" data={analysis.skin} />
       )}
-
       {analysis.hair && (
-        <div className="bg-white border rounded-lg p-6">
-          <h3 className="text-xl font-semibold mb-4">Hair Analysis</h3>
-          <pre className="bg-gray-50 p-4 rounded text-sm overflow-auto">{JSON.stringify(analysis.hair, null, 2)}</pre>
-        </div>
+        <SectionCard title="Hair Analysis" data={analysis.hair} />
       )}
+    </div>
+  )
+}
+
+function SectionCard({ title, data }) {
+  return (
+    <div className="bg-white border rounded-lg p-6">
+      <h3 className="text-xl font-semibold mb-4">{title}</h3>
+      <dl className="space-y-2 text-sm">
+        {Object.entries(data).map(([key, value]) => (
+          <div key={key} className="flex flex-col sm:flex-row sm:gap-2">
+            <dt className="font-medium text-gray-700 capitalize sm:w-48 shrink-0">
+              {key.replace(/_/g, ' ')}
+            </dt>
+            <dd className="text-gray-600">
+              {Array.isArray(value)
+                ? value.map((v, i) => (
+                    <span key={i} className="inline-block mr-1">
+                      {typeof v === 'object' ? JSON.stringify(v) : v};
+                    </span>
+                  ))
+                : typeof value === 'object' && value !== null
+                  ? Object.entries(value).map(([k, v]) => `${k.replace(/_/g, ' ')}: ${Array.isArray(v) ? v.join(', ') : v}`).join(' · ')
+                  : String(value)}
+            </dd>
+          </div>
+        ))}
+      </dl>
     </div>
   )
 }

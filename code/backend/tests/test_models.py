@@ -60,14 +60,13 @@ def test_analysis_creation(db_session):
     db_session.add(photo)
     db_session.commit()
 
-    analysis = Analysis(photo_id=photo.id, overall_score=75.5)
-    analysis.set_face_data({'proportions': {'score': 80}})
+    analysis = Analysis(photo_id=photo.id)
+    analysis.set_face_data({'observations': ['clear skin'], 'swelling': {'level': 'low'}})
     db_session.add(analysis)
     db_session.commit()
 
     assert analysis.id is not None
-    assert analysis.get_face_data()["proportions"]["score"] == 80
-    assert analysis.overall_score == 75.5
+    assert analysis.get_face_data()["swelling"]["level"] == "low"
 
 def test_recommendation_creation(db_session):
     user = User()

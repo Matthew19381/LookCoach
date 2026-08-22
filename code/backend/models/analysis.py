@@ -1,5 +1,5 @@
 import json
-from sqlalchemy import Column, Integer, ForeignKey, DateTime, Text, Float
+from sqlalchemy import Column, Integer, ForeignKey, DateTime, Text
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from .base import Base
@@ -10,11 +10,10 @@ class Analysis(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     photo_id = Column(Integer, ForeignKey("photos.id"), nullable=False)
-    face_data = Column(Text)  # JSON: proportions, swelling, muscle_tension, skin_quality
-    body_data = Column(Text)  # JSON: proportions, asymmetries, missing_muscles
-    skin_data = Column(Text)  # JSON: skin_type, problems, changes
-    hair_data = Column(Text)  # JSON: density, hairline, recommendations
-    overall_score = Column(Float, default=0.0)  # LookScore
+    face_data = Column(Text)  # JSON: qualitative observations, swelling, muscle_tension, skin_quality
+    body_data = Column(Text)  # JSON: qualitative observations, asymmetries, missing_muscles
+    skin_data = Column(Text)  # JSON: skin_type, problems, hydration_status
+    hair_data = Column(Text)  # JSON: hairline_status, density_status, recommendations
     attractiveness_lever = Column(Text)  # JSON: primary_lever, secondary_levers
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 

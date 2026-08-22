@@ -10,8 +10,8 @@ router = APIRouter()
 async def analyze_confidence(user_id: int = 1, db: Session = Depends(get_db)):
     # In full version, would fetch user's latest photo analysis
     dummy_analysis = {
-        "face": {"muscle_tension": {"level": 40}, "swelling": {"level": 30}},
-        "body": {"proportions": {"v_taper": 45}, "asymmetries": []},
+        "face": {"muscle_tension": {"level": "medium"}, "swelling": {"level": "low"}},
+        "body": {"asymmetries": [], "posture_notes": []},
     }
 
     posture = ConfidencePresenceEngine.analyze_posture_indicators(dummy_analysis)
@@ -20,7 +20,6 @@ async def analyze_confidence(user_id: int = 1, db: Session = Depends(get_db)):
     return {
         "posture": posture,
         "facial": facial,
-        "overall_confidence": (posture["overall_score"] + facial["overall_score"]) / 2,
     }
 
 

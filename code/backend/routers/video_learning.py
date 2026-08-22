@@ -19,7 +19,7 @@ async def get_all_videos(technique: str = None, query: str = None):
 async def get_recommended_videos(user_id: int = 1, db: Session = Depends(get_db)):
     # In full version, would fetch user's latest analysis
     return VideoLearningEngine.get_videos_for_analysis(
-        {"overall_face_score": 60},
-        {"overall_skin_score": 55},
-        {"density": 50}
+        {"observations": ["sample"]},
+        {"skin_type": "combination"},
+        {"density_status": "normal"}
     )

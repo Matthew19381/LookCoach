@@ -35,40 +35,34 @@ EVIDENCE_DB = [
 
 
 class EvidenceEngine:
+    PRIORITY_RANK = {"high": 0, "medium": 1, "low": 2}
+    DEFAULT_CATEGORIES = ["sleep", "nutrition", "stress"]
+
     @staticmethod
     def get_recommendations(user_analysis: dict, user_profile: dict) -> list:
-        """Filter and personalize recommendations based on user analysis and profile."""
+        """Filter and personalize recommendations based on qualitative focus areas."""
         recommendations = []
 
-        # Determine which categories to prioritize based on analysis
-        face = user_analysis.get("face", {})
-        body = user_analysis.get("body", {})
-        skin = user_analysis.get("skin", {})
-        hair = user_analysis.get("hair", {})
+        # Collect categories from analysis focus_areas, ordered by priority
+        priorities = []  # (rank, category) — lower rank = higher priority
+        for section in ("face", "body", "skin", "hair"):
+            for area in (user_analysis.get(section) or {}).get("focus_areas", []):
+                if not isinstance(area, dict):
+                    continue
+                category = area.get("area")
+                rank = EvidenceEngine.PRIORITY_RANK.get(area.get("priority"), 1)
+                if category:
+                    priorities.append((rank, category))
 
-        # Prioritize based on scores
-        priorities = []
-        if face:
-            priorities.append(("beauty_technique", face.get("overall_face_score", 50)))
-            priorities.append(("posture", face.get("overall_face_score", 50)))
-        if skin:
-            priorities.append(("skincare", skin.get("overall_skin_score", 50)))
-        if body:
-            priorities.append(("training", body.get("overall_body_score", 50)))
-        if hair:
-            priorities.append(("hair", hair.get("overall_hair_score", 50)))
+        # Always include basics at default priority
+        for cat in EvidenceEngine.DEFAULT_CATEGORIES:
+            priorities.append((1, cat))
 
-        # Always include basics
-        priorities.append(("sleep", 50))
-        priorities.append(("nutrition", 50))
-        priorities.append(("stress", 50))
-
-        # Sort by priority (lower score = higher priority)
-        priorities.sort(key=lambda x: x[1])
+        priorities.sort(key=lambda x: x[0])
 
         # Get unique categories in priority order
         seen_categories = set()
-        for category, score in priorities:
+        for _rank, category in priorities:
             if category not in seen_categories:
                 seen_categories.add(category)
                 items = [e for e in EVIDENCE_DB if e["category"] == category]

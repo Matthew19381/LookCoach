@@ -47,39 +47,40 @@ class LocalLLMService:
         return ""
 
     def analyze_image_fallback(self, image_bytes: bytes, analysis_type: str) -> dict:
-        """Basic heuristic fallback when Gemini is unavailable."""
+        """Basic heuristic fallback when Gemini is unavailable. Qualitative only."""
+        note = "Fallback analysis - limited accuracy"
         if analysis_type == "face":
             return {
-                "proportions": {"score": 50, "ratios": {}, "symmetry": 50},
-                "swelling": {"level": 30, "areas": []},
-                "muscle_tension": {"level": 30, "areas": []},
-                "skin_quality": {"score": 50, "issues": []},
-                "overall_face_score": 50,
-                "note": "Fallback analysis - limited accuracy",
+                "observations": [note],
+                "swelling": {"level": "medium", "areas": []},
+                "muscle_tension": {"level": "medium", "areas": []},
+                "skin_quality": {"status": "fair", "issues": []},
+                "focus_areas": [
+                    {"area": "skincare", "priority": "medium", "reason": note},
+                ],
             }
         elif analysis_type == "body":
             return {
-                "proportions": {"v_taper": 50, "shoulder_waist_ratio": 1.5, "score": 50},
+                "observations": [note],
                 "asymmetries": [],
                 "missing_muscles": [],
-                "overall_body_score": 50,
-                "note": "Fallback analysis - limited accuracy",
+                "posture_notes": [],
+                "focus_areas": [
+                    {"area": "training", "priority": "medium", "reason": note},
+                ],
             }
         elif analysis_type == "skin":
             return {
                 "skin_type": "unknown",
                 "problems": [],
-                "hydration": 50,
-                "overall_skin_score": 50,
-                "note": "Fallback analysis - limited accuracy",
+                "hydration_status": "adequate",
+                "observations": [note],
             }
         elif analysis_type == "hair":
             return {
-                "density": 50,
-                "hairline": {"type": "unknown", "recession": 0},
-                "thickness": 50,
+                "hairline_status": "stable",
+                "density_status": "normal",
                 "recommendations": ["Consult a professional for accurate analysis"],
-                "overall_hair_score": 50,
-                "note": "Fallback analysis - limited accuracy",
+                "observations": [note],
             }
-        return {"error": "Unknown analysis type", "overall_score": 50}
+        return {"error": f"Unknown analysis type: {analysis_type}", "observations": [note]}
