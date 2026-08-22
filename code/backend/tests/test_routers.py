@@ -19,6 +19,7 @@ from backend.models.base import Base
 
 # Import all models so they register with Base.metadata
 from backend.models import user, profile, photo, analysis, recommendation, progress
+from backend.models.experiment import Experiment
 
 # Create test app (don't use main.app to avoid lifespan issues)
 from fastapi import FastAPI
@@ -508,3 +509,98 @@ class TestIntegrationRouter:
         summary = client.get("/api/v1/summary?user_id=summary-user").json()
         types = [e["event_type"] for e in summary["events"]]
         assert "lesson_completed" in types
+
+
+# ========== EXPERIMENTS PERSISTENCE (FAZA 4) ==========
+class TestExperimentsPersistence:
+    def _start(self):
+        return client.post("/api/v1/experiments/start", json={
+            "template_id": "diet_water",
+            "user_id": 42,
+        })
+
+    def test_start_persists_across_db_sessions(self):
+        """Experiment created via API must be readable from a brand-new DB
+        session (proxies a server restart)."""
+        resp = self._start()
+        assert resp.status_code == 200, resp.text
+        exp_id = resp.json()["id"]
+
+        fresh = TestSessionLocal()  # new session, same file DB
+        try:
+            row = (
+                fresh.query(Experiment)
+                .filter(Experiment.experiment_id == exp_id)
+                .first()
+            )
+            assert row is not None
+            assert row.user_id == 42
+            assert row.status == "active"
+            assert row.data["template_id"] == "diet_water"
+        finally:
+            fresh.close()
+
+    def test_get_after_new_session_returns_data(self):
+        resp = self._start()
+        exp_id = resp.json()["id"]
+
+        # Fresh session simulates post-restart state; API reads via new session too
+        got = client.get(f"/api/v1/experiments/{exp_id}")
+        assert got.status_code == 200
+        assert got.json()["id"] == exp_id
+
+    def test_log_daily_persists(self):
+        resp = self._start()
+        exp_id = resp.json()["id"]
+        logged = client.post("/api/v1/experiments/log", json={
+            "experiment_id": exp_id,
+            "day": 1,
+            "rating": 8,
+            "notes": "slept well",
+        })
+        assert logged.status_code == 200
+
+        results = client.get(f"/api/v1/experiments/{exp_id}/results")
+        assert results.status_code == 200
+
+        fresh = TestSessionLocal()
+        try:
+            row = (
+                fresh.query(Experiment)
+                .filter(Experiment.experiment_id == exp_id)
+                .first()
+            )
+            assert len(row.data["daily_logs"]) == 1
+            assert row.data["daily_logs"][0]["rating"] == 8
+        finally:
+            fresh.close()
+
+    def test_finish_sets_status_completed(self):
+        resp = self._start()
+        exp_id = resp.json()["id"]
+        finished = client.post(f"/api/v1/experiments/{exp_id}/finish")
+        assert finished.status_code == 200
+
+        fresh = TestSessionLocal()
+        try:
+            row = (
+                fresh.query(Experiment)
+                .filter(Experiment.experiment_id == exp_id)
+                .first()
+            )
+            assert row.status == "completed"
+        finally:
+            fresh.close()
+
+        active = client.get("/api/v1/experiments/active?user_id=999999")
+        assert all(e["id"] != exp_id for e in active.json())
+
+    def test_unknown_template_rejected(self):
+        resp = client.post("/api/v1/experiments/start", json={
+            "template_id": "no_such_template",
+            "user_id": 1,
+        })
+        assert resp.status_code == 400
+
+    def test_unknown_experiment_404(self):
+        assert client.get("/api/v1/experiments/exp_missing").status_code == 404

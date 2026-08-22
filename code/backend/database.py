@@ -34,5 +34,7 @@ def init_db():
     from .models.analysis import Analysis
     from .models.recommendation import Recommendation
     from .models.progress import ProgressLog
+    from .models.integration_event import IntegrationEvent
+    from .models.experiment import Experiment
 
     Base.metadata.create_all(bind=engine)

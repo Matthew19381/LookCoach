@@ -1,4 +1,5 @@
 import json
+import uuid
 from datetime import datetime, timedelta
 
 
@@ -91,7 +92,7 @@ class PersonalExperimentEngine:
         end_date = start_date + timedelta(days=template["duration_days"])
 
         return {
-            "id": f"exp_{user_id}_{int(datetime.now().timestamp())}",
+            "id": f"exp_{user_id}_{uuid.uuid4().hex[:12]}",
             "user_id": user_id,
             "template_id": template_id,
             "name": custom_name or template["name"],
