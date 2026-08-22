@@ -1,209 +1,282 @@
-# Wyglad — TASKS
+# LookCoach — Task Roadmap
 
-Ostatnia aktualizacja: 2026-04-04 (plan implementation)
-
----
-
-## P0 — Fundament (tydzień 1)
-
-### M1: Project Setup (1 dzień)
-**Stack:** FastAPI + React + Vite + Tailwind + SQLite + Gemini Vision + Ollama + Docker + Chart.js  
-**Technologie:** Python 3.12, Node 18, Docker Compose
-
-- [x] Utworzyć strukturę folderów:
-  ```
-  code/
-  ├── backend/          (FastAPI)
-  ├── frontend/         (React + Vite + TypeScript)
-  ├── docker-compose.yml
-  ├── requirements.txt
-  └── .env.example
-  ```
-- [x] Stworzyć `code/backend/requirements.txt` z pakietami:
-  `fastapi, uvicorn[standard], sqlalchemy, alembic, google-generativeai, pillow, python-multipart, httpx, python-dotenv`
-- [x] Stworzyć `code/frontend/package.json` z:
-  `react, react-dom, react-router-dom, vite, @vitejs/plugin-react, tailwindcss, axios, chart.js, lucide-react`
-- [x] Stworzyć `code/docker-compose.yml`:
-  - backend: port 8001, volume `./backend:/app`
-  - frontend: port 5175, volume `./frontend:/app` (WORKDIR /app — unika Unicode bug)
-- [x] Stworzyć `code/backend/Dockerfile` (python:3.12-slim) i `code/frontend/Dockerfile` (node:18-alpine)
-- [x] Stworzyć start scripts: `start.bat` i `start.ps1` (docker compose up --build)
-- [x] Stworzyć `code/backend/main.py` z CORS, static mount `/uploads`, health endpoint
-
-### M2: Database Models (1 dzień)
-**Technologia:** SQLAlchemy, SQLite
-
-- [x] `code/backend/models/base.py` — declarative base
-- [x] `code/backend/models/user.py` — User(id, created_at)
-- [x] `code/backend/models/profile.py` — UserProfile(user_id, goals[JSON], lifestyle[JSON], discipline_score)
-- [x] `code/backend/models/photo.py` — Photo(user_id, photo_type [front/side/back], file_path, uploaded_at, analysis_status)
-- [x] `code/backend/models/analysis.py` — Analysis(photo_id, face/body/skin/hair[JSON], overall_score, attractiveness_lever)
-- [x] `code/backend/models/recommendation.py` — Recommendation(user_id, category, description, evidence_level, effect_size, time_to_effect, roi_score, priority)
-- [x] `code/backend/models/progress.py` — ProgressLog(user_id, photo_before_id, photo_after_id, look_score_change)
-- [x] `code/backend/database.py` — engine, SessionLocal, get_db(), init_db()
-- [x] Zaktualizować `main.py`: import models + Base.metadata.create_all() w lifespan
+**Status:** v0.2.0 - Backend foundation complete, needs functional enhancements
 
 ---
 
-## P1 — Core Intelligence (tydzień 2)
+## 🔗 PLAN v2 — AUDYT DOWODÓW + INTEGRACJA Z SYSTEMEM GŁÓWNYM (2026-07-19)
 
-### M3: Gemini Vision Service (2 dni)
-**Technologia:** Google Gemini 2.0 Flash, PIL, asyncio + Ollama fallback
+_Kontekst: `NEURO_PLAN.md` (zawiera pełny audyt SCIENTIFIC_FOUNDATION.md — sekcja 4)
++ `System-Glowny/MASTER_PLAN.md`._
 
-- [x] `code/backend/services/__init__.py` (empty)
-- [x] `code/backend/services/gemini_vision.py`:
-  - `GeminiVisionService` z metodami: `analyze_face()`, `analyze_body()`, `analyze_skin()`, `analyze_hair()`
-  - Prompt engineering: JSON output (structured)
-  - Cache: `.cache/{hash}.json` (SHA256 pliku + analysis_type)
-  - Fallback: jeśli Gemini unavailable → użyj `LocalLLMService` z uproszczonym analizatorem (Ollama)
-- [x] `code/backend/services/local_llm.py`:
-  - `LocalLLMService(base_url="http://localhost:11434")`
-  - `generate_text(prompt: str, model="llama3") → str`
-  - `analyze_image_fallback(image_bytes, analysis_type) → dict` (basic heuristics)
-- [x] Test manualny: upload zdjęcia → Gemini zwraca JSON; jeśli brak API key → Ollama fallback
+⚠️ **UWAGA: sekcja "SCIENTIFIC RESEARCH FOUNDATION" poniżej oraz plik
+`knowledge/SCIENTIFIC_FOUNDATION.md` zawierają twierdzenia bez pokrycia
+w literaturze** (m.in. "+15-20% atrakcyjności za symetrię", "+20% za sen",
+tabele przyrostów per ćwiczenie, cytowanie [2602.13368]). Pełna lista:
+`NEURO_PLAN.md` §4. Do czasu rewizji NIE przenosić tych liczb do kodu/UI.
 
-### M4: Evidence & ROI Engines (1 dzień)
-**Technologie:** Python, JSON
+### E — Rzetelność dowodów (NEURO_PLAN faza 1)
+- [ ] E-1: **LC-1** Evidence/ROI Engine v2: każda interwencja = {źródło, poziom
+      dowodów, widełki efektu, czas}; ROI z niepewnością; wpisy przez Evidence
+      Registry Systemu Głównego
+- [ ] E-2: Rewizja SCIENTIFIC_FOUNDATION.md wg audytu (A1-A10 w NEURO_PLAN §4):
+      usunięcie fabrykacji, przeklasyfikowanie gua sha/rozmarynu/sodu, dopisanie
+      realnych źródeł (Hughes 2013, Axelsson 2010, Rhodes 2006...)
+- [ ] E-3: **LC-9** Wyniki analizy twarzy jako obserwacje stanu — usunięcie
+      liczbowych ocen atrakcyjności z UI (ryzyko dysmorficzne); detektor
+      kompulsywnego skanowania → sygnał do Mentalności
 
-- [x] `code/backend/services/evidence_engine.py`:
-  - `EVIDENCE_DB` lista 30+ itemów (skincare, training, nutrition) z polami: id, name, category, evidence_level [RCT/meta/observational/expert], effect_size, time_to_effect, study_url, contraindications
-  - `EvidenceEngine.get_recommendations(user_analysis, user_profile)` → filter + personalize + sort
-- [x] `code/backend/services/roi_engine.py`:
-  - `ROIEngine.calculate_roi(effect_size, time_weeks, feasibility=1.0)` → formula: `effect_size / (time_weeks ** 1.5) * feasibility`
-  - `ROIEngine.rank_recommendations(list)` → compute roi_score per rec, sort desc
-- [x] `code/backend/services/attractiveness_levers.py`:
-  - `AttractivenessLevers.detect_lever(face, body, skin, hair)` → returns "skin_texture" | "body_proportion" | "facial_swelling" | "hair_thinning" | "general"
-- [x] `code/backend/services/explainer.py`:
-  - `ExplainableAI` wykorzystuje `LocalLLMService` do generowania tłumaczeń
-  - `quick_summary(recommendation) → str` (1 zdanie)
-  - `deep_dive_lesson(recommendation) → str` (mini lekcja z kontekstem)
+### F — Funkcje (NEURO_PLAN fazy 2-3)
+- [ ] F-1: **LC-2** Rutyna skincare (SPF/retinoid/niacynamid) z adaptacją do reakcji
+- [ ] F-2: **LC-7** Consistency Tracker + Minimum Effective System (adherencja
+      steruje trudnością)
+- [ ] F-3: **LC-8** Health Safety Layer (twarde blokady + odsyłanie do dermatologa)
+- [ ] F-4: **LC-6** Visual Progress: zdjęcia w kontrolowanych warunkach
+- [ ] F-5: **LC-5** Event Mode oznaczony jako protokół HIPOTEZA z ostrzeżeniami
 
-### M5: API Endpoints (2 dni)
-**Technologia:** FastAPI routers, SQLAlchemy sessions
-
-- [x] `code/backend/routers/__init__.py` (empty)
-- [x] `code/backend/routers/photos.py`:
-  - `POST /api/photos/upload` (multipart, photo_type query param), save file, create DB record, return id/url
-  - `GET /api/photos` — lista all photos (type, url, date, status)
-  - `DELETE /api/photos/{id}` — delete file + DB
-- [x] `code/backend/routers/analysis.py`:
-  - `GET /api/analysis/latest` — combine latest front/side/back (status=done), compute weighted LookScore, return analyses dict + lever (null)
-- [x] `code/backend/routers/recommendations.py`:
-  - `GET /api/recommendations?limit=10` — call EvidenceEngine → ROIEngine → return top N
-- [x] `code/backend/routers/progress.py`:
-  - `GET /api/progress/timeline` — all photos with analysis, sorted by date desc
-  - `POST /api/progress/compare` — body: {photo_before_id, photo_after_id} → return URLs + delta score
-- [x] `code/backend/routers/profile.py`:
-  - `GET /api/profile` — return goals/lifestyle/discipline_score (or defaults)
-  - `PUT /api/profile` — update (create if missing)
-- [x] `code/backend/routers/integration.py` (stub):
-  - `POST /api/integration/input` — log source/data
-  - `GET /api/integration/output?module=` — return empty dict
-- [x] Test each endpoint via http://localhost:8001/docs
+### INT — Integracja z Systemem Głównym
+- [ ] INT-1: `GET /api/v1/summary` (adherencja protokołów, aktywne protokoły,
+      obserwacje stanu, `wellbeing_contribution`)
+- [ ] INT-2: Publisher eventów (`protocol_done`, `protocol_skipped`, `state_observation`)
+      → `:8000` z `X-Module-Key`
+- [ ] INT-3: **LC-4** Priorytet estetyczny jako dyrektywa do ForgeBody (dobór
+      akcesoriów), potrzeby żywieniowe (sód/nabiał) do Diety — LookCoach nie
+      generuje własnych planów treningowych/diet
+- [ ] INT-4: Subskrypcja Affect Engine (sen/stres) — Sleep Engine bez własnego trackera
+- [ ] INT-5: Poranna rutyna skincare jako pozycja planu dnia (planner)
 
 ---
 
-## P2 — Frontend MVP (tydzień 3)
+## 📊 CURRENT STATE ANALYSIS
 
-### M6: Frontend Core (3 dni)
-**Technologie:** React 18, TypeScript, Vite, Tailwind, Axios, react-chartjs-2 + chart.js, React Router v6, Lucide icons
-
-- [x] `code/frontend/vite.config.ts` — `root: process.cwd()`, server.port=5175, host=true
-- [x] `code/frontend/tsconfig.json` — already exists (verify)
-- [x] `code/frontend/tailwind.config.js` — content paths, no custom theme
-- [x] `code/frontend/src/main.jsx` — React root + BrowserRouter
-- [x] `code/frontend/src/App.jsx` — Routes: /, /analysis, /recommendations, /progress, /skincare
-- [x] `code/frontend/src/components/Layout.jsx` — nav bar (5 links), Outlet
-- [x] `code/frontend/src/pages/PhotoUpload.jsx`:
-  - 3 drop zones (front/side/back)
-  - axios POST `/api/photos/upload` (multipart)
-  - Show uploading spinner; on success add to list
-- [x] `code/frontend/src/pages/AnalysisResults.jsx`:
-  - GET `/api/analysis/latest`
-  - If incomplete: show "upload all 3 photos"
-  - If complete: display LookScore + 4 analysis cards (pre>JSON)
-- [x] `code/frontend/src/pages/Recommendations.jsx`:
-  - GET `/api/recommendations?limit=10`
-  - Render list: name, ROI badge, evidence level, effect %, time to effect
-- [x] `code/frontend/src/pages/ProgressTracker.jsx`:
-  - GET `/api/progress/timeline` → grid of thumbnails with dates/scores
-  - Pick 2 photos → POST `/api/progress/compare` → show before/after + delta
-  - Line chart: LookScore over time (react-chartjs-2)
-- [x] `code/frontend/src/pages/SkincareRoutine.jsx`:
-  - For now static data (morning/evening arrays) — will connect to API later
-- [x] `code/frontend/src/api/client.js` (optional) — axios instance baseURL from env
+### Projekt: LookCoach (Looks Optimizer AI)
+- **Stack:** FastAPI + React + Vite + Tailwind + SQLite + Gemini Vision + Ollama fallback
+- **Backend:** 14 routers, 14 services, SQLAlchemy, 37 tests (74% coverage)
+- **Frontend:** 14 pages, 87 tests, Axios API client
+- **AI Services:** Gemini 2.0 Flash (primary), OpenRouter (fallback), Ollama (offline fallback)
 
 ---
 
-## P3 — Skincare & Progress (tydzień 4)
+## 🔬 SCIENTIFIC RESEARCH FOUNDATION
 
-### M7: Skincare Engine (2 dni)
-**Technologia:** Python, algorymy rotacji składników
+### Top Evidence-Based Interventions (według istniejących badań)
 
-- [x] `code/backend/services/skincare_engine.py`:
-  - `SKINCARE_INGREDIENTS` list (20+ items: retinol, niacynamid, AHA, BHA, hialuronowy, wit C, SPF, etc.) z pole: name, type, frequency, rotatable
-  - `SkincareEngine.generate_routine(skin_analysis, lifestyle)` → return {"morning": [...], "evening": [...]}
-  - Logic: always SPF AM; if acne → BHA; if dryness → hyaluronic; if aging → retinol nights; rotation of actives
-- [x] `code/backend/routers/skincare.py` (lub do profile):
-  - `GET /api/skincare/routine` — get latest analysis + profile → call engine
-- [x] `code/frontend/src/pages/SkincareRoutine.jsx` — replace static with API call (GET `/api/skincare/routine`)
+#### Najwyższy ROI (Effect/Time):
+| Interwencja | Kategoria | Effect Size | Czas | ROI Score | Badania |
+|-------------|-----------|-------------|------|-----------|---------|
+| SPF 30+ Daily | skincare | 0.90 | 1 tydzień | 0.90 | RCT - najsilniejsza ochrona przeciwsłoneczna |
+| 8h Sleep | sleep | 0.80 | 1 tydzień | 0.80 | RCT - sen wpływa na naprawę skóry |
+| Hyaluronic Acid | skincare | 0.60 | 2 tygodnie | 0.212 | RCT - nawilżenie skóry |
+| Low Sodium | nutrition | 0.60 | 2 tygodnie | 0.212 | RCT - redukcja obrzęków twarzy |
+| Lymphatic Drainage | beauty | 0.60 | 2 tygodnie | 0.212 | RCT - redukcja obrzęków |
+| Water 3L/day | nutrition | 0.50 | 3 tygodnie | 0.096 | RCT - hidratacja skóry |
 
-### M8: Visual Progress Tracker (już w M5, tylko frontend gotowy)
-- [x] `ProgressTracker.jsx` już istnieje — tylko polish UI:
-  - Add chart: LookScore over time (Chart.js line chart)
-  - Diff image generation (backend: PIL blend) — optional for MVP
+#### Kluczowe Badania do Rozważenia:
 
----
+**1. Body Proportions:**
+- V-taper (shoulder/waist ratio) - badania wskazują na ratio ~1.5-1.6 jako optymalne dla mężczyzn
+- W-H ratio (0.7) - uniwersalny wskaźnik atrakcyjności dla kobiet
+- Symetria twarzy - kluczowy czynnik poprawiający perceived attractiveness o 15-20%
 
-## P4 — Polish & Stubs (tydzień 4-5)
+**2. Facial Features:**
+- Width ratio (interocular/facial width) wpływa na perceived beauty
+- Symmetry scoring - ocena symetrii proporcji twarzy
+- Skin quality score - bezpośrednio koreluje z perceived age
 
-### M9: Integration Stubs & Finalization (1 dzień)
-**Technologia:** FastAPI + Docker
-
-- [x] `code/backend/routers/integration.py` już stub — dodać docstringi
-- [x] `code/backend/main.py` — include all routers
-- [x] `code/backend/.env.example` — GEMINI_API_KEY, OLLAMA_BASE_URL=http://localhost:11437, DATABASE_URL=sqlite:///./looks_optimizer.db
-- [x] `code/docker-compose.yml` — dodać service `ollama` (image: ollama/ollama, ports: 11437:11434, volumes: ollama-data:/usr/share/ollama, network: wyglad-network)
-- [x] `code/docker-compose.yml` — backend: port 8001:8000, depends_on: [ollama], networks: [wyglad-network]
-- [x] `code/docker-compose.yml` — frontend: port 5175:5173, depends_on: [backend], networks: [wyglad-network]
-- [x] Test całego flow end-to-end:
-  1. Upload 3 photos (frontend)
-  2. Analysis completes (backend Gemini)
-  3. GET /recommendations → list sorted by ROI
-  4. GET /progress/timeline → list entries
-  5. Compare 2 photos → delta
-  6. Simulate Gemini failure (unset API key) → fallback to Ollama works
-- [x] `docker compose up --build` — wszystko działa bez błędów
-- [x] Frontend: npm run dev na porcie 5175, proxy do backend 8001
-- [x] Zrealizować testy manualne i naprawić błędy
+**3. Training:**
+- Pull-ups/Deadlifts - najskuteczniejsze na V-taper w 8-12 tygodni
+- Face pulls - poprawa postawy 6-8 tygodni
+- Chin tucks - redukcja forward head posture w 6 tygodni
 
 ---
 
-## TESTING & DOCS
+## 🎯 PROPOSED SYSTEM ENHANCEMENTS
 
-- [x] Backend tests (pytest) — min 70% coverage (models, services)
-- [x] Frontend: no console errors, all pages render
-- [x] CHANGELOG.md: zapisać wersję 0.1.0 z listą M1-M9
-- [x] memory/projects/Wyglad.md: krótki opis projektu + stack + status
+### Core Missing Functions (HIGH IMPACT)
+
+#### F1. Smart Recommendation Engine
+- [ ] `recommendations.py` → użyj prawdziwych danych z analizy
+- [ ] Personalized priority scoring based on analysis gaps
+- [ ] Adaptive recommendations (change as user progresses)
+- [ ] Integration z profile preferences (goals/lifestyle)
+
+#### F2. Progress Correlation Engine
+- [ ] Correlation: sleep_hours ↔ skin_score
+- [ ] Correlation: sodium_intake ↔ facial_puffiness
+- [ ] Correlation: workout_frequency ↔ v_taper_score
+- [ ] Correlation: stress_level ↔ muscle_tension
+- [ ] Visual correlation charts w ProgressTracker
+
+#### F3. Habit Tracker System
+- [ ] `habits.py` router - codzienne nawyki (water, skincare, sleep, posture)
+- [ ] Streak counter - ile dni z rzędu trzymasz nawyk
+- [ ] Habit completion → przyrost LookScore
+- [ ] Integration z experiments dla A/B testów nawyków
+
+#### F4. Before/After Analysis
+- [ ] Pixel diff analysis - highlight zmiany
+- [ ] Side-by-side comparison z overlay toggle
+- [ ] AI-generated progress notes
+- [ ] Auto-detection improvement areas
 
 ---
 
-## SUKCES = WSZYSTKIE CHECKBOXY [x] w 4里程碑 M1-M9
+## 🚀 ADVANCED FEATURES PROPOSAL
 
-**Łącznie szacunkowo:** 12 dni pracy (przedzielić na 4 tygodnie).
+### A1. Weekly Insights Engine
+- [ ] `insights.py` service - analiza tygodniowa
+- [ ] Trend detection: "Twoja skóra się poprawiła, ale sen się pogorszył"
+- [ ] Pattern recognition: "Po treningu V-taper rośnie szybciej"
+- [ ] Automated email/SMS z insights
+
+### A2. Dynamic Goal Adjustment
+- [ ] Auto-adjust goals based on progress rate
+- [ ] "Skin improving fast - add maintenance routine"
+- [ ] "Body plateau - increase training intensity"
+- [ ] Goal difficulty scaling
+
+### A3. Social Features
+- [ ] Progress sharing (anonimowe statystyki)
+- [ ] Community challenges (30-day skincare, etc.)
+- [ ] Leaderboard - "Top LookScore improvement"
+- [ ] Mentor matching algorithm
+
+### A4. AI Photo Coach
+- [ ] Real-time feedback podczas uploadu
+- [ ] Photo quality scoring (proper lighting, angle)
+- [ ] Suggestion: "Take photo in better lighting for accurate analysis"
+- [ ] Comparison z idealnym profile
+
+### A5. Routine Scheduler
+- [ ] Calendar integration
+- [ ] Reminders dla skincare, supplement, workout
+- [ ] Adaptive timing (based on user's schedule)
+- [ ] Habit stacking suggestions
 
 ---
 
-## WORKFLOW STANDARD COMPLIANCE
+## 📱 NEW MODULES TO ADD
 
-Po zakończeniu M1-M9:
-- [x] Zainicjować `code/` strukturę (zgodnie z WORKFLOW_STANDARD.md — kod w `code/` a nie na root)
-- [x] Stworzyć `knowledge/FEATURES.md` — pełna lista 36 funkcji z specyfikacji
-- [x] Stworzyć `CHANGELOG.md` — historia zmian
-- [x] Stworzyć `FEEDBACK.md` — pusty plik (lub early feedback)
-- [x] Zaktualizować `memory/projects/Wyglad.md` z kontekstem projektu
-- [x] Zatrzymać się na P0-P4 w TASKS — reszta (P5-P3 z org spec) to przyszłość
+### N1. Supplement Tracker
+- [ ] Database: popular supplements dla looks (biotin, zinc, vitamin D, omega-3)
+- [ ] Dosage recommendations
+- [ ] Interaction warnings (retinol + vitamin A)
+- [ ] Progress tracking
+
+### N2. Fashion Advisor
+- [ ] Silhouette analysis (co maskuje, co podkreśla)
+- [ ] Color matching based on skin tone
+- [ ] Outfit suggestions dla events
+- [ ] Wardrobe minimalization guide
+
+### N3. Voice Coach
+- [ ] Audio feedback dla ćwiczeń
+- [ ] Voice-guided skincare routine
+- [ ] Meditation scripts dla stres management
+- [ ] Progress updates w formie podcastu
+
+### N4. Barcode Scanner
+- [ ] Skanowanie produktów kosmetycznych
+- [ ] Ingredient analysis (aktywa, kontraindikacje)
+- [ ] Safety check (pregnancy, allergies)
+- [ ] Alternative suggestions
+
+### N5. Weather Optimization
+- [ ] Humidity impact na skórę
+- [ ] UV index + sunscreen recommendations
+- [ ] Temperature → workout timing
+- [ ] Seasonal routine adjustments
 
 ---
 
-**KONIEC PLANU.** Teraz można implementować M1 po kolei.
+## 🔬 SCIENTIFIC ENHANCEMENTS
+
+### S1. Enhanced Evidence Engine
+- [ ] Meta-analysis aggregation
+- [ ] Confidence intervals dla effect sizes
+- [ ] Contradiction detection (conflicting studies)
+- [ ] Personal contraindication checker
+
+### S2. Genetic Insights (Future)
+- [ ] Skin type predisposition
+- [ ] Muscle building potential
+- [ ] Metabolism speed
+- [ ] Personalized timelines
+
+### S3. Lab Integration
+- [ ] Blood test analysis (vitamin D, B12, iron, cortisol)
+- [ ] Hormone impact on looks
+- [ ] Deficiency recommendations
+- [ ] Supplement prioritization
+
+---
+
+## 💰 MONETIZATION FEATURES
+
+### M1. Premium Insights
+- [ ] Advanced analytics (correlations, trends)
+- [ ] Priority AI processing
+- [ ] Custom routine generator
+- [ ] Video call consultation
+
+### M2. Product Integration
+- [ ] Affiliate links do rekomendowanych produktów
+- [ ] Price tracking (kiedy taniej kupić)
+- [ ] Bundle deals dla routines
+- [ ] Subscription management
+
+---
+
+## 🛠 TECHNICAL BACKLOG (existing)
+
+### T1. Repository Cleanup
+- [ ] Usuń garbage files: `1`, `8003)` w root
+- [ ] Wyczyń `__pycache__/` katalogi
+- [ ] Usuń `.coverage` z repo
+
+### T2. Code Quality
+- [ ] Stwórz `CLAUDE.md`
+- [ ] Stwórz `pyproject.toml`
+- [ ] Uzupełnij type hints (29% → 90%)
+- [ ] Dodaj `.pre-commit-config.yaml`
+
+### T3. Frontend Integration
+- [ ] PhotoUpload → auto-analyze po uploadzie
+- [ ] AnalysisResults → prawdziwe dane z API
+- [ ] Recommendations → personalizacja po analizie
+- [ ] SkincareRoutine → użyj danych skóry z analizy
+- [ ] ProgressTracker → prawdziwe porównania
+
+### T4. Bug Fixes
+- [ ] `analysis.py:94` - brak importu `Path`
+- [ ] Gemini Vision - brak eleganckiego handlingu braku API key
+- [ ] Docker ports mismatch (8003 vs 8000)
+
+---
+
+## 📈 ROADMAP TIMELINE
+
+### Month 1: Foundation
+- Cleanup + bug fixes
+- Frontend real data integration
+- Habit tracker MVP
+
+### Month 2: Intelligence
+- Correlation engine
+- Weekly insights
+- Before/after analysis
+
+### Month 3: Engagement
+- Social features (anonimowe)
+- Voice coach
+- Weather optimization
+
+### Month 4: Premium
+- Supplement tracker
+- Fashion advisor
+- Barcode scanner
+- Monetization prep
+
+---
+
+*Ostatnia aktualizacja: 2026-07-10*
