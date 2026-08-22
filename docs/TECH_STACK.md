@@ -1,11 +1,11 @@
-# Tech Stack — Looks Optimizer
+# Tech Stack — LookCoach
 
 ## Architektura
 
 | Warstwa | Technologia | Cel |
 |---------|-------------|-----|
 | **Backend** | Python 3.12 + FastAPI | REST API, automatyzacja, AI integracja |
-| **Frontend** | React 18 + Vite + React Router v6 | SPA, responsywny UI |
+| **Frontend** | React 19 + Vite + React Router v6 | SPA, responsywny UI |
 | **Baza danych** | SQLite (SQLAlchemy + Alembic) | Przechowywanie danych treningowych |
 | **Konteneryzacja** | Docker + Docker Compose | Izolacja, łatwe deployment |
 | **LLM lokalny** | Ollama (Llama) | Adaptacja planów, generowanie treści |
@@ -57,7 +57,7 @@
 ### Charts: Chart.js
 - Lekka biblioteka
 - Dobra TypeScript support
-- Wystarczająca dla LookScore timeline
+- Wykresy progresu (timeline obserwacji, nie liczbowe oceny — patrz LC-9)
 
 ## Environment Variables
 

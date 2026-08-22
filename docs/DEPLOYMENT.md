@@ -1,4 +1,4 @@
-# Deployment & Isolation — Looks Optimizer
+# Deployment & Isolation — LookCoach
 
 ## 🔥 Rozwiązania konfliktów multi-project
 
@@ -18,8 +18,8 @@ Każdy `docker-compose.yml` definiuje własne wolumeny:
 
 ```yaml
 volumes:
-  wyglad-ollama-data:  # tylko dla tego projektu
-  wyglad-db-data:      # jeśli db w kontenerze
+  lookcoach-ollama-data:  # tylko dla tego projektu
+  lookcoach-db-data:      # jeśli db w kontenerze
 ```
 
 Docker Compose traktuje każdy folder jako oddzielny **project** → wolumeny nie kolidują.
@@ -28,11 +28,11 @@ Docker Compose traktuje każdy folder jako oddzielny **project** → wolumeny ni
 
 ```yaml
 networks:
-  wyglad-network:
+  lookcoach-network:
     driver: bridge
 ```
 
-Kontenery w `wyglad-network` nie widzą kontenerów z innych projektów (chyba że celowo podpięte).
+Kontenery w `lookcoach-network` nie widzą kontenerów z innych projektów (chyba że celowo podpięte).
 
 ### 4. Pliki bazy danych
 
@@ -52,7 +52,7 @@ Kontenery w `wyglad-network` nie widzą kontenerów z innych projektów (chyba �
 │   ├── docker-compose.yml
 │   ├── backend/
 │   └── frontend/
-└── Wyglad/
+└── LookCoach/
     ├── docker-compose.yml      ← izolowane
     ├── code/
     │   ├── backend/

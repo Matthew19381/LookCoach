@@ -83,7 +83,7 @@ Mierzalne kryteria sukcesu (weryfikowalne, nie deklaratywne):
 
 ### FAZA 0 — Higiena repozytorium (blokuje wszystko inne, zero ryzyka regresji)
 
-- [ ] **0.1 Usuń `node_modules` z git.**
+- [x] **0.1 Usuń `node_modules` z git.**  [WYKONANE 2026-08-23]
   Plik/katalog: `code/frontend/node_modules/` (7560 plików śledzonych).
   Komendy:
   ```bash
@@ -94,7 +94,7 @@ Mierzalne kryteria sukcesu (weryfikowalne, nie deklaratywne):
   Kryterium akceptacji: `git ls-files | grep -c node_modules` zwraca `0`; `npm install` w `code/frontend/` nadal działa lokalnie (katalog fizycznie zostaje na dysku, tylko przestaje być śledzony).
   Zależności: brak.
 
-- [ ] **0.2 Usuń `__pycache__`, `*.pyc`, `.coverage` z git.**
+- [x] **0.2 Usuń `__pycache__`, `*.pyc`, `.coverage` z git.**  [WYKONANE 2026-08-23]
   Komendy:
   ```bash
   git rm -r --cached code/backend/**/__pycache__ 2>/dev/null
@@ -105,7 +105,7 @@ Mierzalne kryteria sukcesu (weryfikowalne, nie deklaratywne):
   Kryterium akceptacji: `git ls-files | grep -E "__pycache__|\.pyc$|\.coverage"` zwraca pustą listę; `git status` po uruchomieniu testów nie pokazuje tych plików jako "modified".
   Zależności: brak.
 
-- [ ] **0.3 Usuń śmieciowe pliki artefaktowe.**
+- [x] **0.3 Usuń śmieciowe pliki artefaktowe.**  [WYKONANE 2026-08-23]
   Pliki: `1` (root, 0 B, nieśledzony), `code/backend/1` (0 B, nieśledzony), `8003)` (root, 0 B, zacommitowany), `code/frontend/photo_map[p.photo_type].uploaded_at` (zacommitowany).
   Komendy:
   ```bash
@@ -116,12 +116,12 @@ Mierzalne kryteria sukcesu (weryfikowalne, nie deklaratywne):
   Kryterium akceptacji: żaden z czterech plików nie istnieje na dysku ani w `git ls-files`.
   Zależności: brak.
 
-- [ ] **0.4 Usuń martwy root-level szkielet npm.**
+- [x] **0.4 Usuń martwy root-level szkielet npm.**  [WYKONANE 2026-08-23]
   Pliki do usunięcia: `package.json` (root), `tsconfig.json` (root), pusty katalog `src/` (root) — potwierdzony jako niepowiązany z `code/frontend/` ani `code/backend/`.
   Kryterium akceptacji: pliki nie istnieją; `code/frontend/package.json` (właściwy frontend) pozostaje nietknięty.
   Zależności: brak. **Uwaga:** przed usunięciem sprawdź `cat package.json` i `git log --follow package.json`, żeby upewnić się, że nic z niego nie jest używane przez `start.bat`/`start.ps1` (audyt wskazuje że to generyczny `npm init` bez plików źródłowych — ryzyko niskie, ale zweryfikuj).
 
-- [ ] **0.5 Zaktualizuj `.gitignore` retroaktywnie i dodaj brakujące wzorce.**
+- [x] **0.5 Zaktualizuj `.gitignore` retroaktywnie i dodaj brakujące wzorce.**  [WYKONANE 2026-08-23]
   Plik: `.gitignore`.
   Dodaj (jeśli brakuje): `.pytest_cache/`, `code/backend/looks_optimizer.db`, `*.egg-info/`.
   Kryterium akceptacji: świeży `git status` po pełnym buildzie backendu i frontendu jest czysty (`nothing to commit`).
@@ -131,7 +131,7 @@ Mierzalne kryteria sukcesu (weryfikowalne, nie deklaratywne):
 
 ### FAZA 1 — Naprawa krytycznego długu technicznego (backend musi w ogóle wystartować)
 
-- [ ] **1.1 Ujednolić SDK Gemini: przejść w pełni na `google-genai`.**
+- [x] **1.1 Ujednolić SDK Gemini: przejść w pełni na `google-genai`.**  [WYKONANE 2026-08-23]
   Uzasadnienie wyboru: `services/gemini_vision.py` już używa nowego API (`from google import genai`) w całym pliku — taniej jest poprawić `requirements.txt`, niż przepisywać serwis na stary SDK.
   Plik: `code/backend/requirements.txt`.
   Zmiana: usuń linię `google-generativeai==0.7.2`, dodaj `google-genai==1.2.0` (lub najnowszą stabilną wersję dostępną w PyPI w momencie wykonania — sprawdź `pip index versions google-genai`).
@@ -145,7 +145,7 @@ Mierzalne kryteria sukcesu (weryfikowalne, nie deklaratywne):
   kończy się bez `ModuleNotFoundError`.
   Zależności: brak.
 
-- [ ] **1.2 Napraw brakujący import `Path` w `routers/analysis.py`.**
+- [x] **1.2 Napraw brakujący import `Path` w `routers/analysis.py`.**  [WYKONANE 2026-08-23]
   Plik: `code/backend/routers/analysis.py`.
   Problem: linia 94 używa `Path(photo.file_path).read_bytes()`, ale nie ma `from pathlib import Path` w nagłówku pliku (linie 1-8: `import json`, `from fastapi import ...`, `from sqlalchemy.orm import Session`, `from ..database import get_db`, `from ..models.photo import Photo`, `from ..models.analysis import Analysis`, `from ..services.gemini_vision import GeminiVisionService`, `from ..services.attractiveness_levers import AttractivenessLevers`).
   Zmiana — dodaj na początku pliku:
@@ -155,7 +155,7 @@ Mierzalne kryteria sukcesu (weryfikowalne, nie deklaratywne):
   Kryterium akceptacji: `POST /api/analysis/analyze/{photo_id}` dla istniejącego zdjęcia z prawdziwym plikiem na dysku nie rzuca już `NameError: name 'Path' is not defined`; odpowiedź to 200 (przy zamockowanym `VISION_SERVICE`) zamiast 500.
   Zależności: brak (niezależne od 1.1, ale oba muszą być zrobione żeby endpoint zadziałał end-to-end).
 
-- [ ] **1.3 Dodaj test happy-path dla `POST /api/analysis/analyze/{photo_id}`.**
+- [x] **1.3 Dodaj test happy-path dla `POST /api/analysis/analyze/{photo_id}`.**  [WYKONANE 2026-08-23]
   Plik: `code/backend/tests/test_routers.py` (rozszerzyć istniejący plik, obok `test_analyze_photo_not_found`).
   Wzorzec (dostosuj do istniejących fixture'ów w `conftest.py` — sprawdź nazwy fixture'ów `client`, `db_session`, `test_photo` przed napisaniem):
   ```python
@@ -173,7 +173,7 @@ Mierzalne kryteria sukcesu (weryfikowalne, nie deklaratywne):
   Kryterium akceptacji: `pytest code/backend/tests/test_routers.py -k analyze_photo_happy_path -v` przechodzi (PASSED), i celowo zepsuty import (`# from pathlib import Path` zakomentowany) powoduje FAIL tego testu — potwierdza że test faktycznie łapie regresję z zadania 1.2.
   Zależności: 1.2.
 
-- [ ] **1.4 [POPRAWIONE 2026-08-09 — poprzednia wersja migrowała na `:8000`, kolidujący z hubem; rejestr portów w `System-Glowny/CLAUDE.md` przydzielił LookCoach `:8010`] Ujednolić port backendu do `8010` we wszystkich miejscach.**
+- [x] **1.4 [POPRAWIONE 2026-08-09 — poprzednia wersja migrowała na `:8000`, kolidujący z hubem; rejestr portów w `System-Glowny/CLAUDE.md` przydzielił LookCoach `:8010`] Ujednolić port backendu do `8010` we wszystkich miejscach.**  [WYKONANE 2026-08-23]
   Pliki i zmiany (LookCoach miał wcześniej `8003`, który z kolei koliduje z HackerLabAcademy — obie
   niespójności naprawiane razem):
   - `code/backend/main.py:86` — `uvicorn.run("main:app", host="0.0.0.0", port=8003, reload=True)` → `port=8010`.
@@ -187,7 +187,7 @@ Mierzalne kryteria sukcesu (weryfikowalne, nie deklaratywne):
   na `:8000`, które POWINNY zostać — to adres huba, nie LookCoach).
   Zależności: brak, ale wykonać po 1.1-1.2 żeby testować na działającym serwerze.
 
-- [ ] **1.5 [2026-08-09: 3.11→3.12, standard ekosystemu podniesiony] Dodaj `pyproject.toml` pinujący Python 3.12.**
+- [x] **1.5 [2026-08-09: 3.11→3.12, standard ekosystemu podniesiony] Dodaj `pyproject.toml` pinujący Python 3.12.**  [WYKONANE 2026-08-23]
   Plik: `code/backend/pyproject.toml` (nowy).
   Treść minimalna:
   ```toml
@@ -199,7 +199,7 @@ Mierzalne kryteria sukcesu (weryfikowalne, nie deklaratywne):
   Kryterium akceptacji: plik istnieje; README/docs wskazują `python3.12` jako wymaganą wersję do lokalnego dev (repo ma artefakty `.pyc` sugerujące Python 3.14 używany lokalnie — dobra wiadomość: bliżej 3.12 niż było do 3.11, ale nadal wymaga jawnego zaznaczenia w `docs/TECH_STACK.md`, że lokalny interpreter musi być 3.12).
   Zależności: brak.
 
-- [ ] **1.5b [NOWE 2026-08-09] Podnieś frontend do standardu ekosystemu (React 19.2 + Router 7.13 + Vite 8).**
+- [x] **1.5b [NOWE 2026-08-09] Podnieś frontend do standardu ekosystemu (React 19.2 + Router 7.13 + Vite 8).**  [WYKONANE 2026-08-23]
   Plik: `code/frontend/package.json`. Obecnie: `react@^18.3.1`, `react-router-dom@^6.26.0`, `vite@^5.3.4`.
   Komenda: `npm install react@^19.2.4 react-dom@^19.2.4 react-router-dom@^7.13.1 vite@^8.0.0` w `code/frontend/`,
   następnie podnieść `@vitejs/plugin-react` do wersji kompatybilnej z Vite 8.
@@ -211,7 +211,7 @@ Mierzalne kryteria sukcesu (weryfikowalne, nie deklaratywne):
 
 ### FAZA 2 — Bezpieczeństwo danych i zgodność z własną polityką (NEURO_PLAN §5, LC-9)
 
-- [ ] **2.1 Usuń liczbowy "Look Score" z UI.**
+- [x] **2.1 Usuń liczbowy "Look Score" z UI.**  [WYKONANE 2026-08-23]
   Plik: `code/frontend/src/pages/AnalysisResults.jsx`, linie 72-73:
   ```jsx
   <h2 className="text-2xl font-bold text-blue-900">Look Score</h2>
@@ -228,7 +228,7 @@ Mierzalne kryteria sukcesu (weryfikowalne, nie deklaratywne):
   Kryterium akceptacji: `grep -n "overall_score\|overall_face_score\|overall_body_score" code/frontend/src/pages/*.jsx` nie zwraca żadnych wyników w warstwie renderowania (mogą zostać jako wewnętrzne pola danych, ale nie mogą być wyświetlane jako liczba użytkownikowi).
   Zależności: 2.2 (zmiana promptu/modelu danych musi iść równolegle albo najpierw).
 
-- [ ] **2.2 Zmień prompt Gemini i model danych z liczbowego score na kategorie jakościowe.**
+- [x] **2.2 Zmień prompt Gemini i model danych z liczbowego score na kategorie jakościowe.**  [WYKONANE 2026-08-23]
   Plik: `code/backend/services/gemini_vision.py`, linie ok. 78-198 (prompty proszące o `overall_face_score: 0-100`, `overall_body_score`).
   Zmiana: przeformułować prompt tak, żeby model zwracał listę obserwacji tekstowych + kategorię priorytetu (np. `"priority": "high"/"medium"/"low"` per obszar: skóra, postawa, itd.) zamiast pojedynczej liczby 0-100 oceniającej osobę.
   Przykładowa nowa struktura odpowiedzi:
@@ -269,7 +269,7 @@ Mierzalne kryteria sukcesu (weryfikowalne, nie deklaratywne):
 
 ### FAZA 3 — Zgodność z kontraktem integracyjnym System-Głównego
 
-- [ ] **3.1 Przenieś wszystkie routery pod prefiks `/api/v1/`.**
+- [x] **3.1 Przenieś wszystkie routery pod prefiks `/api/v1/`.**  [WYKONANE 2026-08-23]
   Plik: `code/backend/main.py`, linie 66-81.
   Zmiana: każdy `prefix="/api/..."` → `prefix="/api/v1/..."`, np.:
   ```python
@@ -281,7 +281,7 @@ Mierzalne kryteria sukcesu (weryfikowalne, nie deklaratywne):
   Kryterium akceptacji: `curl http://localhost:8010/api/v1/photos` zwraca poprawną odpowiedź (nie 404); `curl http://localhost:8010/api/photos` (stary prefix) zwraca 404; frontend nadal działa end-to-end (ręczny test w przeglądarce lub `npm test`).
   Zależności: 1.4 (port ujednolicony).
 
-- [ ] **3.2 Zaimplementuj `GET /api/v1/summary`.**
+- [x] **3.2 Zaimplementuj `GET /api/v1/summary`.**  [WYKONANE 2026-08-23]
   Nowy plik: `code/backend/routers/summary.py`.
   Sygnatura:
   ```python
@@ -315,7 +315,7 @@ Mierzalne kryteria sukcesu (weryfikowalne, nie deklaratywne):
   Kryterium akceptacji: `GET http://localhost:8010/api/v1/summary?user_id=test123` zwraca 200 z JSON zawierającym dokładnie klucze `module, user_id, date, summary, events` zgodnie ze standardem System-Głównego; test w `tests/test_routers.py` weryfikuje strukturę.
   Zależności: 3.1, wymaga modeli z Fazy 4 dla pełnych danych (może startować z częściowymi/pustymi wartościami jeśli modele jeszcze nie istnieją, z jawnym TODO w kodzie).
 
-- [ ] **3.3 Zaimplementuj `POST /api/v1/integrations/event` z nagłówkiem `X-Module-Key`.**
+- [x] **3.3 Zaimplementuj `POST /api/v1/integrations/event` z nagłówkiem `X-Module-Key`.**  [WYKONANE 2026-08-23]
   Plik: rozbuduj `code/backend/routers/integration.py` (zastąp stub `POST /input`) lub dodaj do `summary.py`.
   Sygnatura:
   ```python
@@ -454,23 +454,23 @@ Dotyczy 9 modułów bez modelu SQLAlchemy: `experiments, aesthetic_training, pos
 
 ### FAZA 6 — Uporządkowanie dokumentacji projektu
 
-- [ ] **6.1 Dodaj `README.md`.**
+- [x] **6.1 Dodaj `README.md`.** [WYKONANE 2026-08-23]
   Nowy plik: `README.md` (root projektu).
   Zawartość minimalna: opis projektu (1 akapit), instrukcja `jak uruchomić dev` (backend + frontend, analogicznie do `System-Glowny/CLAUDE.md`), link do `spec.md`, `NEURO_PLAN.md`, `TASKS.md`.
   Kryterium akceptacji: plik istnieje, świeży klon repo + README wystarcza do uruchomienia projektu bez czytania innych plików.
   Zależności: 1.4 (żeby podać poprawny port).
 
-- [ ] **6.2 Zaktualizuj nazewnictwo "Wyglad" → "LookCoach" w dokumentacji.**
+- [x] **6.2 Zaktualizuj nazewnictwo "Wyglad" → "LookCoach" w dokumentacji.** [WYKONANE 2026-08-23] (grep docs/ → 0 wyników)
   Pliki: `docs/TECH_STACK.md`, `docs/DEPLOYMENT.md` — wciąż nazywają projekt starą nazwą "Wyglad".
   Kryterium akceptacji: `grep -rn "Wyglad" docs/` zwraca 0 wyników.
   Zależności: brak.
 
-- [ ] **6.3 Dodaj `CLAUDE.md` dla LookCoach zgodnie z wymogiem `System-Glowny`.**
+- [x] **6.3 Dodaj `CLAUDE.md` dla LookCoach zgodnie z wymogiem `System-Glowny`.** [WYKONANE 2026-08-23]
   Nowy plik: `CLAUDE.md` (root projektu LookCoach), wzorowany na strukturze `System-Glowny/CLAUDE.md` — stack, struktura katalogów, jak uruchomić, konwencje commitów, aktualny stan integracji z System-Głównym (link do sekcji "Architektura docelowa" tego planu).
   Kryterium akceptacji: plik istnieje i jest spójny z rzeczywistym stanem repo po wykonaniu Faz 0-5 (nie kopiuj planów jako faktów — opisuj stan faktyczny).
   Zależności: wszystkie poprzednie fazy (dokument ma opisywać stan *po* naprawach, żeby nie powielić problemu z audytu: dokumentacja rozjechana z kodem).
 
-- [ ] **6.4 Skonsoliduj `TASKS.md` — usuń/zaktualizuj zrealizowane i sprzeczne wpisy.**
+- [x] **6.4 Skonsoliduj `TASKS.md` — usuń/zaktualizuj zrealizowane i sprzeczne wpisy.** [WYKONANE 2026-08-23]
   Plik: `TASKS.md`.
   Po wykonaniu Faz 0-5, przejrzeć sekcję "PLAN v2" i oznaczyć checkboxy zgodnie z rzeczywistym stanem (nie deklaratywnie) — usunąć wpisy zdublowane z tym planem, zostawić `TASKS.md` jako operacyjną listę bieżących drobnych zadań, a nie drugą kopię strategii.
   Kryterium akceptacji: brak sprzeczności między `TASKS.md` a stanem faktycznym kodu (zweryfikować ręcznie każdy checkbox).
@@ -486,7 +486,7 @@ Poniższe wymagają decyzji **człowieka**, nie AI — wykonawca planu (nawet AI
 2. **Rotacja klucza OpenRouter** (zadanie 2.3) — wymaga dostępu do konta OpenRouter należącego do użytkownika; AI nie powinno tego robić autonomicznie (dostęp do panelu zewnętrznego dostawcy, potencjalny koszt).
 3. [ROZSTRZYGNIĘTE 2026-08-09 — decyzja użytkownika] **Priorytetyzacja 9 modułów bez persystencji** (zadanie 4.1) —
    wszystkie zostają, `sleep`/`stress`/`confidence` pierwsze.
-4. **Budżet/czas na research naukowy** (Faza 5) — znalezienie realnych źródeł (PubMed/DOI) dla ~30 wpisów w `EVIDENCE_DB` i całego `SCIENTIFIC_FOUNDATION.md` to praca czasochłonna; człowiek musi zdecydować, czy to robi AI z dostępem do wyszukiwania (z jawnym oznaczeniem niepewności tam, gdzie źródła nie da się zweryfikować), czy człowiek ręcznie z dostępem do bazy badań.
+4. [ROZSTRZYGNIĘTE 2026-08-23 — wykonane przez AI z web-wyszukiwaniem; każde zachowane źródło zweryfikowane na PubMed (PMID), niezweryfikowane obniżone poziomem i oznaczone] **Budżet/czas na research naukowy** (Faza 5) — znalezienie realnych źródeł (PubMed/DOI) dla ~30 wpisów w `EVIDENCE_DB` i całego `SCIENTIFIC_FOUNDATION.md` to praca czasochłonna; człowiek musi zdecydować, czy to robi AI z dostępem do wyszukiwania (z jawnym oznaczeniem niepewności tam, gdzie źródła nie da się zweryfikować), czy człowiek ręcznie z dostępem do bazy badań.
 5. [ROZSTRZYGNIĘTE 2026-08-09 — decyzja użytkownika] **Alembic** (opcja A) w zadaniu 4.4.
 6. [ROZSTRZYGNIĘTE 2026-08-09 — sprawdzone bezpośrednio w kodzie] **Root-level `.env` NIE jest zbędny —
    to `code/backend/.env` jest duplikatem.** `main.py:12` jawnie ładuje `PROJECT_ROOT / ".env"` (czyli root).
