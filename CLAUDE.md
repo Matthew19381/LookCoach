@@ -1,7 +1,7 @@
 # CLAUDE.md — LookCoach
 
 Instrukcje dla asystenta AI pracującego w tym repo. Opisuje **stan faktyczny**
-(po wykonaniu naprawczych Faz 0–5 z `ACTION_PLAN.md`, 2026-08-23), nie plany.
+(po wykonaniu naprawczych Faz 0–5 z `decisions/ACTION_PLAN_2026-08-09_wykonane_2026-08-23.md`, 2026-08-23), nie plany.
 
 ## Uruchamianie
 
@@ -104,7 +104,7 @@ Kontrakt po stronie LookCoach (hub: port 8000):
   `X-Module-Key` zgodnego z env `MODULE_KEY` (brak/zły klucz → **401**, także gdy header
   nieobecny). Eventy są persystowane w tabeli `integration_events`.
 
-Pełna architektura docelowa: sekcja "Architektura docelowa" w `ACTION_PLAN.md`;
+Pełna architektura docelowa: sekcja "Architektura docelowa" w `decisions/ACTION_PLAN_2026-08-09_wykonane_2026-08-23.md` (archiwum);
 audyt naukowy: `NEURO_PLAN.md` §4.
 
 ## Git — polityka commitów

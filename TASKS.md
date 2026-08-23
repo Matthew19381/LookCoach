@@ -2,11 +2,11 @@
 
 **Status:** v0.3.0 — fundamenty naprawione (ACTION_PLAN Fazy 0–6, 2026-08-23).
 Ten plik to **operacyjna lista bieżących zadań**, nie druga kopia strategii.
-Strategia i architektura docelowa: `ACTION_PLAN.md` + `NEURO_PLAN.md`.
+Strategia i architektura docelowa: `decisions/ACTION_PLAN_2026-08-09_wykonane_2026-08-23.md` + `NEURO_PLAN.md`.
 
 ---
 
-## ✅ Zrealizowane (Fazy 0–5 — szczegóły w ACTION_PLAN.md)
+## ✅ Zrealizowane (Fazy 0–5 — szczegóły w `decisions/ACTION_PLAN_2026-08-09_wykonane_2026-08-23.md`)
 
 - [x] E-1 (**LC-1**) Evidence/ROI v2: widełki niepewności wg poziomu dowodów,
       `verify_evidence_db.py` jako brama rzetelności. *(pozostaje: podpięcie pod
