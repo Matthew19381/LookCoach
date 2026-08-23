@@ -1,3 +1,9 @@
+# ARCHIWUM (2026-08-23)
+
+> Plan wykonany w całości (Fazy 0–6, commity c7ea10c..4dfe6bf). Jedyny otwarty punkt:
+> 2.3 rotacja klucza OpenRouter — czynność człowieka.
+> Operacyjna lista zadań: `TASKS.md`.
+
 # ACTION PLAN — LookCoach
 
 **Data:** 2026-08-09
