@@ -27,10 +27,10 @@ Strategia i architektura docelowa: `decisions/ACTION_PLAN_2026-08-09_wykonane_20
 ## 🔧 Bieżące zadania
 
 ### Integracja z Systemem Głównym
-- [ ] INT-2b: Publisher wychodzący (`protocol_done`, `protocol_skipped`,
+- [x] INT-2b: Publisher wychodzący (`protocol_done`, `protocol_skipped`,
       `state_observation`) → hub `:8000/api/v1/integrations/event`
       z `X-Module-Key`; obsługa 401 jako błąd konfiguracji, nie cicha porażka.
-- [ ] INT-3 (**LC-4**): priorytet estetyczny jako dyrektywa do ForgeBody,
+- [x] INT-3 (**LC-4**): priorytet estetyczny jako dyrektywa do ForgeBody,
       potrzeby żywieniowe (sód/nabiał) do Diety — LookCoach nie generuje
       własnych planów treningowych/diet.
 - [ ] INT-4: Subskrypcja Affect Engine (sen/stres) — Sleep Engine bez własnego trackera.

@@ -2,6 +2,22 @@
 
 ---
 
+## [0.3.0] — 2026-08-29
+
+### Added (INT-3: Aesthetic Priority & Nutrition Directives)
+- `services/integration_publisher.py`: Added two new event types for System-Główny integration:
+  - `aesthetic_priority_directive`: Sends aesthetic priority areas (e.g., "V-taper", "shoulders", "posture") with priority level and reason to ForgeBody module
+  - `nutrition_needs_directive`: Sends sodium limits and dairy restriction flags with reason to Dieta module
+- Convenience functions: `publish_aesthetic_priority_directive()` and `publish_nutrition_needs_directive()`
+- Tests: 12 new tests in `tests/test_integration_publisher.py` covering new event types and convenience functions
+- All 250 backend tests pass
+
+### Completed
+- INT-2b: Outgoing publisher for protocol_done, protocol_skipped, state_observation events
+- INT-3 (LC-4): Aesthetic priority directives to ForgeBody + nutrition needs (sodium/dairy) to Dieta
+
+---
+
 ## [0.2.0] — 2026-05-08
 
 ### Fixed
