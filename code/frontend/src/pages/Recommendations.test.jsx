@@ -133,6 +133,31 @@ describe('Recommendations', () => {
     expect(screen.getByText('#2')).toBeInTheDocument()
   })
 
+  it('orders recommendations by ROI and links their evidence sources', async () => {
+    getRecommendations.mockResolvedValue([
+      {
+        name: 'Lower priority',
+        roi_score: 0.2,
+        study_url: 'https://example.test/lower',
+      },
+      {
+        name: 'Higher priority',
+        roi_score: 0.8,
+        study_url: 'https://example.test/higher',
+      },
+    ])
+
+    render(<Recommendations />)
+
+    await waitFor(() => {
+      expect(screen.getByText('Higher priority')).toBeInTheDocument()
+    })
+    const articles = screen.getAllByRole('article')
+    expect(articles[0]).toHaveTextContent('Higher priority')
+    expect(articles[1]).toHaveTextContent('Lower priority')
+    expect(screen.getAllByRole('link', { name: /Evidence source/ })).toHaveLength(2)
+  })
+
   it('handles error gracefully', async () => {
     getRecommendations.mockRejectedValue(new Error('API error'))
 

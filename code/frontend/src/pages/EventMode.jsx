@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Calendar, Clock, Sun, Moon, Droplets } from 'lucide-react'
+import { Calendar, Clock, Sun, Droplets } from 'lucide-react'
 import { generateEventPlan, getEventTips } from '../api/client'
 
 export default function EventMode() {

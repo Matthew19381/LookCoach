@@ -5,7 +5,7 @@ import { BrowserRouter } from 'react-router-dom'
 
 // Mock react-chartjs-2 to avoid canvas issues in jsdom
 vi.mock('react-chartjs-2', () => ({
-  Line: (props) => <div data-testid="chart-line" />,
+  Line: () => <div data-testid="chart-line" />,
 }))
 
 // Mock chart.js - ChartJS.register is called on module load, we just need to not error

@@ -4,7 +4,6 @@ import { getPostureIssues, detectPostureIssues, getCorrectionPlan, fullPostureAs
 
 export default function PostureCorrection() {
   const [issues, setIssues] = useState([])
-  const [selectedIssue, setSelectedIssue] = useState(null)
   const [correction, setCorrection] = useState(null)
   const [assessment, setAssessment] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -30,7 +29,6 @@ export default function PostureCorrection() {
   const handleGetCorrection = async (issueId) => {
     try {
       const result = await getCorrectionPlan(issueId)
-      setSelectedIssue(issueId)
       setCorrection(result)
     } catch (e) {
       console.error('Correction plan failed:', e)

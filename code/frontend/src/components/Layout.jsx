@@ -1,10 +1,11 @@
 import { Outlet, NavLink } from 'react-router-dom'
-import { Camera, Heart, Droplets, LineChart, Moon, Play, Calendar, Brain, FlaskConical, Dumbbell, Move, Apple, Bed, Activity } from 'lucide-react'
+import { Camera, Heart, Droplets, LineChart, Moon, Play, Calendar, Brain, FlaskConical, Dumbbell, Move, Apple, Bed, Activity, BarChart3 } from 'lucide-react'
 
 const navItems = [
   { to: '/', label: 'Upload', icon: Camera },
   { to: '/analysis', label: 'Analysis', icon: Heart },
   { to: '/recommendations', label: 'Recommendations', icon: Droplets },
+  { to: '/priorities', label: 'ROI priorities', icon: BarChart3 },
   { to: '/progress', label: 'Progress', icon: LineChart },
   { to: '/skincare', label: 'Skincare', icon: Moon },
   { to: '/videos', label: 'Videos', icon: Play },

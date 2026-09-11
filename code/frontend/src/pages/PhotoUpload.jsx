@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Camera, Upload, CheckCircle, Loader2 } from 'lucide-react'
-import { uploadPhoto, getPhotos } from '../api/client'
+import { uploadPhoto } from '../api/client'
 
 export default function PhotoUpload() {
   const [uploading, setUploading] = useState({ front: false, side: false, back: false })

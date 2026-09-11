@@ -14,6 +14,7 @@ import PostureCorrection from './pages/PostureCorrection'
 import NutritionLooks from './pages/NutritionLooks'
 import SleepOptimizer from './pages/SleepOptimizer'
 import StressManagement from './pages/StressManagement'
+import PriorityBoard from './pages/PriorityBoard'
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
         <Route index element={<PhotoUpload />} />
         <Route path="analysis" element={<AnalysisResults />} />
         <Route path="recommendations" element={<Recommendations />} />
+        <Route path="priorities" element={<PriorityBoard />} />
         <Route path="progress" element={<ProgressTracker />} />
         <Route path="skincare" element={<SkincareRoutine />} />
         <Route path="videos" element={<VideoLearning />} />

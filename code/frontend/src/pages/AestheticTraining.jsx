@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { Dumbbell, Target, Activity } from 'lucide-react'
-import { getAvailablePlans, generateTrainingPlan, analyzePhysique } from '../api/client'
+import { Dumbbell, Target } from 'lucide-react'
+import { getAvailablePlans, generateTrainingPlan } from '../api/client'
 
 export default function AestheticTraining() {
   const [plans, setPlans] = useState([])

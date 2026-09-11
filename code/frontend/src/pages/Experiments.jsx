@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { FlaskConical, Play, Check, BarChart3, Plus, Calendar } from 'lucide-react'
-import { getExperimentTemplates, startExperiment, getExperiment, logDaily, getResults, getActiveExperiments, finishExperiment } from '../api/client'
+import { getExperimentTemplates, startExperiment, logDaily, getResults, getActiveExperiments, finishExperiment } from '../api/client'
 
 export default function Experiments() {
   const [templates, setTemplates] = useState([])
