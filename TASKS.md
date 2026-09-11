@@ -37,9 +37,8 @@ Strategia i architektura docelowa: `decisions/ACTION_PLAN_2026-08-09_wykonane_20
 - [ ] INT-5: Poranna rutyna skincare jako pozycja planu dnia (planner).
 
 ### Funkcje (NEURO_PLAN fazy 2–3)
-- [ ] F-1 (**LC-2**): rutyna skincare istnieje, ale wymaga adaptacji do reakcji skóry.
-- [ ] F-2 (**LC-7**): Consistency Tracker + Minimum Effective System
-      (adherencja steruje trudnością).
+- [x] F-1 (**LC-2**): rutyna skincare z adaptacją do reakcji skóry i rotacją składników wg tolerancji — zaimplementowano `SkinReactionTracker`, `IngredientRotationManager`, `check_ingredient_conflicts`, `get_evidence_summary`, nowe endpointy API (`/routine/adaptive`, `/reaction/log`, `/rotation/recommendations`, `/tolerance/{ingredient}`), 20 nowych testów.
+- [x] F-2 (**LC-7**): Consistency Tracker + Minimum Effective System (adherencja steruje trudnością). Zaimplementowano `ConsistencyTracker` z `AdherenceLog`, `ProtocolAdherence`, `ConsistencyMetrics` modelami, router `/api/v1/consistency` z endpointami do logowania adherencji, obliczania rate, rekomendowanego trudności, minimum effective protocol, summary, pattern alerts. 23 testy w `test_consistency.py`.
 - [ ] F-4 (**LC-6**): Visual Progress — zdjęcia w kontrolowanych warunkach.
 - [ ] F-5 (**LC-5**): Event Mode oznaczony jako protokół HIPOTEZA z ostrzeżeniami.
 

@@ -1,21 +1,38 @@
-import os
 from pathlib import Path
+from contextlib import asynccontextmanager
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from contextlib import asynccontextmanager
-
-# Environment variables - load .env from project root
-from dotenv import load_dotenv
-from pathlib import Path
-PROJECT_ROOT = Path(__file__).parent.parent.parent
-load_dotenv(dotenv_path=PROJECT_ROOT / ".env")
-
-# Database
-from .database import get_db, init_db
 
 # Routers
-from .routers import photos, analysis, recommendations, progress, profile, skincare, integration, video_learning, event_mode, confidence, experiments, aesthetic_training, posture, nutrition, sleep, stress, summary
+from .routers import (
+    photos,
+    analysis,
+    recommendations,
+    progress,
+    profile,
+    skincare,
+    integration,
+    video_learning,
+    event_mode,
+    confidence,
+    experiments,
+    aesthetic_training,
+    posture,
+    nutrition,
+    sleep,
+    stress,
+    summary,
+    consistency,
+)
+
+# Database
+from .database import init_db
+
+# Environment variables - load .env from project root
+PROJECT_ROOT = Path(__file__).parent.parent.parent
+load_dotenv(dotenv_path=PROJECT_ROOT / ".env")
 
 UPLOAD_DIR = Path("uploads")
 UPLOAD_DIR.mkdir(exist_ok=True)
@@ -80,6 +97,7 @@ app.include_router(posture.router, prefix="/api/v1/posture", tags=["posture"])
 app.include_router(nutrition.router, prefix="/api/v1/nutrition", tags=["nutrition"])
 app.include_router(sleep.router, prefix="/api/v1/sleep", tags=["sleep"])
 app.include_router(stress.router, prefix="/api/v1/stress", tags=["stress"])
+app.include_router(consistency.router, prefix="/api/v1/consistency", tags=["consistency"])
 
 
 if __name__ == "__main__":

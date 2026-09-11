@@ -35,13 +35,5 @@ def get_db():
 
 def init_db():
     from .models.base import Base
-    from .models.user import User
-    from .models.profile import UserProfile
-    from .models.photo import Photo
-    from .models.analysis import Analysis
-    from .models.recommendation import Recommendation
-    from .models.progress import ProgressLog
-    from .models.integration_event import IntegrationEvent
-    from .models.experiment import Experiment
 
     Base.metadata.create_all(bind=engine)

@@ -2,6 +2,79 @@
 
 ---
 
+## [0.5.0] — 2026-08-29
+
+### Added (F-2 / LC-7: Consistency Tracker + Minimum Effective System)
+- `services/consistency_tracker.py`: Core consistency tracking service implementing LC-7/FB-5:
+  - `ConsistencyTracker`: Tracks adherence per protocol type, calculates rates, determines adherence levels (excellent/good/moderate/low/critical)
+  - Minimum Effective Dose system: Adherence drives plan difficulty — when adherence drops, difficulty reduces automatically (never "motivate harder")
+  - Hysteresis prevention: Difficulty only increases after sustained ≥90% adherence for 14+ days; only increases one level at a time
+  - Protocol types: skincare_morning, skincare_evening, training, sleep, nutrition, stress
+  - Difficulty levels: full, reduced, minimum, survival with defined minimum effective protocols for each
+  - Pattern alerts for Mentalność integration: 3+ consecutive misses or <50% adherence over 14 days
+  - Supportive messaging only — no shaming language ("not failure", "normal adaptation", "showing up matters")
+  - Weighted overall consistency score (training 30%, sleep 20%, skincare 30%, nutrition 10%, stress 10%)
+- `models/consistency.py`: Database models:
+  - `AdherenceLog`: Daily adherence entries per protocol
+  - `ProtocolAdherence`: Aggregated metrics per protocol per period (rate, level, streaks, recommended difficulty)
+  - `ConsistencyMetrics`: Overall consistency snapshot (score, system status, protocols needing reduction)
+- `routers/consistency.py`: API endpoints at `/api/v1/consistency`:
+  - `POST /adherence/log` — log daily adherence
+  - `GET /adherence/history` — get adherence history
+  - `GET /adherence/rate` — calculate adherence rate and level
+  - `GET /difficulty/recommended` — get recommended difficulty based on adherence
+  - `GET /protocols/status` — status for all protocols
+  - `GET /summary` — overall consistency summary
+  - `GET /minimum-effective/{protocol_type}` — get minimum effective protocol steps
+  - `POST /recalculate` — recalculate and persist aggregated metrics
+  - `GET /pattern-alert` — check for pattern alerts to Mentalność
+- `tests/test_consistency.py`: 23 comprehensive tests covering:
+  - Adherence rate calculation and level mapping
+  - Recommended difficulty logic with hysteresis
+  - Minimum effective protocol retrieval for all types/levels
+  - Consistency summary at all system status levels (thriving/stable/adjusting/minimum_effective/survival)
+  - Supportive messaging validation (no shaming language)
+  - Weighted overall consistency score calculation
+  - Pattern alert detection (consecutive misses, sustained low adherence)
+  - Threshold and dose configuration completeness
+
+### Completed
+- F-2 (LC-7): Consistency Tracker + Minimum Effective System (adherence drives difficulty)
+
+---
+
+## [0.4.0] — 2026-08-29
+
+### Added (F-1 / LC-2: Adaptive Skincare Routine with Reaction Tracking & Rotation)
+- `services/skincare_engine.py`: Complete rewrite with adaptive routine generation:
+  - `SkinReactionTracker`: Tracks ingredient reactions, determines tolerance levels (none/low/medium/high) and overall skin sensitivity
+  - `IngredientRotationManager`: Manages ingredient rotation cycles (retinoid 12w, exfoliant 8w, vitamin C 16w, niacinamide 20w, peptide 24w) with alternative suggestions
+  - `check_ingredient_conflicts()`: Detects high-risk combinations (retinoid+exfoliant, Vit C+exfoliant, retinoid+benzoyl peroxide)
+  - `get_evidence_summary()`: Returns evidence level breakdown (RCT/meta/observational/expert) with sources for routine ingredients
+  - Adaptive routine generation based on skin type, problems, sensitivity, and reaction history
+- `routers/skincare.py`: New API endpoints:
+  - `GET /routine` — enhanced with adaptations, conflicts, evidence summary
+  - `POST /routine/adaptive` — full adaptive routine with context
+  - `POST /reaction/log` — log skin reactions to ingredients
+  - `GET /rotation/recommendations` — get rotation suggestions for current routine
+  - `GET /tolerance/{ingredient}` — check tolerance level for specific ingredient
+- `tests/test_skincare.py`: 20 new comprehensive tests covering:
+  - Basic and adaptive routine generation
+  - Sensitivity levels (none/low/medium/high) and retinoid/exfoliant adaptation
+  - Ingredient conflict detection
+  - Evidence summary generation
+  - Tolerance tracking and overall sensitivity calculation
+  - Rotation cycle detection and recommendations
+  - Retinoid selection logic
+  - Data structure validation
+- All 264 backend tests pass
+- Evidence DB verification passes (29 entries, 9 RCT/meta)
+
+### Completed
+- F-1 (LC-2): Skincare routine with skin reaction adaptation and ingredient rotation per tolerance
+
+---
+
 ## [0.3.0] — 2026-08-29
 
 ### Added (INT-3: Aesthetic Priority & Nutrition Directives)
