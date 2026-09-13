@@ -1,4 +1,3 @@
-import json
 
 class StressEngine:
     """Manage stress impact on looks (cortisol, skin, hair)."""
@@ -57,7 +56,6 @@ class StressEngine:
             return result
 
         level = stress_data.get("level", "low")  # low, medium, high
-        sources = stress_data.get("sources", [])
         physical_signs = stress_data.get("physical_signs", [])
 
         # Score calculation (lower stress = higher score)

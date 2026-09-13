@@ -4,7 +4,6 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from ..database import get_db
 from ..models.photo import Photo
-from ..models.progress import ProgressLog
 
 router = APIRouter()
 

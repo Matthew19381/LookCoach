@@ -1,5 +1,7 @@
+# ruff: noqa: E402
 import sys
 from pathlib import Path
+from fastapi.testclient import TestClient
 
 # Add parent of backend to path so 'backend' is a package
 BACKEND_DIR = Path(__file__).parent.parent
@@ -7,18 +9,17 @@ CODE_DIR = BACKEND_DIR.parent  # This is 'code/'
 sys.path.insert(0, str(CODE_DIR))
 
 # Now we can import backend as a package
-import importlib
 import os
 
 # Change to backend directory for relative file paths
 os.chdir(BACKEND_DIR)
 
 # Import backend modules
-from backend.database import get_db, init_db
+from backend.database import get_db
 from backend.models.base import Base
 
 # Import all models so they register with Base.metadata
-from backend.models import user, profile, photo, analysis, recommendation, progress
+import backend.models  # noqa: F401
 from backend.models.experiment import Experiment
 
 # Create test app (don't use main.app to avoid lifespan issues)
@@ -92,10 +93,6 @@ test_app.dependency_overrides[get_db] = get_test_db
 Base.metadata.create_all(bind=test_engine)
 print(f"Created tables: {list(Base.metadata.tables.keys())}")
 
-from fastapi.testclient import TestClient
-client = TestClient(test_app)
-
-from fastapi.testclient import TestClient
 client = TestClient(test_app)
 
 

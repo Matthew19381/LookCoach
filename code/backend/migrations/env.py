@@ -1,3 +1,4 @@
+# ruff: noqa: E402
 from logging.config import fileConfig
 import os
 import sys

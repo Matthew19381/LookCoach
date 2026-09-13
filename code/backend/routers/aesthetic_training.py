@@ -1,7 +1,5 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
 from pydantic import BaseModel
-from sqlalchemy.orm import Session
-from ..database import get_db
 from ..services.aesthetic_training import AestheticTrainingEngine
 
 router = APIRouter()

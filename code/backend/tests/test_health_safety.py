@@ -3,6 +3,7 @@
 Covers hard contraindication blocks and high-risk disclaimers across
 at least 3 contraindication scenarios.
 """
+# ruff: noqa: E402
 import sys
 from pathlib import Path
 

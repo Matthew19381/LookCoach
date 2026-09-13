@@ -1,4 +1,3 @@
-import unittest.mock as mock
 from services.event_mode import EventModeEngine
 from datetime import datetime, timedelta
 

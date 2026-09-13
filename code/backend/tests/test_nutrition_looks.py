@@ -1,4 +1,3 @@
-import unittest.mock as mock
 from services.nutrition_looks import NutritionLooksEngine
 
 
