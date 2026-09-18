@@ -1,4 +1,3 @@
-import json
 
 class PostureCorrectionEngine:
     """Detect and correct posture issues affecting looks."""

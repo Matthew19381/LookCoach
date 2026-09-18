@@ -1,4 +1,3 @@
-import unittest.mock as mock
 from services.posture_correction import PostureCorrectionEngine
 
 

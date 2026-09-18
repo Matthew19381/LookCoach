@@ -15,6 +15,62 @@ def test_roi_calculate_zero_time():
     roi = ROIEngine.calculate_roi(0.8, 0, 1.0)
     assert roi == 0.0
 
+def test_roi_mode_multipliers():
+    # Test free mode (baseline)
+    roi_free = ROIEngine.calculate_roi(0.8, 4, 1.0, "free")
+    
+    # Test maintenance mode (should be lower)
+    roi_maintenance = ROIEngine.calculate_roi(0.8, 4, 1.0, "maintenance")
+    assert roi_maintenance < roi_free
+    
+    # Test improvement mode (should be higher)
+    roi_improvement = ROIEngine.calculate_roi(0.8, 4, 1.0, "improvement")
+    assert roi_improvement > roi_free
+    
+    # Test invalid mode (should fall back to free)
+    roi_invalid = ROIEngine.calculate_roi(0.8, 4, 1.0, "invalid_mode")
+    assert roi_invalid == roi_free
+
+def test_roi_rank_with_mode():
+    # Use values that will show clear differences when rounded to 3 decimal places
+    # Include evidence_level to avoid default low confidence (0.5 width multiplier)
+    recs_free = [{'name': 'A', 'effect_size': 3.0, 'time_to_effect': 1, 'evidence_level': 'rct'}]
+    recs_maintenance = [{'name': 'A', 'effect_size': 3.0, 'time_to_effect': 1, 'evidence_level': 'rct'}]
+    recs_improvement = [{'name': 'A', 'effect_size': 3.0, 'time_to_effect': 1, 'evidence_level': 'rct'}]
+    
+    # Test free mode ranking
+    ranked_free = ROIEngine.rank_recommendations(recs_free, "free")
+    ranked_maintenance = ROIEngine.rank_recommendations(recs_maintenance, "maintenance")
+    ranked_improvement = ROIEngine.rank_recommendations(recs_improvement, "improvement")
+    
+    # Verify that mode affects the actual ROI scores
+    assert ranked_free[0]["roi_score"] != ranked_maintenance[0]["roi_score"]
+    assert ranked_free[0]["roi_score"] != ranked_improvement[0]["roi_score"]
+    assert ranked_maintenance[0]["roi_score"] < ranked_free[0]["roi_score"]  # maintenance is more conservative
+    assert ranked_improvement[0]["roi_score"] > ranked_free[0]["roi_score"]  # improvement is more aggressive
+    
+    # Test with multiple recommendations
+    recs_multiple_free = [
+        {'name': 'A', 'effect_size': 3.0, 'time_to_effect': 1, 'evidence_level': 'rct'},
+        {'name': 'B', 'effect_size': 1.0, 'time_to_effect': 2, 'evidence_level': 'rct'},
+    ]
+    recs_multiple_maintenance = [
+        {'name': 'A', 'effect_size': 3.0, 'time_to_effect': 1, 'evidence_level': 'rct'},
+        {'name': 'B', 'effect_size': 1.0, 'time_to_effect': 2, 'evidence_level': 'rct'},
+    ]
+    recs_multiple_improvement = [
+        {'name': 'A', 'effect_size': 3.0, 'time_to_effect': 1, 'evidence_level': 'rct'},
+        {'name': 'B', 'effect_size': 1.0, 'time_to_effect': 2, 'evidence_level': 'rct'},
+    ]
+    
+    ranked_free_multi = ROIEngine.rank_recommendations(recs_multiple_free, "free")
+    ranked_maintenance_multi = ROIEngine.rank_recommendations(recs_multiple_maintenance, "maintenance")
+    ranked_improvement_multi = ROIEngine.rank_recommendations(recs_multiple_improvement, "improvement")
+    
+    # Verify that mode affects the ranking scores
+    assert ranked_free_multi[0]["roi_score"] != ranked_maintenance_multi[0]["roi_score"]
+    assert ranked_free_multi[0]["roi_score"] != ranked_improvement_multi[0]["roi_score"]
+
 def test_roi_rank():
     recs = [
         {'name': 'A', 'effect_size': 0.5, 'time_to_effect': 8, 'roi_score': 0},

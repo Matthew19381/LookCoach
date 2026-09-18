@@ -12,7 +12,7 @@ class EventModeEngine:
             target = datetime.strptime(event_date, "%Y-%m-%d").date()
             today = date.today()
             days_until = (target - today).days
-        except:
+        except ValueError:
             days_until = 7  # default 1 week
 
         if days_until < 0:

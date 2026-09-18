@@ -3,6 +3,7 @@
 Covers hard contraindication blocks and high-risk disclaimers across
 at least 3 contraindication scenarios.
 """
+import importlib
 import sys
 from pathlib import Path
 
@@ -10,12 +11,12 @@ BACKEND_DIR = Path(__file__).parent.parent
 CODE_DIR = BACKEND_DIR.parent
 sys.path.insert(0, str(CODE_DIR))
 
-from backend.services.health_safety import (
-    apply_high_risk_disclaimer,
-    apply_safety_filter,
-    check_contraindications,
-)
-from backend.services.evidence_engine import EVIDENCE_DB
+health_safety = importlib.import_module("backend.services.health_safety")
+evidence_engine = importlib.import_module("backend.services.evidence_engine")
+apply_high_risk_disclaimer = health_safety.apply_high_risk_disclaimer
+apply_safety_filter = health_safety.apply_safety_filter
+check_contraindications = health_safety.check_contraindications
+EVIDENCE_DB = evidence_engine.EVIDENCE_DB
 
 
 def _entry(eid):

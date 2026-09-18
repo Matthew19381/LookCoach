@@ -6,3 +6,33 @@ requires-python = ">=3.12,<3.13"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.ruff]
+# Line length
+line-length = 100
+
+# Target Python version
+target-version = "py312"
+
+# Files to include/exclude
+include = ["*.py"]
+exclude = [
+    ".venv*",
+    "build",
+    "dist",
+    "*.egg-info",
+]
+
+[tool.ruff.lint]
+select = [
+    "E402",
+    "F401",
+    "F811",
+    "F841",
+    "E722",
+]
+
+[tool.ruff.format]
+quote-style = "single"
+indent-style = "space"
+skip-magic-trailing-comma = false

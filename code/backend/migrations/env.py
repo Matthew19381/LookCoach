@@ -1,24 +1,26 @@
+import importlib
 from logging.config import fileConfig
 import os
 import sys
 from pathlib import Path
 
-from sqlalchemy import engine_from_config
-from sqlalchemy import pool
-
 from alembic import context
+from dotenv import load_dotenv
+from sqlalchemy import engine_from_config, pool
 
 # Make `backend` package importable (alembic runs from code/backend/)
 CODE_DIR = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(CODE_DIR))
 
 # Load the single root-level .env (same source as database.py)
-from dotenv import load_dotenv
 load_dotenv(dotenv_path=CODE_DIR.parent / ".env")
 
 # Import all models so they register with Base.metadata
-import backend.models  # noqa: F401  (triggers all model imports)
-from backend.database import DATABASE_URL
+importlib.import_module("backend.models")
+backend_database = importlib.import_module("backend.database")
+backend_models_base = importlib.import_module("backend.models.base")
+DATABASE_URL = backend_database.DATABASE_URL
+Base = backend_models_base.Base
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -31,10 +33,6 @@ config.set_main_option("sqlalchemy.url", os.getenv("DATABASE_URL", DATABASE_URL)
 # This line sets up loggers basically.
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
-
-# add your model's MetaData object here
-# for 'autogenerate' support
-from backend.models.base import Base
 
 target_metadata = Base.metadata
 

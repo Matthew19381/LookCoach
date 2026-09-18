@@ -1,6 +1,4 @@
-import unittest.mock as mock
 from services.experiment_engine import PersonalExperimentEngine
-from datetime import datetime, timedelta
 
 
 class TestPersonalExperimentEngine:
