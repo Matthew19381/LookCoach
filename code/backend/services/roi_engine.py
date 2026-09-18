@@ -17,26 +17,47 @@ RANGE_WIDTH = {
 
 class ROIEngine:
     @staticmethod
-    def calculate_roi(effect_size: float, time_weeks: int, feasibility: float = 1.0) -> float:
-        """Calculate ROI score: effect_size / (time_weeks^1.5) * feasibility"""
+    def calculate_roi(effect_size: float, time_weeks: int, feasibility: float = 1.0, mode: str = "free") -> float:
+        """Calculate ROI score: effect_size / (time_weeks^1.5) * feasibility * mode_multiplier
+        
+        Mode multipliers:
+        - free: 1.0 (baseline)
+        - maintenance: 0.7 (more conservative, focus on maintaining current state)
+        - improvement: 1.3 (more aggressive, focus on significant improvements)
+        """
         if time_weeks <= 0:
             return 0.0
-        return (effect_size / (time_weeks ** 1.5)) * feasibility
+        
+        # Mode-based multiplier
+        mode_multipliers = {
+            "free": 1.0,
+            "maintenance": 0.7,
+            "improvement": 1.3,
+        }
+        mode_multiplier = mode_multipliers.get(mode, 1.0)
+        
+        return (effect_size / (time_weeks ** 1.5)) * feasibility * mode_multiplier
 
     @staticmethod
-    def rank_recommendations(recommendations: list) -> list:
+    def rank_recommendations(recommendations: list, mode: str = "free") -> list:
         """Add ROI point estimate + uncertainty range to each recommendation and
         sort by point estimate descending.
 
         The point estimate is a heuristic for internal ranking only — it must not
         be shown to users as a precise number. Consumers should render
         roi_score_low/roi_score_high or the qualitative `confidence` field.
+        
+        Mode affects ROI calculation:
+        - maintenance: more conservative scoring, prioritizes stability
+        - improvement: more aggressive scoring, prioritizes significant changes
+        - free: balanced approach
         """
         for rec in recommendations:
             point = ROIEngine.calculate_roi(
                 rec.get("effect_size", 0.5),
                 rec.get("time_to_effect", 4),
                 1.0,
+                mode,
             )
             confidence = EVIDENCE_CONFIDENCE.get(
                 (rec.get("evidence_level") or "").lower(), "low"

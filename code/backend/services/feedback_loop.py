@@ -315,7 +315,11 @@ class SmartFeedbackLoop:
         # Get current adherence rates
         protocols_status = self.consistency_tracker.get_all_protocols_status()
         
+        # Get user mode for ROI calculation
+        user_mode = context.get('user_mode', 'free')
+        
         # Sort by ROI potential (higher adherence = better ROI)
+        # In real implementation, this would use ROIEngine.rank_recommendations with mode
         sorted_protocols = sorted(
             protocols_status.items(),
             key=lambda x: x[1]['adherence_rate'],
@@ -335,7 +339,7 @@ class SmartFeedbackLoop:
             'action': 'recompose_plan',
             'selected_protocols': selected_protocols,
             'removed_protocols': [p[0] for p in sorted_protocols[3:]],
-            'reason': 'Focus on highest ROI interventions based on current adherence.',
+            'reason': f'Focus on highest ROI interventions based on current adherence (mode: {user_mode}).',
         }]
         
         return {

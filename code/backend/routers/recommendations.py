@@ -19,9 +19,10 @@ async def get_recommendations(limit: int = 10, user_id: int = 1, db: Session = D
         db.query(UserProfile).filter(UserProfile.user_id == user_id).first()
     )
     user_profile = {"health": profile_row.get_health() if profile_row else {}}
+    user_mode = profile_row.mode if profile_row else "free"
 
     recs = EvidenceEngine.get_recommendations(user_analysis, user_profile)
-    recs = ROIEngine.rank_recommendations(recs)
+    recs = ROIEngine.rank_recommendations(recs, user_mode)
     recs = apply_safety_filter(recs, user_profile)
 
     return recs[:limit]

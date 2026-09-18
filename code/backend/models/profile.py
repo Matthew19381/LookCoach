@@ -1,7 +1,6 @@
 import json
-from sqlalchemy import Column, Integer, ForeignKey, DateTime, Text
+from sqlalchemy import Column, Integer, ForeignKey, Text, String
 from sqlalchemy.orm import relationship
-from sqlalchemy.sql import func
 from .base import Base
 
 
@@ -13,6 +12,7 @@ class UserProfile(Base):
     goals = Column(Text, default="{}")  # JSON: {face: 0.4, body: 0.3, skin: 0.3}
     lifestyle = Column(Text, default="{}")  # JSON: {sleep: 7, stress: 5, activity: 3}
     health = Column(Text, default="{}")  # JSON: {pregnancy: false, kidney_disease: false, ...}
+    mode = Column(String, default="free")  # maintenance, improvement, free (event mode exists separately)
     discipline_score = Column(Integer, default=50)
 
     user = relationship("User", backref="profile")

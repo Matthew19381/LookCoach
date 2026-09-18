@@ -1,5 +1,4 @@
-import json
-from typing import Dict, List
+from typing import Dict
 
 class AestheticTrainingEngine:
     """Generate minimal effective aesthetic training plans prioritizing V-taper."""

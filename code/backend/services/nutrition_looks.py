@@ -1,4 +1,3 @@
-import json
 
 class NutritionLooksEngine:
     """Nutrition recommendations for looks optimization."""

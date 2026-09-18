@@ -39,6 +39,37 @@ def test_profile_get_set_methods(db_session):
     assert profile.get_goals()["body"] == 0.3
     assert profile.get_lifestyle()["stress"] == 5
 
+def test_profile_mode_field(db_session):
+    # Test default mode
+    user1 = User()
+    db_session.add(user1)
+    db_session.commit()
+
+    profile = UserProfile(user_id=user1.id)
+    db_session.add(profile)
+    db_session.commit()
+    assert profile.mode == "free"
+
+    # Test custom mode
+    user2 = User()
+    db_session.add(user2)
+    db_session.commit()
+
+    profile_maintenance = UserProfile(user_id=user2.id, mode="maintenance")
+    db_session.add(profile_maintenance)
+    db_session.commit()
+    assert profile_maintenance.mode == "maintenance"
+
+    # Test improvement mode
+    user3 = User()
+    db_session.add(user3)
+    db_session.commit()
+
+    profile_improvement = UserProfile(user_id=user3.id, mode="improvement")
+    db_session.add(profile_improvement)
+    db_session.commit()
+    assert profile_improvement.mode == "improvement"
+
 def test_photo_creation(db_session):
     user = User()
     db_session.add(user)

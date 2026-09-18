@@ -1,30 +1,50 @@
+import importlib
 import sys
+import tempfile
+import os
+from contextlib import asynccontextmanager
 from pathlib import Path
+from typing import Generator
+
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.testclient import TestClient
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session, sessionmaker
 
 # Add parent of backend to path so 'backend' is a package
 BACKEND_DIR = Path(__file__).parent.parent
 CODE_DIR = BACKEND_DIR.parent  # This is 'code/'
 sys.path.insert(0, str(CODE_DIR))
 
-# Now we can import backend as a package
-import importlib
-import os
-
 # Change to backend directory for relative file paths
 os.chdir(BACKEND_DIR)
 
-# Import backend modules
-from backend.database import get_db, init_db
-from backend.models.base import Base
-
-# Import all models so they register with Base.metadata
-from backend.models import user, profile, photo, analysis, recommendation, progress
-from backend.models.experiment import Experiment
-
-# Create test app (don't use main.app to avoid lifespan issues)
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from contextlib import asynccontextmanager
+# Import backend modules after extending sys.path and setting the test cwd.
+backend_database = importlib.import_module("backend.database")
+importlib.import_module("backend.models")
+backend_models_base = importlib.import_module("backend.models.base")
+backend_models_experiment = importlib.import_module("backend.models.experiment")
+get_db = backend_database.get_db
+Base = backend_models_base.Base
+Experiment = backend_models_experiment.Experiment
+photos = importlib.import_module("backend.routers.photos")
+analysis = importlib.import_module("backend.routers.analysis")
+recommendations = importlib.import_module("backend.routers.recommendations")
+progress = importlib.import_module("backend.routers.progress")
+profile = importlib.import_module("backend.routers.profile")
+skincare = importlib.import_module("backend.routers.skincare")
+video_learning = importlib.import_module("backend.routers.video_learning")
+event_mode = importlib.import_module("backend.routers.event_mode")
+confidence = importlib.import_module("backend.routers.confidence")
+experiments = importlib.import_module("backend.routers.experiments")
+aesthetic_training = importlib.import_module("backend.routers.aesthetic_training")
+posture = importlib.import_module("backend.routers.posture")
+nutrition = importlib.import_module("backend.routers.nutrition")
+sleep = importlib.import_module("backend.routers.sleep")
+stress = importlib.import_module("backend.routers.stress")
+integration = importlib.import_module("backend.routers.integration")
+summary = importlib.import_module("backend.routers.summary")
 
 @asynccontextmanager
 async def lifespan(app):
@@ -38,12 +58,6 @@ test_app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Import and include routers
-from backend.routers import photos, analysis, recommendations, progress, profile, skincare
-from backend.routers import video_learning, event_mode, confidence, experiments
-from backend.routers import aesthetic_training, posture, nutrition, sleep, stress
-from backend.routers import integration, summary
 
 test_app.include_router(photos.router, prefix="/api/v1/photos")
 test_app.include_router(analysis.router, prefix="/api/v1/analysis")
@@ -62,13 +76,6 @@ test_app.include_router(sleep.router, prefix="/api/v1/sleep")
 test_app.include_router(stress.router, prefix="/api/v1/stress")
 test_app.include_router(integration.router, prefix="/api/v1/integrations")
 test_app.include_router(summary.router, prefix="/api/v1")
-
-# Override get_db to use test database
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, Session
-from typing import Generator
-import tempfile
-import os
 
 # Use file-based DB to avoid :memory: issues
 TEST_DB_FILE = tempfile.mktemp(suffix='.db')
@@ -92,10 +99,6 @@ test_app.dependency_overrides[get_db] = get_test_db
 Base.metadata.create_all(bind=test_engine)
 print(f"Created tables: {list(Base.metadata.tables.keys())}")
 
-from fastapi.testclient import TestClient
-client = TestClient(test_app)
-
-from fastapi.testclient import TestClient
 client = TestClient(test_app)
 
 

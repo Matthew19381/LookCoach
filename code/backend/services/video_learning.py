@@ -1,4 +1,3 @@
-import json
 
 YOUTUBE_API_KEY = None  # Set in .env
 
