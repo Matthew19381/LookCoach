@@ -25,6 +25,7 @@ from .routers import (
     stress,
     summary,
     consistency,
+    feedback_loop,
 )
 
 # Database
@@ -98,6 +99,7 @@ app.include_router(nutrition.router, prefix="/api/v1/nutrition", tags=["nutritio
 app.include_router(sleep.router, prefix="/api/v1/sleep", tags=["sleep"])
 app.include_router(stress.router, prefix="/api/v1/stress", tags=["stress"])
 app.include_router(consistency.router, prefix="/api/v1/consistency", tags=["consistency"])
+app.include_router(feedback_loop.router, prefix="/api/v1/feedback-loop", tags=["feedback-loop"])
 
 
 if __name__ == "__main__":
