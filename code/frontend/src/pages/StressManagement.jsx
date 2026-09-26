@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Brain, Heart, Activity } from 'lucide-react';
 import { getStressEffects, getRelaxationTechniques, analyzeStress } from '../api/client';
 
@@ -12,14 +12,10 @@ export default function StressManagement() {
   const [analysis, setAnalysis] = useState(null);
   const [signsList] = useState([
     'acne', 'oily skin', 'hair shedding', 'dull skin', 'dark circles',
-    'frown lines', 'jaw tension', 'crow\'s feet',
+    'frown lines', 'jaw tension', "crow's feet",
   ]);
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       const [e, t] = await Promise.all([
         getStressEffects(),
@@ -32,7 +28,11 @@ export default function StressManagement() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const handleAnalyze = async () => {
     try {

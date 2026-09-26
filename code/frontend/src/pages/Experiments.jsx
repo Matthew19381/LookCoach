@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { FlaskConical, Play, Check, BarChart3, Plus, Calendar } from 'lucide-react'
 import { getExperimentTemplates, startExperiment, getExperiment, logDaily, getResults, getActiveExperiments, finishExperiment } from '../api/client'
 
@@ -15,11 +15,7 @@ export default function Experiments() {
   const [dayNumber, setDayNumber] = useState(1)
   const [results, setResults] = useState(null)
 
-  useEffect(() => {
-    loadData()
-  }, [])
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true)
     try {
       const [tplRes, activeRes] = await Promise.all([
@@ -32,7 +28,11 @@ export default function Experiments() {
       console.error('Error loading experiments:', e)
     }
     setLoading(false)
-  }
+  }, [])
+
+  useEffect(() => {
+    loadData()
+  }, [loadData])
 
   const handleStart = async () => {
     if (!selectedTemplate) return

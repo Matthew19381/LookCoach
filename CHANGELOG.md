@@ -2,6 +2,15 @@
 
 ---
 
+## [0.5.1] — 2026-09-11
+
+### Fixed
+- Skonfigurowano Ruff dla backendu i usunięto wykryte naruszenia importów,
+  nadmiarowych definicji, zmiennych oraz handlerów wyjątków; `ruff check code/backend`
+  kończy się wynikiem 0. Pełny zestaw backendowy: 287 testów przeszło.
+
+---
+
 ## [0.5.0] — 2026-08-29
 
 ### Added (F-2 / LC-7: Consistency Tracker + Minimum Effective System)

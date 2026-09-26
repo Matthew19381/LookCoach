@@ -4,6 +4,7 @@ import PhotoUpload from './pages/PhotoUpload'
 import AnalysisResults from './pages/AnalysisResults'
 import Recommendations from './pages/Recommendations'
 import ProgressTracker from './pages/ProgressTracker'
+import ConsistencyTracker from './pages/ConsistencyTracker'
 import SkincareRoutine from './pages/SkincareRoutine'
 import VideoLearning from './pages/VideoLearning'
 import EventMode from './pages/EventMode'
@@ -23,6 +24,7 @@ function App() {
         <Route path="analysis" element={<AnalysisResults />} />
         <Route path="recommendations" element={<Recommendations />} />
         <Route path="progress" element={<ProgressTracker />} />
+        <Route path="consistency" element={<ConsistencyTracker />} />
         <Route path="skincare" element={<SkincareRoutine />} />
         <Route path="videos" element={<VideoLearning />} />
         <Route path="event" element={<EventMode />} />

@@ -46,6 +46,8 @@ Strategia i architektura docelowa: `decisions/ACTION_PLAN_2026-08-09_wykonane_20
 - [ ] Rotacja klucza OpenRouter w `.env` (czynność człowieka — dostęp do panelu).
 - [ ] Type hints w backendzie (obecnie częściowe).
 - [ ] `.pre-commit-config.yaml` + `pyproject.toml`.
+- [x] Backend Ruff: konfiguracja w `pyproject.toml`, czysty wynik `ruff check code/backend`
+      oraz pełny zestaw 287 testów backendowych.
 
 ## 💡 Backlog (pomysły, brak priorytetu)
 

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Brain, User, Smile } from 'lucide-react'
+import { Brain } from 'lucide-react'
 import { getConfidenceAnalysis, getActionPlan, getAttractivenessImpact } from '../api/client'
 
 export default function ConfidencePresence() {

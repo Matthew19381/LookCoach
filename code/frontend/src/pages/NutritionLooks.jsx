@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Apple, Droplets, Zap } from 'lucide-react';
 import { getNutritionFactors, getNutritionRecommendations, getMealPlan, analyzeDiet } from '../api/client';
 
@@ -11,11 +11,7 @@ export default function NutritionLooks() {
   const [dietLog, setDietLog] = useState({ water: 0, sugar: 0, veg: 0, protein: 0 });
   const [analysis, setAnalysis] = useState(null);
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     try {
       const [f, r, m] = await Promise.all([
@@ -31,7 +27,11 @@ export default function NutritionLooks() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const handleAnalyze = async () => {
     setAnalyzing(true);

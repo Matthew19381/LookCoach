@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Moon, Clock, Bed } from 'lucide-react';
 import { getSleepFactors, analyzeSleep, getPreEventSleepTips } from '../api/client';
 
@@ -12,11 +12,7 @@ export default function SleepOptimizer() {
   const [eventType, setEventType] = useState('general');
   const [eventTips, setEventTips] = useState(null);
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       const f = await getSleepFactors();
       setFactors(f);
@@ -25,7 +21,11 @@ export default function SleepOptimizer() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const handleAnalyze = async () => {
     try {

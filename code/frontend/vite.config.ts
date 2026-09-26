@@ -38,14 +38,17 @@ export default defineConfig({
           },
         },
       ],
+      devOptions: { enabled: false },
     },
-    devOptions: { enabled: false },
   })],
   test: {
     globals: true,
     environment: 'jsdom',
     setupFiles: './src/setupTests.ts',
     include: ['src/**/*.{test,spec}.{js,jsx,ts,tsx}'],
+    define: {
+      'import.meta.env.VITE_API_URL': '"http://localhost:8010"'
+    },
   },
   server: {
     port: 5175,

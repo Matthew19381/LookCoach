@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { RefreshCw, AlertCircle } from 'lucide-react'
 import { getAnalysis } from '../api/client'
 
@@ -7,7 +7,7 @@ export default function AnalysisResults() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
-  const fetchAnalysis = async () => {
+  const fetchAnalysis = useCallback(async () => {
     setLoading(true)
     setError('')
     try {
@@ -18,11 +18,11 @@ export default function AnalysisResults() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
   useEffect(() => {
     fetchAnalysis()
-  }, [])
+  }, [fetchAnalysis])
 
   if (loading) {
     return (
