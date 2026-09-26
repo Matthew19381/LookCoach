@@ -47,3 +47,7 @@ logs/
 # Docker
 .dockerignore
 code/looks_optimizer.db
+
+# lokalne srodowiska Pythona (commit d3555db przypadkiem dodal .venv_audit)
+.venv*/
+venv/
