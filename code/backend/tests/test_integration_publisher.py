@@ -156,11 +156,11 @@ class TestIntegrationPublisher:
         assert captured["url"] == "http://localhost:8000/api/v1/integrations/event"
         assert captured["headers"]["X-Module-Key"] == "test-secret-key"
         assert captured["headers"]["Content-Type"] == "application/json"
-        assert captured["json"]["source_module"] == "lookcoach"
+        assert captured["json"]["module"] == "lookcoach"
         assert captured["json"]["event_type"] == "protocol_skipped"
         assert captured["json"]["user_id"] == "user456"
         assert "timestamp" in captured["json"]
-        assert captured["json"]["payload"] == {"protocol_id": "test", "reason": "no_time"}
+        assert captured["json"]["data"] == {"protocol_id": "test", "reason": "no_time"}
 
 
 class TestConvenienceFunctions:

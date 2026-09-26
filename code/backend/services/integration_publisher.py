@@ -70,12 +70,15 @@ class IntegrationPublisher:
                 f"Must be one of: {', '.join(valid_event_types)}"
             )
         
+        # Hub contract (System-Glowny/docs/INTEGRACJA-MODULOW.md 1.2): "module" must
+        # match the key's module name and the body goes in "data" - with
+        # "source_module"/"payload" the hub answered 422 to every event.
         event = {
-            "source_module": "lookcoach",
+            "module": "lookcoach",
             "event_type": event_type,
-            "user_id": user_id,
+            "user_id": str(user_id),
             "timestamp": timestamp or datetime.utcnow().isoformat() + "Z",
-            "payload": payload,
+            "data": payload,
         }
         
         headers = {
