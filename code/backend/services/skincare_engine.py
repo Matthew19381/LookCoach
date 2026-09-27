@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Optional
 
 SKINCARE_INGREDIENTS = [
@@ -62,11 +62,33 @@ class SkinReactionTracker:
             "date": date.isoformat(),
             "user_id": self.user_id
         }
+        # Persisted since 2026-09-27; before, nothing was stored and history was
+        # always [] - the routine never adapted to logged reactions.
+        if self.db is not None:
+            from ..models.skin_reaction import SkinReaction
+
+            self.db.add(SkinReaction(user_id=self.user_id, ingredient=ingredient, reaction=reaction,
+                                     severity=severity, date=date))
+            self.db.commit()
         return reaction_record
 
     def get_reaction_history(self, days: int = 90) -> list:
-        """Get reaction history for the last N days."""
-        return []
+        """Reactions of the last N days, oldest first (empty without a DB session)."""
+        if self.db is None:
+            return []
+        from ..models.skin_reaction import SkinReaction
+
+        rows = (
+            self.db.query(SkinReaction)
+            .filter(SkinReaction.user_id == self.user_id, SkinReaction.date >= datetime.now() - timedelta(days=days))
+            .order_by(SkinReaction.date, SkinReaction.id)
+            .all()
+        )
+        return [
+            {"ingredient": r.ingredient, "reaction": r.reaction, "severity": r.severity,
+             "date": r.date.isoformat() if r.date else None, "user_id": r.user_id}
+            for r in rows
+        ]
 
     def get_tolerance_level(self, ingredient: str) -> str:
         """Determine tolerance level for an ingredient based on reaction history."""

@@ -7,6 +7,7 @@ from .progress import ProgressLog as ProgressLog
 from .integration_event import IntegrationEvent as IntegrationEvent
 from .experiment import Experiment as Experiment
 from .directive_state import DirectiveState as DirectiveState
+from .skin_reaction import SkinReaction as SkinReaction
 from .consistency import (
     AdherenceLog as AdherenceLog,
     ProtocolAdherence as ProtocolAdherence,
@@ -14,6 +15,7 @@ from .consistency import (
 )
 
 __all__ = [
+    "SkinReaction",
     "DirectiveState",
     "User",
     "UserProfile",
