@@ -19,11 +19,13 @@
 - Consistency Tracker: 9 funkcji API nie istniało w kliencie (strona nie działała poza testami), brak w menu,
   `protocols.map` / pola summary niezgodne z API.
 - Nutrition: wywracała całą aplikację (`mealPlan.map`, renderowanie obiektów). ErrorBoundary w layoucie.
+- Id użytkownika = 1 (PRIMARY_USER_ID huba) zamiast `Date.now()` — eventy i dyrektywy trafiały do „innej osoby”;
+  stare id w przeglądarce migrowane automatycznie.
 - Testy wysyłały prawdziwe, płatne zapytania do OpenRouter, gdy klucz był w środowisku — klucze AI wyzerowane w conftest.
 ### Naprawione
 - **Reakcje skóry (F-1) nie były zapisywane**: `log_reaction` nic nie utrwalał, historia zawsze `[]`, więc tolerancja
   składników zawsze „none” i rutyna się nie adaptowała. Nowa tabela `skin_reactions`, historia z bazy.
-  Znane ograniczenie: rotacja składników (`get_ingredient_history`) nadal bez źródła danych — brak logowania użycia składników.
+  (Rotacja składników ma już źródło danych — „Użyłem dziś” w Moich produktach, patrz wyżej.)
 - **Consistency Tracker (LC-7) nie działał**: `get_adherence_history` był placeholderem zwracającym `[]`, więc
   adherencja zawsze = 100% i trudność nigdy nie spadała; wskaźniki trzymane w pamięci znikały po restarcie. Teraz
   historia z `AdherenceLog` (baza), tracker tworzony per żądanie.
