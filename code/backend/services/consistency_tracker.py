@@ -123,7 +123,7 @@ class ConsistencyTracker:
             "logged_at": datetime.now().isoformat(),
         }
 
-        # In full implementation, this would persist to DB
+        # persisted by routers/consistency.py (AdherenceLog); this only shapes the record
         return record
 
     def get_adherence_history(
