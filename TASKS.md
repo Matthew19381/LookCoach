@@ -33,6 +33,7 @@ Strategia i architektura docelowa: `decisions/ACTION_PLAN_2026-08-09_wykonane_20
 - [x] INT-3 (**LC-4**): priorytet estetyczny jako dyrektywa do ForgeBody,
       potrzeby żywieniowe (sód/nabiał) do Diety — LookCoach nie generuje
       własnych planów treningowych/diet.
+- [x] INT-3b (2026-09-27): odbiór dyrektyw huba `POST /api/v1/directives` (survival_mode → poziom SURVIVAL w Consistency Trackerze).
 - [ ] INT-4: Subskrypcja Affect Engine (sen/stres) — Sleep Engine bez własnego trackera.
 - [ ] INT-5: Poranna rutyna skincare jako pozycja planu dnia (planner).
 

@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Optional
 from enum import Enum
 
@@ -90,9 +90,16 @@ class ConsistencyTracker:
     ForgeBody FB-5 (adherence as first-class metric).
     """
 
-    def __init__(self, db_session=None, user_id: int = 1):
+    def __init__(self, db_session=None, user_id: int = 1, survival_mode: bool | None = None):
         self.db = db_session
         self.user_id = user_id
+        # INT-3: hub survival_mode directive forces the SURVIVAL level for every protocol
+        if survival_mode is None and db_session is not None:
+            from ..models.directive_state import DirectiveState
+
+            state = db_session.query(DirectiveState).filter(DirectiveState.user_id == user_id).first()
+            survival_mode = bool(state and state.survival_mode)
+        self.survival_mode = bool(survival_mode)
 
     def log_adherence(
         self,
@@ -124,10 +131,34 @@ class ConsistencyTracker:
         protocol_type: ProtocolType,
         days: int = 28,
     ) -> list[dict]:
-        """Get adherence history for a protocol type."""
-        # In full implementation, this would query DB
-        # Return empty list for now - placeholder
-        return []
+        """Adherence logs of the last N days, oldest first (empty without a DB session).
+
+        Until 2026-09-27 this was a placeholder returning [], so every rate was
+        1.0 and difficulty never dropped - the whole LC-7 loop was inert.
+        """
+        if self.db is None:
+            return []
+        from ..models.consistency import AdherenceLog
+
+        cutoff = datetime.now() - timedelta(days=days)
+        rows = (
+            self.db.query(AdherenceLog)
+            .filter(
+                AdherenceLog.user_id == self.user_id,
+                AdherenceLog.protocol_type == protocol_type.value,
+                AdherenceLog.date >= cutoff,
+            )
+            .order_by(AdherenceLog.date, AdherenceLog.id)
+            .all()
+        )
+        return [
+            {
+                "date": r.date.isoformat() if r.date else None,
+                "completed": bool(r.completed),
+                "difficulty_level": getattr(r.difficulty_level, "value", r.difficulty_level),
+            }
+            for r in rows
+        ]
 
     def calculate_adherence_rate(
         self,
@@ -172,6 +203,9 @@ class ConsistencyTracker:
         Never increases difficulty if adherence < 75%.
         Only increases after sustained >= 90% for 2+ weeks.
         """
+        if self.survival_mode:
+            return DifficultyLevel.SURVIVAL
+
         rate = self.calculate_adherence_rate(protocol_type, 28)
         level = self.get_adherence_level(rate)
 

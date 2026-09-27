@@ -2,6 +2,16 @@
 
 ---
 
+## [Unreleased] — 2026-09-27
+### Naprawione
+- **Consistency Tracker (LC-7) nie działał**: `get_adherence_history` był placeholderem zwracającym `[]`, więc
+  adherencja zawsze = 100% i trudność nigdy nie spadała; wskaźniki trzymane w pamięci znikały po restarcie. Teraz
+  historia z `AdherenceLog` (baza), tracker tworzony per żądanie.
+### Dodane
+- **INT-3 `POST /api/v1/directives`** (+ `GET /api/v1/directives/{user_id}`): `survival_mode` z huba ustawia
+  wszystkie protokoły na poziom SURVIVAL (np. skincare = woda + SPF), `priority`, `quiet_hours` (pola `from`/`to`
+  jak w kontrakcie huba). Testy `tests/test_directives_consistency.py`.
+
 ## [0.5.1] — 2026-09-11
 
 ### Fixed

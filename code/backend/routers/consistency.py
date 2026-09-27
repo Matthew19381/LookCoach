@@ -21,7 +21,11 @@ from ..models.consistency import (
 
 router = APIRouter()
 
-CONSISTENCY_TRACKER = ConsistencyTracker()
+
+
+def _tracker(db: Session, user_id: int) -> ConsistencyTracker:
+    """Per request: history comes from AdherenceLog, survival_mode from hub directives."""
+    return ConsistencyTracker(db, user_id)
 
 
 @router.post("/adherence/log")
@@ -53,7 +57,7 @@ async def log_adherence(
             raise HTTPException(status_code=400, detail="Invalid date format. Use ISO format.")
 
     # Log using tracker (in-memory for now)
-    CONSISTENCY_TRACKER.log_adherence(
+    _tracker(db, user_id).log_adherence(
         protocol_type=pt,
         completed=completed,
         date=parsed_date,
@@ -119,8 +123,8 @@ async def get_adherence_rate(
     except ValueError:
         raise HTTPException(status_code=400, detail=f"Invalid protocol_type: {protocol_type}")
 
-    rate = CONSISTENCY_TRACKER.calculate_adherence_rate(pt, days)
-    level = CONSISTENCY_TRACKER.get_adherence_level(rate)
+    rate = _tracker(db, user_id).calculate_adherence_rate(pt, days)
+    level = _tracker(db, user_id).get_adherence_level(rate)
 
     return {
         "protocol_type": protocol_type,
@@ -148,8 +152,8 @@ async def get_recommended_difficulty(
     except ValueError:
         raise HTTPException(status_code=400, detail=f"Invalid current_difficulty: {current_difficulty}")
 
-    recommended = CONSISTENCY_TRACKER.get_recommended_difficulty(pt, cd)
-    min_protocol = CONSISTENCY_TRACKER.get_minimum_effective_protocol(pt, recommended)
+    recommended = _tracker(db, user_id).get_recommended_difficulty(pt, cd)
+    min_protocol = _tracker(db, user_id).get_minimum_effective_protocol(pt, recommended)
 
     return {
         "protocol_type": protocol_type,
@@ -166,7 +170,7 @@ async def get_all_protocols_status(
     db: Session = Depends(get_db),
 ):
     """Get adherence status and recommended difficulty for all protocols."""
-    status = CONSISTENCY_TRACKER.get_all_protocols_status()
+    status = _tracker(db, user_id).get_all_protocols_status()
     return {"protocols": status}
 
 
@@ -177,7 +181,7 @@ async def get_consistency_summary(
     db: Session = Depends(get_db),
 ):
     """Get overall consistency summary across all protocols."""
-    summary = CONSISTENCY_TRACKER.get_consistency_summary(days)
+    summary = _tracker(db, user_id).get_consistency_summary(days)
     return summary
 
 
@@ -199,7 +203,7 @@ async def get_minimum_effective_protocol(
     except ValueError:
         raise HTTPException(status_code=400, detail=f"Invalid difficulty: {difficulty}")
 
-    protocol = CONSISTENCY_TRACKER.get_minimum_effective_protocol(pt, dl)
+    protocol = _tracker(db, user_id).get_minimum_effective_protocol(pt, dl)
 
     return {
         "protocol_type": protocol_type,
@@ -275,7 +279,7 @@ async def recalculate_metrics(
             current_diff = latest_log.difficulty_level
 
         # Get recommended difficulty
-        recommended_diff = CONSISTENCY_TRACKER.get_recommended_difficulty(
+        recommended_diff = _tracker(db, user_id).get_recommended_difficulty(
             ProtocolType(pt_enum.value),
             DifficultyLevel(current_diff.value),
         )
@@ -389,7 +393,7 @@ async def check_pattern_alerts(
     alerts = []
 
     for pt_enum in ProtocolTypeEnum:
-        should_alert, message = CONSISTENCY_TRACKER.should_trigger_pattern_alert(
+        should_alert, message = _tracker(db, user_id).should_trigger_pattern_alert(
             ProtocolType(pt_enum.value)
         )
         if should_alert:
