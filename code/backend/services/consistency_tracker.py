@@ -314,9 +314,22 @@ class ConsistencyTracker:
         return messages.get(status, "Tracking consistency...")
 
     def get_weekly_adherence_trend(self, protocol_type: ProtocolType, weeks: int = 4) -> list[dict]:
-        """Get weekly adherence trend for visualization."""
-        # Placeholder - would query DB with weekly grouping
-        return []
+        """Weekly adherence for visualization, oldest week first (weeks without logs skipped)."""
+        now = datetime.now()
+        buckets: dict[int, list[bool]] = {}
+        for h in self.get_adherence_history(protocol_type, weeks * 7):
+            if not h.get("date"):
+                continue
+            age_days = (now - datetime.fromisoformat(h["date"]).replace(tzinfo=None)).days
+            buckets.setdefault(min(age_days // 7, weeks - 1), []).append(bool(h["completed"]))
+        return [
+            {
+                "weeks_ago": w,
+                "adherence_rate": round(sum(v) / len(v), 2),
+                "logged_days": len(v),
+            }
+            for w, v in sorted(buckets.items(), reverse=True)
+        ]
 
     def should_trigger_pattern_alert(self, protocol_type: ProtocolType) -> tuple[bool, str]:
         """

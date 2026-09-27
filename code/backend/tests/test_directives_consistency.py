@@ -89,3 +89,12 @@ def test_hub_field_names_and_unknown_directive():
     client.post("/api/v1/directives", json={"directive": "quiet_hours", "from": "22:00", "to": "06:30", "user_id": 15})
     assert client.get("/api/v1/directives/15").json()["quiet_hours"] == {"from": "22:00", "to": "06:30"}
     assert client.post("/api/v1/directives", json={"directive": "x"}).status_code == 422
+
+
+def test_weekly_trend_from_database():
+    _log(16, [False, False, True, True, True, True, True, True, True, True])  # older misses, recent completions
+    db = Local()
+    trend = ConsistencyTracker(db, 16).get_weekly_adherence_trend(ProtocolType.SKINCARE_MORNING, 4)
+    db.close()
+    assert trend and trend[-1]["weeks_ago"] == 0 and trend[-1]["adherence_rate"] == 1.0
+    assert sum(t["logged_days"] for t in trend) == 10
