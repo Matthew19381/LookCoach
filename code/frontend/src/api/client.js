@@ -15,10 +15,12 @@ api.interceptors.response.use(
   }
 );
 
+// Single-user ecosystem: 1 = PRIMARY_USER_ID of the System-Glowny hub. The old
+// default Date.now() id made hub events and directives refer to a different person.
 export const getUserId = () => {
   let id = localStorage.getItem("lookcoach_user_id");
-  if (!id) {
-    id = Date.now().toString();
+  if (!id || parseInt(id) > 1e9) {
+    id = "1";
     localStorage.setItem("lookcoach_user_id", id);
   }
   return parseInt(id);
