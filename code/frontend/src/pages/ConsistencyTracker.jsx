@@ -44,7 +44,9 @@ export default function ConsistencyTracker() {
       
       // Load all protocols status
       const statusResponse = await getAllProtocolsStatus()
-      setProtocols(statusResponse?.protocols ?? [])
+      // API returns {protocols: {protocol_type: {...}}} - turn it into the list the page renders
+      const p = statusResponse?.protocols ?? {}
+      setProtocols(Array.isArray(p) ? p : Object.entries(p).map(([protocol_type, v]) => ({ protocol_type, ...v })))
       
       // Load consistency summary
       const summaryResponse = await getConsistencySummary()
@@ -128,7 +130,7 @@ export default function ConsistencyTracker() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="text-center">
               <p className="text-2xl font-bold text-blue-600">
-                {Math.round(consistencySummary.overall_consistency_score * 100)}%
+                {Math.round((consistencySummary.average_adherence ?? 0) * 100)}%
               </p>
               <p className="text-sm text-gray-500">Overall Score</p>
             </div>
@@ -140,7 +142,7 @@ export default function ConsistencyTracker() {
             </div>
             <div className="text-center">
               <p className="text-2xl font-bold text-purple-600">
-                {consistencySummary.protocols_tracked}
+                {consistencySummary.total_protocols}
               </p>
               <p className="text-sm text-gray-500">Protocols</p>
             </div>

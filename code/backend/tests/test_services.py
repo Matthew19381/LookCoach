@@ -249,6 +249,11 @@ def test_openrouter_init():
 
 
 def test_openrouter_generate_text_no_key(monkeypatch):
+    # the module reads the key from the environment at import - a local .env must not leak in
+    # (this test used to send a REAL paid request whenever a key was in the environment)
+    import services.openrouter as orr  # same module path as the import at the top of this file
+
+    monkeypatch.setattr(orr, "OPENROUTER_API_KEY", None)
     service = OpenRouterService(api_key=None)
     result = service.generate_text("test prompt")
     assert result == ""

@@ -4,7 +4,18 @@ import json
 
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
-OPENROUTER_MODEL = os.getenv("OPENROUTER_MODEL", "google/gemini-2.0-flash-001")
+OPENROUTER_MODEL = os.getenv("OPENROUTER_MODEL", "google/gemini-2.5-flash")
+# OpenRouter answers 404 for retired models (gemini-2.0-flash-001 was the hard-coded default,
+# so every text AND vision call failed silently, 2026-09-27) - retry once with a current one.
+FALLBACK_MODEL = "google/gemini-2.5-flash"
+
+
+def _post(url: str, headers: dict, payload: dict, timeout: int):
+    response = httpx.post(url, headers=headers, json=payload, timeout=timeout)
+    if response.status_code == 404 and payload.get("model") != FALLBACK_MODEL:
+        print(f"OpenRouter: model {payload.get('model')} unavailable, retrying with {FALLBACK_MODEL}")
+        response = httpx.post(url, headers=headers, json={**payload, "model": FALLBACK_MODEL}, timeout=timeout)
+    return response
 
 
 class OpenRouterService:
@@ -32,12 +43,7 @@ class OpenRouterService:
                 "temperature": temperature,
                 "stream": False,
             }
-            response = httpx.post(
-                self.api_url,
-                headers=headers,
-                json=payload,
-                timeout=60,
-            )
+            response = _post(self.api_url, headers, payload, 60)
             response.raise_for_status()
             data = response.json()
             return data["choices"][0]["message"]["content"]
@@ -76,7 +82,7 @@ class OpenRouterService:
                 "X-Title": "LookCoach",
             }
 
-            vision_model = model or "google/gemini-2.0-flash-001"
+            vision_model = model or self.model
 
             payload = {
                 "model": vision_model,
@@ -98,12 +104,7 @@ class OpenRouterService:
                 "stream": False,
             }
 
-            response = httpx.post(
-                self.api_url,
-                headers=headers,
-                json=payload,
-                timeout=60,
-            )
+            response = _post(self.api_url, headers, payload, 60)
             response.raise_for_status()
             data = response.json()
             text = data["choices"][0]["message"]["content"]

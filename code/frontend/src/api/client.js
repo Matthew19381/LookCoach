@@ -1,7 +1,9 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:8010",
+  // relative by default: works through the Vite proxy on desktop AND from a phone on the LAN
+  // ("http://localhost:8010" pointed a phone at itself)
+  baseURL: import.meta.env.VITE_API_URL ?? "",
   timeout: 60000,
 });
 
@@ -175,3 +177,40 @@ export const analyzeStress = (stressData) =>
   api.post(`/api/v1/stress/analyze`, { stress_data: stressData });
 
 export default api;
+
+// ── My skincare products (label scan / pasted INCI), usage, reactions, rotation ──
+const uid = () => `user_id=${getUserId()}`;
+export const scanProductLabel = (file) => {
+  const fd = new FormData();
+  fd.append("file", file);
+  return api.post(`/api/v1/skincare/products/scan?${uid()}`, fd);
+};
+export const parseProductText = (text, name = "") =>
+  api.post(`/api/v1/skincare/products/parse?${uid()}`, { text, name });
+export const saveProduct = (product) => api.post(`/api/v1/skincare/products?${uid()}`, product);
+export const getProducts = () => api.get(`/api/v1/skincare/products?${uid()}`);
+export const deleteProduct = (id) => api.delete(`/api/v1/skincare/products/${id}?${uid()}`);
+export const logProductUsage = (productIds) =>
+  api.post(`/api/v1/skincare/usage/log?${uid()}`, { product_ids: productIds });
+export const getMyRotation = () => api.get(`/api/v1/skincare/rotation/mine?${uid()}`);
+export const logSkinReaction = (ingredient, reaction, severity) =>
+  api.post(`/api/v1/skincare/reaction/log?${uid()}&ingredient=${encodeURIComponent(ingredient)}&reaction=${encodeURIComponent(reaction)}&severity=${severity}`);
+
+// ── Consistency Tracker (LC-7) - the page imported these, but they never existed ──
+const q = (params) => new URLSearchParams(
+  Object.fromEntries(Object.entries({ ...params, user_id: getUserId() }).filter(([, v]) => v !== undefined && v !== null && v !== ""))
+).toString();
+export const logAdherence = ({ protocol_type, completed, date, difficulty_level, notes }) =>
+  api.post(`/api/v1/consistency/adherence/log?${q({ protocol_type, completed, date, difficulty_level, notes })}`);
+export const getAdherenceHistory = (protocol_type, days = 28) =>
+  api.get(`/api/v1/consistency/adherence/history?${q({ protocol_type, days })}`);
+export const getAdherenceRate = (protocol_type, days = 28) =>
+  api.get(`/api/v1/consistency/adherence/rate?${q({ protocol_type, days })}`);
+export const getRecommendedDifficulty = (protocol_type, current_difficulty = "full") =>
+  api.get(`/api/v1/consistency/difficulty/recommended?${q({ protocol_type, current_difficulty })}`);
+export const getAllProtocolsStatus = () => api.get(`/api/v1/consistency/protocols/status?${q({})}`);
+export const getConsistencySummary = (days = 28) => api.get(`/api/v1/consistency/summary?${q({ days })}`);
+export const getMinimumEffectiveProtocol = (protocol_type, difficulty = "full") =>
+  api.get(`/api/v1/consistency/minimum-effective/${protocol_type}?${q({ difficulty })}`);
+export const recalculateMetrics = (days = 28) => api.post(`/api/v1/consistency/recalculate?${q({ days })}`);
+export const getPatternAlert = () => api.get(`/api/v1/consistency/pattern-alert?${q({})}`);

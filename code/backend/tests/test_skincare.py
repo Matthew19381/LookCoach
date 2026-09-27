@@ -232,34 +232,34 @@ def test_overall_sensitivity():
     assert tracker.get_overall_sensitivity() == "low"
 
 
+def _weekly(weeks_back_start, weeks_back_end=0):
+    """History of weekly uses from `weeks_back_start` weeks ago until `weeks_back_end` weeks ago."""
+    from datetime import datetime, timedelta
+
+    now = datetime.now()
+    return [{"date": (now - timedelta(weeks=w)).isoformat()} for w in range(weeks_back_start, weeks_back_end - 1, -1)]
+
+
 def test_rotation_manager_should_rotate():
-    """Test rotation manager cycle detection."""
+    """Rotation = continuous use for a full cycle (retinoid: 12 weeks), not time since last use."""
     manager = IngredientRotationManager()
 
-    # No history = don't rotate
     assert manager.should_rotate("Retinol 0.25-1%", "retinoid") == (False, "no_history")
 
-    # Within cycle = don't rotate
-    manager.get_ingredient_history = lambda ing, days: [
-        {"date": "2026-08-01T00:00:00"}  # ~4 weeks ago, cycle is 12 weeks
-    ]
+    manager.get_ingredient_history = lambda ing, days: _weekly(4)  # 4 weeks in use
     assert manager.should_rotate("Retinol 0.25-1%", "retinoid") == (False, "within_cycle")
 
-    # Cycle complete = rotate
-    manager.get_ingredient_history = lambda ing, days: [
-        {"date": "2026-01-01T00:00:00"}  # ~34 weeks ago, cycle is 12 weeks
-    ]
+    manager.get_ingredient_history = lambda ing, days: _weekly(13)  # 13 weeks in use
     assert manager.should_rotate("Retinol 0.25-1%", "retinoid") == (True, "cycle_complete")
+
+    manager.get_ingredient_history = lambda ing, days: _weekly(30, 20)  # stopped 20 weeks ago
+    assert manager.should_rotate("Retinol 0.25-1%", "retinoid") == (False, "not_in_use")
 
 
 def test_rotation_recommendations():
     """Test rotation recommendations for current routine."""
     manager = IngredientRotationManager()
-
-    # Mock history for retinoid (cycle complete)
-    manager.get_ingredient_history = lambda ing, days: [
-        {"date": "2026-01-01T00:00:00"}
-    ] if "Retinol" in ing else []
+    manager.get_ingredient_history = lambda ing, days: _weekly(13) if "Retinol" in ing else []
 
     current_routine = {
         "morning": ["Gentle Cleanser", "Vitamin C 10-20%", "SPF 30+"],
@@ -267,9 +267,7 @@ def test_rotation_recommendations():
     }
 
     recs = manager.get_rotation_recommendations(current_routine)
-    assert len(recs) > 0
-    assert any(r["ingredient"] == "Retinol 0.25-1%" for r in recs)
-    assert any(r["reason"] == "cycle_complete" for r in recs)
+    assert any(r["ingredient"] == "Retinol 0.25-1%" and r["reason"] == "cycle_complete" for r in recs)
 
 
 def test_select_retinoid():

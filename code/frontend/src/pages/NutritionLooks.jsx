@@ -65,8 +65,9 @@ export default function NutritionLooks() {
                 <h3 className="font-semibold">{factor.name}</h3>
                 <p className="text-sm text-gray-600">{factor.looks_impact}</p>
                 <div className="mt-2 text-sm">
-                  <span className="text-green-600">Optimal: {factor.optimal}</span>
-                  {factor.poor && <span className="text-red-600 ml-2">Avoid: {factor.poor}</span>}
+                  {/* API fields are recommendation/timing (optimal/poor never existed) */}
+                  <span className="text-green-600">{factor.recommendation}</span>
+                  {factor.timing && <span className="text-gray-500 ml-2">· {factor.timing}</span>}
                 </div>
               </div>
             ))}
@@ -82,7 +83,7 @@ export default function NutritionLooks() {
             {recommendations.map((rec, i) => (
               <li key={i} className="flex items-start gap-2">
                 <Zap className="w-4 h-4 text-yellow-500 mt-1" />
-                <span>{rec}</span>
+                <span>{typeof rec === 'string' ? rec : `${rec.name}: ${rec.recommendation}`}</span>
               </li>
             ))}
           </ul>
@@ -95,14 +96,12 @@ export default function NutritionLooks() {
           <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
             <Droplets className="w-5 h-5 text-blue-500" /> Pre-Event Meal Plan
           </h2>
-          <div className="space-y-3">
-            {mealPlan.map((item, i) => (
-              <div key={i} className="border-l-4 border-blue-500 pl-4">
-                <div className="font-medium">{item.timing}</div>
-                <div className="text-sm text-gray-600">{item.foods}</div>
-                <div className="text-xs text-green-600">{item.looks_benefit}</div>
-              </div>
-            ))}
+          {/* the API returns {name, timing, actions[]} - the page expected a list and crashed the app */}
+          <div className="border-l-4 border-blue-500 pl-4">
+            <div className="font-medium">{mealPlan.name} · {mealPlan.timing}</div>
+            <ul className="text-sm text-gray-600 list-disc ml-4 mt-1">
+              {(mealPlan.actions ?? []).map((a) => <li key={a}>{a}</li>)}
+            </ul>
           </div>
         </div>
       )}

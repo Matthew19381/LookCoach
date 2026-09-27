@@ -1,4 +1,5 @@
 import { Outlet, NavLink } from 'react-router-dom'
+import PageErrorBoundary from './PageErrorBoundary'
 import { Camera, Heart, Droplets, LineChart, Moon, Play, Calendar, Brain, FlaskConical, Dumbbell, Move, Apple, Bed, Activity } from 'lucide-react'
 
 const navItems = [
@@ -6,6 +7,7 @@ const navItems = [
   { to: '/analysis', label: 'Analysis', icon: Heart },
   { to: '/recommendations', label: 'Recommendations', icon: Droplets },
   { to: '/progress', label: 'Progress', icon: LineChart },
+  { to: '/consistency', label: 'Consistency', icon: Activity },
   { to: '/skincare', label: 'Skincare', icon: Moon },
   { to: '/videos', label: 'Videos', icon: Play },
   { to: '/event', label: 'Event Mode', icon: Calendar },
@@ -49,7 +51,7 @@ export default function Layout() {
         </div>
       </nav>
       <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-        <Outlet />
+        <PageErrorBoundary><Outlet /></PageErrorBoundary>
       </main>
     </div>
   )

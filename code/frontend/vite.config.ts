@@ -30,7 +30,8 @@ export default defineConfig({
       runtimeCaching: [
         {
           urlPattern: ({ url }) => url.pathname.startsWith('/api/'),
-          handler: 'StaleWhileRevalidate',
+          // NetworkFirst: fresh data online (SWR showed e.g. a product list without the product just added)
+          handler: 'NetworkFirst',
           options: {
             cacheName: 'api-cache',
             expiration: { maxEntries: 100, maxAgeSeconds: 60 * 60 * 24 * 7 },
@@ -38,8 +39,8 @@ export default defineConfig({
           },
         },
       ],
-      devOptions: { enabled: false },
     },
+    devOptions: { enabled: false },  // belongs to VitePWA, not workbox - it broke `vite build`
   })],
   test: {
     globals: true,

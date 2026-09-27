@@ -46,11 +46,10 @@ describe('ConsistencyTracker', () => {
   ]
 
   const mockSummary = {
-    overall_consistency_score: 0.75,
+    average_adherence: 0.75,  // real API field (was overall_consistency_score, never returned)
     system_status: 'stable',
-    protocols_tracked: 2,
+    total_protocols: 2,
     protocols_needing_reduction: 1,
-    average_adherence: 0.7
   }
 
   const mockAlerts = [

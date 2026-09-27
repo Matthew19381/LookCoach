@@ -70,6 +70,12 @@ def _save_to_cache(key: str, data: dict):
     Path(key).write_text(json.dumps(data, ensure_ascii=False, indent=2))
 
 
+LABEL_PROMPT = """To zdjęcie etykiety kosmetyku. Przepisz DOKŁADNIE listę składników (INCI) w kolejności z etykiety,
+oddzielając przecinkami, oraz nazwę produktu, jeśli jest widoczna. Nie dodawaj składników, których nie widać.
+Zwróć JSON: {"product_name": "...", "ingredients_text": "Aqua, Glycerin, ..."}.
+Jeśli składu nie da się odczytać, zwróć "ingredients_text": ""."""
+
+
 class GeminiVisionService:
     def __init__(self):
         self.client = None
@@ -147,6 +153,12 @@ class GeminiVisionService:
 
     def analyze_hair(self, image_bytes: bytes) -> dict:
         return self._analyze(image_bytes, HAIR_PROMPT, self._fallback_hair)
+
+    def read_ingredient_label(self, image_bytes: bytes) -> dict:
+        """OCR of a cosmetic label: {"product_name", "ingredients_text"} (empty text = unreadable).
+
+        Only transcription - finding actives/conflicts is done locally (services/ingredient_label.py)."""
+        return self._analyze(image_bytes, LABEL_PROMPT, lambda _b: {"product_name": "", "ingredients_text": ""})
 
     def _get_fallback(self):
         if self.fallback is None:

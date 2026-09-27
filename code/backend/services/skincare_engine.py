@@ -134,8 +134,22 @@ class IngredientRotationManager:
         self.user_id = user_id
 
     def get_ingredient_history(self, ingredient: str, days: int = 365) -> list:
-        """Get usage history for an ingredient."""
-        return []
+        """Days the ingredient was used (oldest first), from "Użyłem dziś" logs.
+
+        Was a placeholder returning [] until 2026-09-27 - rotation never fired."""
+        if self.db is None:
+            return []
+        from ..models.skincare_product import IngredientUsage
+
+        rows = (
+            self.db.query(IngredientUsage.date)
+            .filter(IngredientUsage.user_id == self.user_id, IngredientUsage.ingredient == ingredient,
+                    IngredientUsage.date >= (datetime.now() - timedelta(days=days)).date())
+            .distinct()
+            .order_by(IngredientUsage.date)
+            .all()
+        )
+        return [{"date": r[0].isoformat()} for r in rows]
 
     def should_rotate(self, ingredient: str, category: str) -> tuple[bool, str]:
         """Determine if an ingredient should be rotated out."""
@@ -144,19 +158,23 @@ class IngredientRotationManager:
         if not history:
             return False, "no_history"
 
-        last_used = history[-1].get("date") if history else None
-        if not last_used:
+        # Current run of use: consecutive uses with gaps under 2 weeks. A cycle is
+        # complete when the ingredient has been in continuous use for cycle_weeks
+        # (the old code measured time since the LAST use, i.e. rewarded not using it).
+        dates = [datetime.fromisoformat(h["date"]) for h in history if h.get("date")]
+        if not dates:
             return False, "no_date"
+        if (datetime.now() - dates[-1]).days > 14:
+            return False, "not_in_use"
+        run_start = dates[-1]
+        for prev, cur in zip(reversed(dates[:-1]), reversed(dates[1:])):
+            if (cur - prev).days > 14:
+                break
+            run_start = prev
 
-        last_used_dt = datetime.fromisoformat(last_used)
-        weeks_since = (datetime.now() - last_used_dt).days / 7
-
-        schedule = ROTATION_SCHEDULE.get(category, {"cycle_weeks": 12})
-        cycle_weeks = schedule.get("cycle_weeks", 12)
-
-        if weeks_since >= cycle_weeks:
+        cycle_weeks = ROTATION_SCHEDULE.get(category, {"cycle_weeks": 12}).get("cycle_weeks", 12)
+        if (dates[-1] - run_start).days / 7 >= cycle_weeks:
             return True, "cycle_complete"
-
         return False, "within_cycle"
 
     def get_rotation_recommendations(self, current_routine: dict) -> list:

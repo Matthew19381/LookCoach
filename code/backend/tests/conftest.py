@@ -5,6 +5,12 @@ from pathlib import Path
 
 import pytest
 
+# No test may reach a paid AI API: blank the keys BEFORE any module runs load_dotenv
+# (load_dotenv does not override variables that already exist). A test once sent
+# real OpenRouter requests with the owner's key (found 2026-09-27).
+for _key in ("OPENROUTER_API_KEY", "GEMINI_API_KEY", "GOOGLE_API_KEY"):
+    os.environ[_key] = ""
+
 # Add code/ (parent of backend/) to path so that 'backend' is a package
 BACKEND_DIR = Path(__file__).parent.parent
 CODE_DIR = BACKEND_DIR.parent

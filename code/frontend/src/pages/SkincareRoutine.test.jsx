@@ -5,6 +5,14 @@ import { BrowserRouter } from 'react-router-dom'
 // Mock the API client
 vi.mock('../api/client', () => ({
   getSkincareRoutine: vi.fn(),
+  getProducts: vi.fn(() => Promise.resolve([])),
+  getMyRotation: vi.fn(() => Promise.resolve({ actives: [], recommendations: [] })),
+  deleteProduct: vi.fn(),
+  logProductUsage: vi.fn(),
+  logSkinReaction: vi.fn(),
+  parseProductText: vi.fn(),
+  saveProduct: vi.fn(),
+  scanProductLabel: vi.fn(),
 }))
 
 import SkincareRoutine from './SkincareRoutine'
@@ -31,7 +39,7 @@ describe('SkincareRoutine', () => {
       </BrowserRouter>
     )
 
-    expect(screen.getByText('Loading skincare routine...')).toBeInTheDocument()
+    expect(screen.getByText('Wczytuję rutynę…')).toBeInTheDocument()
   })
 
   it('renders routine after data loaded', async () => {
@@ -44,7 +52,7 @@ describe('SkincareRoutine', () => {
     )
 
     await waitFor(() => {
-      expect(screen.getByText('Skincare Routine')).toBeInTheDocument()
+      expect(screen.getByText('Pielęgnacja')).toBeInTheDocument()
     })
   })
 
@@ -58,7 +66,7 @@ describe('SkincareRoutine', () => {
     )
 
     await waitFor(() => {
-      expect(screen.getByText('Skin Type: Combination')).toBeInTheDocument()
+      expect(screen.getByText('Typ skóry: Combination')).toBeInTheDocument()
     })
     expect(screen.getByText('Focus on hydration and oil control')).toBeInTheDocument()
   })
@@ -73,7 +81,7 @@ describe('SkincareRoutine', () => {
     )
 
     await waitFor(() => {
-      expect(screen.getByText('Morning Routine')).toBeInTheDocument()
+      expect(screen.getByText('Rano')).toBeInTheDocument()
     })
 
     expect(screen.getByText('Cleanse with gentle cleanser')).toBeInTheDocument()
@@ -91,7 +99,7 @@ describe('SkincareRoutine', () => {
     )
 
     await waitFor(() => {
-      expect(screen.getByText('Evening Routine')).toBeInTheDocument()
+      expect(screen.getByText('Wieczór')).toBeInTheDocument()
     })
 
     expect(screen.getByText('Remove makeup')).toBeInTheDocument()
@@ -109,8 +117,15 @@ describe('SkincareRoutine', () => {
     )
 
     await waitFor(() => {
-      expect(screen.getByText('No routine available')).toBeInTheDocument()
+      expect(screen.getByText('Rutyna niedostępna — sprawdź, czy backend działa.')).toBeInTheDocument()
     })
+  })
+
+  it('shows the product scanner', async () => {
+    getSkincareRoutine.mockResolvedValue(mockRoutine)
+    render(<BrowserRouter><SkincareRoutine /></BrowserRouter>)
+    await waitFor(() => expect(screen.getByText('Moje produkty')).toBeInTheDocument())
+    expect(screen.getByText('Zrób zdjęcie składu (INCI)')).toBeInTheDocument()
   })
 
   it('handles error gracefully', async () => {
@@ -123,7 +138,7 @@ describe('SkincareRoutine', () => {
     )
 
     await waitFor(() => {
-      expect(screen.getByText('No routine available')).toBeInTheDocument()
+      expect(screen.getByText('Rutyna niedostępna — sprawdź, czy backend działa.')).toBeInTheDocument()
     })
   })
 })

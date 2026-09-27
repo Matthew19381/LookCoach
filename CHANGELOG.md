@@ -3,6 +3,23 @@
 ---
 
 ## [Unreleased] — 2026-09-27
+### Dodane (prośba właściciela)
+- **Moje produkty**: zdjęcie składu (INCI) → AI tylko przepisuje etykietę, analiza lokalna: składniki aktywne,
+  sygnały podrażnień (zapach, alergeny, alkohol), konflikty z produktami już w rutynie, ostrzeżenia z zapisanych
+  reakcji skóry; to samo dla wklejonego tekstu (bez AI). Zapis produktu, „Użyłem dziś” → historia użycia składników.
+- Rotacja liczona z realnego użycia (ciągłe używanie przez pełny cykl) — wcześniej brak danych i odwrotna logika
+  (liczyła czas od OSTATNIEGO użycia). `GET /skincare/rotation/mine`.
+- Strona Pielęgnacja po polsku: rutyna, produkty (skan/wklejenie), rotacja, formularz reakcji skóry.
+- Tryb przetrwania z huba skraca też rutynę pielęgnacji do podstaw; `/routine` per użytkownik (reakcje się liczą).
+### Naprawione
+- **Analiza zdjęć AI nie działała wcale**: zapasowy OpenRouter używał wycofanego modelu (404) — aktualny model +
+  ponowienie przy 404. (Klucz Gemini w `.env` jest nieważny — do wymiany przez właściciela.)
+- `vite build` nie przechodził (`devOptions` w złym miejscu), klient API wskazywał `localhost:8010` (nie działał
+  z telefonu), cache API StaleWhileRevalidate 7 dni → NetworkFirst.
+- Consistency Tracker: 9 funkcji API nie istniało w kliencie (strona nie działała poza testami), brak w menu,
+  `protocols.map` / pola summary niezgodne z API.
+- Nutrition: wywracała całą aplikację (`mealPlan.map`, renderowanie obiektów). ErrorBoundary w layoucie.
+- Testy wysyłały prawdziwe, płatne zapytania do OpenRouter, gdy klucz był w środowisku — klucze AI wyzerowane w conftest.
 ### Naprawione
 - **Reakcje skóry (F-1) nie były zapisywane**: `log_reaction` nic nie utrwalał, historia zawsze `[]`, więc tolerancja
   składników zawsze „none” i rutyna się nie adaptowała. Nowa tabela `skin_reactions`, historia z bazy.

@@ -44,7 +44,7 @@ Strategia i architektura docelowa: `decisions/ACTION_PLAN_2026-08-09_wykonane_20
 - [ ] F-5 (**LC-5**): Event Mode oznaczony jako protokół HIPOTEZA z ostrzeżeniami.
 
 ### Drobne techniczne
-- [ ] Rotacja składników (F-1): `IngredientRotationManager.get_ingredient_history` zwraca `[]` — brak źródła danych o użyciu składników (np. z logu rutyny); do zaprojektowania (2026-09-27).
+- [x] Rotacja składników (F-1): historia z „Użyłem dziś” (produkty użytkownika), skan zdjęcia składu (2026-09-27).
 - [ ] Rotacja klucza OpenRouter w `.env` (czynność człowieka — dostęp do panelu).
 - [ ] Type hints w backendzie (obecnie częściowe).
 - [ ] `.pre-commit-config.yaml` + `pyproject.toml`.
