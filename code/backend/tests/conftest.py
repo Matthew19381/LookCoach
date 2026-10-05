@@ -10,6 +10,9 @@ import pytest
 # real OpenRouter requests with the owner's key (found 2026-09-27).
 for _key in ("OPENROUTER_API_KEY", "GEMINI_API_KEY", "GOOGLE_API_KEY"):
     os.environ[_key] = ""
+# Same for the hub: logging adherence publishes to System-Glowny (2026-10-04);
+# without a key the publisher refuses, so no test writes into the real hub.
+os.environ["MODULE_KEY"] = ""
 
 # Add code/ (parent of backend/) to path so that 'backend' is a package
 BACKEND_DIR = Path(__file__).parent.parent

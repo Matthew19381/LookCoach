@@ -2,6 +2,17 @@
 
 ---
 
+## [Unreleased] — 2026-10-04 (plan dnia Systemu Głównego)
+### Naprawione
+- **LookCoach nie wysyłał do huba żadnych eventów**: `integration_publisher` był przetestowany, ale żaden
+  endpoint go nie wywoływał. Teraz `POST /consistency/adherence/log` (dzisiejszy wpis) publikuje
+  `protocol_done` / `protocol_skipped` w tle; brak huba lub klucza nie wpływa na zapis.
+### Dodane
+- `/summary` zwraca `suggested_items`: rutyny pielęgnacji śledzone w ostatnich 14 dniach i jeszcze nie
+  odhaczone dziś (survival: wersja bazowa). Hub sam odhacza je po `protocol_done:protocol_id=…`
+  (kontrakt: `System-Glowny/docs/INTEGRACJA-MODULOW.md` §1.1a).
+- Testy zerują `MODULE_KEY` w `conftest`, więc żaden test nie pisze do prawdziwego huba.
+
 ## [Unreleased] — 2026-09-27
 ### Dodane (prośba właściciela)
 - **Moje produkty**: zdjęcie składu (INCI) → AI tylko przepisuje etykietę, analiza lokalna: składniki aktywne,
