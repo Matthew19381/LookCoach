@@ -13,6 +13,17 @@
 - **Opcjonalne zdjęcie „uśmiech”** (zęby, dziąsła) z poradami w Stylu.
 - Sygnał do **Mentalności** przy bardzo częstym sprawdzaniu wyglądu lub cierpieniu z jego powodu.
 - Treści z backendu po polsku; CI: mypy, ESLint; pre-commit.
+
+## [Unreleased] — 2026-10-15 (odhaczenie w hubie)
+### Naprawione
+- **Odhaczenie rutyny w planie dnia huba nie docierało do LookCoach**, więc regularność, trudność i rotacja
+  składników nie widziały rutyn odhaczonych w hubie. Nowa dyrektywa huba `plan_item_done`
+  (`POST /api/v1/directives`, kontrakt `System-Glowny/docs/INTEGRACJA-MODULOW.md` §1.3a): odhaczenie = wpis
+  regularności z notatką „plan dnia huba #<id>” (poziom SURVIVAL w trybie przetrwania), cofnięcie usuwa tylko
+  ten wpis. Wymaga `X-Module-Key`; LookCoach nie odsyła `protocol_done` (pozycja w hubie już jest zrobiona).
+  Gdy rutyna jest już zapisana w LookCoach tego dnia, drugi wpis nie powstaje. Testy `tests/test_plan_item_done.py`.
+
+## [Unreleased] — 2026-10-15 (prywatność zdjęć)
 ### Naprawione
 - Migracje Alembic: łańcuch nie działał na czystej bazie; start aplikacji robi teraz `alembic upgrade head`
   (stara baza bez utraty danych).
