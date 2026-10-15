@@ -6,6 +6,9 @@ code/backend/.env
 # Database
 code/backend/*.db
 code/backend/uploads/
+# Photos/AI cache anywhere in the repo - second guard behind storage.py (2026-10-15)
+uploads/
+.cache/
 
 # Python
 __pycache__/

@@ -1,6 +1,7 @@
 import importlib
 import os
 import sys
+import tempfile
 from pathlib import Path
 
 import pytest
@@ -13,6 +14,9 @@ for _key in ("OPENROUTER_API_KEY", "GEMINI_API_KEY", "GOOGLE_API_KEY"):
 # Same for the hub: logging adherence publishes to System-Glowny (2026-10-04);
 # without a key the publisher refuses, so no test writes into the real hub.
 os.environ["MODULE_KEY"] = ""
+# Photos and AI cache of tests go to a throwaway folder, never the owner's real
+# one (storage.py, 2026-10-15). Set before any backend module is imported.
+os.environ["LOOKCOACH_DATA_DIR"] = tempfile.mkdtemp(prefix="lookcoach-test-")
 
 # Add code/ (parent of backend/) to path so that 'backend' is a package
 BACKEND_DIR = Path(__file__).parent.parent

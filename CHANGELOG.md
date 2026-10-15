@@ -2,6 +2,16 @@
 
 ---
 
+## [Unreleased] — 2026-10-15 (prywatność zdjęć)
+### Naprawione
+- **Zdjęcia mogły trafić do publicznego repo.** Zdjęcia i cache odpowiedzi AI szły do `uploads/` i `.cache/`
+  względem katalogu roboczego; starter ekosystemu uruchamia backend z `code/`, więc lądowały w `code/uploads/`
+  i `code/.cache/`, których `.gitignore` nie obejmował. Teraz oba siedzą w `LOOKCOACH_DATA_DIR`
+  (`storage.py`; domyślnie `~/LookCoach-dane`), a folder wewnątrz repo backend odrzuca przy starcie.
+  `.gitignore` ignoruje `uploads/` i `.cache/` w całym repo jako druga zapora.
+- Testy zapisują zdjęcia do folderu tymczasowego (`conftest`), test sprawdza, że upload nie zostawia w repo
+  nic, co git by zobaczył.
+
 ## [Unreleased] — 2026-10-04 (plan dnia Systemu Głównego)
 ### Naprawione
 - **LookCoach nie wysyłał do huba żadnych eventów**: `integration_publisher` był przetestowany, ale żaden

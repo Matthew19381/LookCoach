@@ -7,12 +7,12 @@ from google.genai import types
 from PIL import Image
 import io
 
+from ..storage import CACHE_DIR  # outside the public repo
+
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
 AI_SERVICE = os.getenv("AI_SERVICE", "openrouter").lower()  # gemini, openrouter, ollama
 
-CACHE_DIR = Path(".cache")
-CACHE_DIR.mkdir(exist_ok=True)
 
 # Qualitative analysis prompts — NO numeric attractiveness ratings of the person.
 # Only observable state categories (NEURO_PLAN LC-9: risk of dysmorphia).
