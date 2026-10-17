@@ -9,6 +9,7 @@ from .experiment import Experiment as Experiment
 from .directive_state import DirectiveState as DirectiveState
 from .skin_reaction import SkinReaction as SkinReaction
 from .skincare_product import IngredientUsage as IngredientUsage, SkincareProduct as SkincareProduct
+from .routine_step import RoutineStep as RoutineStep
 from .consistency import (
     AdherenceLog as AdherenceLog,
     ProtocolAdherence as ProtocolAdherence,
@@ -16,6 +17,7 @@ from .consistency import (
 )
 
 __all__ = [
+    "RoutineStep",
     "SkinReaction",
     "DirectiveState",
     "User",
