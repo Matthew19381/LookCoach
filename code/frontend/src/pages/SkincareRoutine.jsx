@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
 import {
-  deleteProduct, getMyRotation, getProducts, getSkincareRoutine, logProductUsage,
-  logSkinReaction, parseProductText, saveProduct, scanProductLabel, lookupProductBarcode,
+  addRoutineStep, createDefaultRoutine, deleteProduct, deleteRoutineStep, getMyRotation, getMyRoutine,
+  getProducts, getRoutineToday, getSkincareRoutine, logAdherence, logProductUsage, logSkinReaction,
+  lookupProductBarcode, parseProductText, saveProduct, scanProductLabel, updateRoutineStep,
 } from '../api/client'
 import BarcodeBox from '../components/BarcodeBox'
-import { AlertTriangle, Camera, Check, Droplets, Info, Moon, RotateCcw, Sun, Trash2 } from 'lucide-react'
+import { AlertTriangle, Camera, Check, Droplets, Info, ListChecks, Moon, Plus, RotateCcw, Sun, Trash2 } from 'lucide-react'
 
 const SLOTS = [['morning', 'Rano'], ['evening', 'Wieczór'], ['both', 'Rano i wieczór']]
 const REACTIONS = [['poczerwienienie', 'Zaczerwienienie'], ['pieczenie', 'Pieczenie / szczypanie'],
@@ -176,15 +177,185 @@ function ReactionForm({ actives }) {
   )
 }
 
+
+// ── Today + my routine (owner request 2026-10-15: "tworzenie rutyny i podgląd co dzisiaj ma być") ──
+const SLOT_NAMES = { morning: 'Rano', evening: 'Wieczór' }
+const SLOT_ICONS = { morning: <Sun size={18} className="text-yellow-500" />, evening: <Moon size={18} className="text-indigo-500" /> }
+const DAYS = ['Pn', 'Wt', 'Śr', 'Cz', 'Pt', 'So', 'Nd']
+const daysText = (w) => (w === '0123456' ? 'codziennie' : [...(w || '')].map((d) => DAYS[+d]).join(', ') || 'żaden dzień')
+
+function Evidence({ evidence }) {
+  if (!evidence) return null
+  return (
+    <p className="text-xs text-gray-500 mt-1">
+      Dowody: {evidence.level}. {evidence.ref}{' '}
+      {evidence.url && <a href={evidence.url} target="_blank" rel="noreferrer" className="underline">źródło</a>}
+    </p>
+  )
+}
+
+function TodayCard({ today, onDone }) {
+  const [busy, setBusy] = useState('')
+  const [error, setError] = useState('')
+  if (!today) return null
+  const markDone = async (slot) => {
+    setBusy(slot.slot); setError('')
+    try {
+      await logAdherence({ protocol_type: slot.protocol_type, completed: true })
+      await onDone()
+    } catch (e) { setError(errText(e)) } finally { setBusy('') }
+  }
+  return (
+    <div className="bg-white border rounded-lg p-6 space-y-4">
+      <h2 className="text-xl font-semibold flex items-center gap-2"><ListChecks size={20} /> Dziś</h2>
+      {!today.has_routine && (
+        <p className="text-sm text-gray-600">Nie masz jeszcze zapisanej rutyny. Niżej jest gotowa propozycja oparta na badaniach: zapisz ją albo dodaj swoje kroki.</p>
+      )}
+      {today.survival_mode && <p className="text-sm text-amber-700">Tryb minimum: tylko kroki oznaczone jako podstawowe.</p>}
+      {today.has_routine && (
+        <div className="grid md:grid-cols-2 gap-4">
+          {today.slots.map((slot) => (
+            <div key={slot.slot} className="border rounded p-4 space-y-2">
+              <div className="flex items-center gap-2 font-medium">{SLOT_ICONS[slot.slot]} {SLOT_NAMES[slot.slot]}</div>
+              {slot.steps.length === 0 ? <p className="text-sm text-gray-500">Dziś nic.</p> : (
+                <>
+                  <ol className="list-decimal list-inside text-sm space-y-1">
+                    {slot.steps.map((st) => <li key={st.id}>{st.name}</li>)}
+                  </ol>
+                  {slot.done
+                    ? <p className="text-sm text-green-700 flex items-center gap-1"><Check size={16} /> Zrobione</p>
+                    : <button onClick={() => markDone(slot)} disabled={busy === slot.slot}
+                        className="bg-green-600 disabled:opacity-50 text-white rounded px-4 py-2 text-sm">Zrobione</button>}
+                </>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+      {error && <p className="text-sm text-red-600">{error}</p>}
+    </div>
+  )
+}
+
+function StepRow({ step, onChange }) {
+  const [error, setError] = useState('')
+  const run = async (fn) => {
+    setError('')
+    try { await fn(); await onChange() } catch (e) { setError(errText(e)) }
+  }
+  return (
+    <li className={`border rounded p-3 ${step.active ? '' : 'opacity-60'}`}>
+      <div className="flex items-start justify-between gap-2">
+        <div>
+          <p className="font-medium text-sm">{step.name}</p>
+          <p className="text-xs text-gray-600">{daysText(step.weekdays)}{step.essential ? ' · podstawowy (zostaje w trybie minimum)' : ''}{step.active ? '' : ' · wyłączony'}</p>
+          {step.note && <p className="text-xs text-gray-600 mt-1">{step.note}</p>}
+          <Evidence evidence={step.evidence} />
+        </div>
+        {step.id && (
+          <div className="flex flex-col items-end gap-1 text-xs">
+            <label className="flex items-center gap-1">
+              <input type="checkbox" checked={step.active} onChange={(e) => run(() => updateRoutineStep(step.id, { active: e.target.checked }))} /> włączony
+            </label>
+            <label className="flex items-center gap-1">
+              <input type="checkbox" checked={step.essential} onChange={(e) => run(() => updateRoutineStep(step.id, { essential: e.target.checked }))} /> podstawowy
+            </label>
+            <button aria-label={`Usuń ${step.name}`} onClick={() => run(() => deleteRoutineStep(step.id))} className="text-red-600"><Trash2 size={16} /></button>
+          </div>
+        )}
+      </div>
+      {error && <p className="text-xs text-red-600 mt-1">{error}</p>}
+    </li>
+  )
+}
+
+function AddStepForm({ onAdded }) {
+  const [slot, setSlot] = useState('morning')
+  const [name, setName] = useState('')
+  const [days, setDays] = useState('0123456')
+  const [error, setError] = useState('')
+  const toggleDay = (d) => setDays((cur) => (cur.includes(d) ? cur.replace(d, '') : [...cur + d].sort().join('')))
+  const submit = async () => {
+    setError('')
+    try {
+      await addRoutineStep({ slot, name, weekdays: days })
+      setName('')
+      await onAdded()
+    } catch (e) { setError(errText(e)) }
+  }
+  return (
+    <div className="border-t pt-4 space-y-2">
+      <p className="text-sm font-medium">Dodaj krok</p>
+      <div className="flex flex-wrap gap-2">
+        <select aria-label="Pora" className="border rounded px-2 py-2" value={slot} onChange={(e) => setSlot(e.target.value)}>
+          <option value="morning">Rano</option><option value="evening">Wieczór</option>
+        </select>
+        <input className="border rounded px-2 py-2 flex-1 min-w-[12rem]" placeholder="np. Krem z filtrem SPF 50" value={name} onChange={(e) => setName(e.target.value)} />
+      </div>
+      <div className="flex flex-wrap gap-2 text-sm">
+        {DAYS.map((label, i) => (
+          <label key={label} className="flex items-center gap-1">
+            <input type="checkbox" checked={days.includes(String(i))} onChange={() => toggleDay(String(i))} /> {label}
+          </label>
+        ))}
+      </div>
+      <button onClick={submit} disabled={!name.trim() || !days} className="bg-gray-800 disabled:opacity-50 text-white rounded px-4 py-2 text-sm flex items-center gap-1"><Plus size={16} /> Dodaj</button>
+      {error && <p className="text-sm text-red-600">{error}</p>}
+    </div>
+  )
+}
+
+function MyRoutine({ routine, onChange }) {
+  const [error, setError] = useState('')
+  if (!routine) return null
+  const saveDefault = async () => {
+    setError('')
+    try { await createDefaultRoutine(); await onChange() } catch (e) { setError(errText(e)) }
+  }
+  return (
+    <div className="bg-white border rounded-lg p-6 space-y-4">
+      <h2 className="text-xl font-semibold">Moja rutyna</h2>
+      {!routine.saved && (
+        <div className="bg-blue-50 border border-blue-200 rounded p-4 space-y-2">
+          <p className="text-sm text-blue-900">
+            Propozycja na start. Nie znam Twoich kosmetyków, więc to podstawy z najmocniejszymi dowodami. Po zapisaniu możesz kroki wyłączać, usuwać i dodawać własne.
+          </p>
+          <button onClick={saveDefault} className="bg-blue-600 text-white rounded px-4 py-2 text-sm">Zapisz jako moją rutynę</button>
+        </div>
+      )}
+      <div className="grid md:grid-cols-2 gap-4">
+        {Object.keys(SLOT_NAMES).map((slot) => (
+          <div key={slot} className="space-y-2">
+            <div className="flex items-center gap-2 font-medium">{SLOT_ICONS[slot]} {SLOT_NAMES[slot]}</div>
+            <ul className="space-y-2">
+              {routine.steps.filter((st) => st.slot === slot).map((st) => <StepRow key={st.id ?? st.name} step={st} onChange={onChange} />)}
+            </ul>
+          </div>
+        ))}
+      </div>
+      <AddStepForm onAdded={onChange} />
+      {error && <p className="text-sm text-red-600">{error}</p>}
+    </div>
+  )
+}
+
 export default function SkincareRoutine() {
   const [routine, setRoutine] = useState(null)
   const [loading, setLoading] = useState(true)
   const [rotation, setRotation] = useState({ actives: [], recommendations: [] })
 
+  const [today, setToday] = useState(null)
+  const [myRoutine, setMyRoutine] = useState(null)
+
   const loadRotation = () => getMyRotation().then(setRotation).catch(() => {})
+  const loadMine = () => Promise.all([
+    getRoutineToday().then(setToday).catch(() => setToday(null)),
+    getMyRoutine().then(setMyRoutine).catch(() => setMyRoutine(null)),
+  ])
   useEffect(() => {
     getSkincareRoutine().then(setRoutine).catch(() => setRoutine(null)).finally(() => setLoading(false))
     loadRotation()
+    loadMine()
   }, [])
 
   if (loading) return <div className="text-center py-20">Wczytuję rutynę…</div>
@@ -196,8 +367,12 @@ export default function SkincareRoutine() {
         <h1 className="text-3xl font-bold text-gray-900">Pielęgnacja</h1>
       </div>
 
+      <TodayCard today={today} onDone={loadMine} />
+      <MyRoutine routine={myRoutine} onChange={loadMine} />
+
       {routine && (
         <>
+          <h2 className="text-xl font-semibold pt-2">Rutyna z generatora (przykład, nie zapisuje się)</h2>
           <div className={`${routine.survival_mode ? 'bg-amber-50 border-amber-200' : 'bg-blue-50 border-blue-200'} border rounded-lg p-4 flex items-start gap-3`}>
             <Info size={20} className="text-blue-600 mt-0.5" />
             <div>

@@ -14,6 +14,7 @@ from .ecosystem_snapshot import EcosystemSnapshot as EcosystemSnapshot
 from .style_preview import StylePreviewLog as StylePreviewLog
 from .assistant_message import AssistantMessage as AssistantMessage
 from .push import PushSubscription as PushSubscription, ReminderLog as ReminderLog, ReminderSettings as ReminderSettings
+from .routine_step import RoutineStep as RoutineStep
 from .consistency import (
     AdherenceLog as AdherenceLog,
     ProtocolAdherence as ProtocolAdherence,
@@ -21,6 +22,7 @@ from .consistency import (
 )
 
 __all__ = [
+    "RoutineStep",
     "SkinReaction",
     "DirectiveState",
     "User",

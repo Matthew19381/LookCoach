@@ -14,6 +14,28 @@
 - Sygnał do **Mentalności** przy bardzo częstym sprawdzaniu wyglądu lub cierpieniu z jego powodu.
 - Treści z backendu po polsku; CI: mypy, ESLint; pre-commit.
 
+## [Unreleased] — 2026-10-17 (moja rutyna i widok „Dziś”)
+### Dodane
+- **Własna rutyna pielęgnacji** (prośba właściciela 15.10: „tworzenie rutyny i podgląd co dzisiaj ma być”).
+  Tabela `routine_steps` (pora, kolejność, dni tygodnia, „podstawowy” = zostaje w trybie minimum, włączony,
+  notatka, źródło). Endpointy `/api/v1/skincare/my-routine` (GET, `POST /default`, `POST/PATCH/DELETE /steps`)
+  i `GET /api/v1/skincare/today` (kroki na dziś rano i wieczorem, w trybie minimum tylko podstawowe, status
+  „zrobione” z wpisów regularności).
+- **Rutyna domyślna oparta na badaniach** (`services/routine_defaults.py`), dopóki nie ma listy kosmetyków
+  właściciela: rano mycie + krem z filtrem SPF 30+ (RCT Hughes 2013), wieczorem mycie + krem nawilżający
+  (mała RCT, Buraczewska i in. 2008: efekt zależy od składu). Retinol i niacynamid jako kroki wyłączone, z
+  ograniczeniami badań. Mycie twarzy ma tylko opinię ekspertów i tak jest opisane. Nic nie zapisuje się samo:
+  propozycję zapisuje przycisk „Zapisz jako moją rutynę”.
+- Strona Pielęgnacja: sekcje „Dziś” (przycisk „Zrobione” zapisuje wpis regularności, który odhacza pozycję w
+  planie dnia huba) i „Moja rutyna” (włączanie, „podstawowy”, usuwanie, dodawanie kroków na wybrane dni).
+  Dotychczasowa wygenerowana rutyna zostaje niżej z podpisem, że to przykład, który się nie zapisuje.
+### Zmienione
+- `/summary` → `suggested_items`: przy zapisanej rutynie hub dostaje porę, która ma dziś włączone kroki, z
+  nazwami kroków w tytule (np. „Pielęgnacja rano: Umyj twarz, Krem z filtrem SPF 30+”, maks. 100 znaków).
+  Bez zapisanej rutyny zostaje dotychczasowa reguła (wpisy z 14 dni), więc pusta baza nadal nic nie wysyła.
+- Tabela `routine_steps` powstaje przez `create_all` przy starcie, tak jak inne tabele dodane po 18.09;
+  migracji Alembic nie dodano (plan, L7).
+
 ## [Unreleased] — 2026-10-15 (odhaczenie w hubie)
 ### Naprawione
 - **Odhaczenie rutyny w planie dnia huba nie docierało do LookCoach**, więc regularność, trudność i rotacja

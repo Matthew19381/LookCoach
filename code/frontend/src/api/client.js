@@ -197,6 +197,14 @@ export const getMyRotation = () => api.get(`/api/v1/skincare/rotation/mine?${uid
 export const logSkinReaction = (ingredient, reaction, severity) =>
   api.post(`/api/v1/skincare/reaction/log?${uid()}&ingredient=${encodeURIComponent(ingredient)}&reaction=${encodeURIComponent(reaction)}&severity=${severity}`);
 
+// ── My routine: own steps and what today asks for (2026-10-15) ──
+export const getMyRoutine = () => api.get(`/api/v1/skincare/my-routine?${uid()}`);
+export const createDefaultRoutine = () => api.post(`/api/v1/skincare/my-routine/default?${uid()}`);
+export const addRoutineStep = (step) => api.post(`/api/v1/skincare/my-routine/steps?${uid()}`, step);
+export const updateRoutineStep = (id, changes) => api.patch(`/api/v1/skincare/my-routine/steps/${id}?${uid()}`, changes);
+export const deleteRoutineStep = (id) => api.delete(`/api/v1/skincare/my-routine/steps/${id}?${uid()}`);
+export const getRoutineToday = () => api.get(`/api/v1/skincare/today?${uid()}`);
+
 // ── Consistency Tracker (LC-7) - the page imported these, but they never existed ──
 const q = (params) => new URLSearchParams(
   Object.fromEntries(Object.entries({ ...params, user_id: getUserId() }).filter(([, v]) => v !== undefined && v !== null && v !== ""))

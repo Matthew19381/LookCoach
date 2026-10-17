@@ -300,3 +300,129 @@ async def my_rotation(user_id: int = 1, db: Session = Depends(get_db)):
     engine = SkincareEngine(db_session=db, user_id=user_id)
     return {"actives": actives,
             "recommendations": engine.rotation_manager.get_rotation_recommendations({"morning": actives, "evening": []})}
+
+
+# ── My routine: build it, see what today asks for (owner request 2026-10-15) ──
+
+WEEKDAY_DIGITS = set("0123456")
+
+
+class StepIn(BaseModel):
+    slot: str
+    name: str
+    weekdays: str = "0123456"
+    essential: bool = False
+    active: bool = True
+    note: str | None = None
+    product_id: int | None = None
+
+
+class StepPatch(BaseModel):
+    name: str | None = None
+    slot: str | None = None
+    position: int | None = None
+    weekdays: str | None = None
+    essential: bool | None = None
+    active: bool | None = None
+    note: str | None = None
+    product_id: int | None = None
+
+
+def _check_step(slot, name, weekdays):
+    from ..services.my_routine import SLOTS
+
+    if slot is not None and slot not in SLOTS:
+        raise HTTPException(422, "Pora musi być 'morning' albo 'evening'.")
+    if name is not None and not name.strip():
+        raise HTTPException(422, "Podaj nazwę kroku.")
+    if weekdays is not None and not set(weekdays) <= WEEKDAY_DIGITS:
+        raise HTTPException(422, "Dni tygodnia jako cyfry 0–6 (0 = poniedziałek).")
+
+
+@router.get("/my-routine")
+async def my_routine(user_id: int = 1, db: Session = Depends(get_db)):
+    """Saved steps; with none saved, the research-based proposal (not saved)."""
+    from ..services.my_routine import default_out, step_out, user_steps
+
+    steps = user_steps(db, user_id)
+    if steps:
+        return {"saved": True, "steps": [step_out(s) for s in steps]}
+    return {"saved": False, "steps": default_out()}
+
+
+@router.post("/my-routine/default")
+async def create_default_routine(user_id: int = 1, db: Session = Depends(get_db)):
+    """Save the proposal as the user's routine; an existing routine is left as is."""
+    from ..services.my_routine import create_default, step_out, user_steps
+
+    created = create_default(db, user_id)
+    return {"created": created, "steps": [step_out(s) for s in user_steps(db, user_id)]}
+
+
+@router.post("/my-routine/steps", status_code=201)
+async def add_step(s: StepIn, user_id: int = 1, db: Session = Depends(get_db)):
+    from ..models.routine_step import RoutineStep
+    from ..services.my_routine import step_out
+
+    _check_step(s.slot, s.name, s.weekdays)
+    last = (db.query(RoutineStep).filter(RoutineStep.user_id == user_id, RoutineStep.slot == s.slot)
+            .order_by(RoutineStep.position.desc()).first())
+    row = RoutineStep(user_id=user_id, slot=s.slot, position=(last.position + 1) if last else 0,
+                      name=s.name.strip(), weekdays=s.weekdays, essential=s.essential, active=s.active,
+                      note=s.note, product_id=s.product_id)
+    db.add(row)
+    db.commit()
+    db.refresh(row)
+    return step_out(row)
+
+
+@router.patch("/my-routine/steps/{step_id}")
+async def update_step(step_id: int, p: StepPatch, user_id: int = 1, db: Session = Depends(get_db)):
+    from ..models.routine_step import RoutineStep
+    from ..services.my_routine import step_out
+
+    row = db.query(RoutineStep).filter(RoutineStep.id == step_id, RoutineStep.user_id == user_id).first()
+    if not row:
+        raise HTTPException(404, "Nie ma takiego kroku")
+    changes = p.model_dump(exclude_unset=True)
+    _check_step(changes.get("slot"), changes.get("name"), changes.get("weekdays"))
+    for field, value in changes.items():
+        setattr(row, field, value.strip() if field == "name" else value)
+    db.commit()
+    db.refresh(row)
+    return step_out(row)
+
+
+@router.delete("/my-routine/steps/{step_id}")
+async def delete_step(step_id: int, user_id: int = 1, db: Session = Depends(get_db)):
+    from ..models.routine_step import RoutineStep
+
+    row = db.query(RoutineStep).filter(RoutineStep.id == step_id, RoutineStep.user_id == user_id).first()
+    if not row:
+        raise HTTPException(404, "Nie ma takiego kroku")
+    db.delete(row)
+    db.commit()
+    return {"status": "deleted"}
+
+
+@router.get("/today")
+async def routine_today(user_id: int = 1, date: str | None = None, db: Session = Depends(get_db)):
+    """What the routine asks for on `date` (default today), per slot, with done status."""
+    from ..services.my_routine import SLOTS, done_on, step_out, steps_for_day, survival_mode, user_steps
+
+    try:
+        day = date_type.fromisoformat(date) if date else date_type.today()
+    except ValueError:
+        raise HTTPException(422, "Data w formacie RRRR-MM-DD.")
+    steps = user_steps(db, user_id)
+    survival = survival_mode(db, user_id)
+    planned = steps_for_day(steps, day, survival)
+    done = done_on(db, user_id, day)
+    return {
+        "date": day.isoformat(),
+        "has_routine": bool(steps),
+        "survival_mode": survival,
+        "slots": [{"slot": slot, "protocol_type": protocol, "done": protocol in done,
+                   "steps": [step_out(s) for s in planned[slot]]}
+                  for slot, protocol in SLOTS.items()],
+    }
