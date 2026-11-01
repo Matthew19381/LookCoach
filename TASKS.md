@@ -2,6 +2,7 @@
 
 **Status:** v0.3.0 — fundamenty naprawione (ACTION_PLAN Fazy 0–6, 2026-08-23).
 Ten plik to **operacyjna lista bieżących zadań**, nie druga kopia strategii.
+Aktualny plan działania (z checkboxami): `decisions/ACTION_PLAN_2026-11-01.md`.
 Strategia i architektura docelowa: `decisions/ACTION_PLAN_2026-08-09_wykonane_2026-08-23.md` + `NEURO_PLAN.md`.
 
 ---
