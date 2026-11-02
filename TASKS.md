@@ -59,4 +59,4 @@ Strategia i architektura docelowa: `decisions/ACTION_PLAN_2026-08-09_wykonane_20
 - Photo quality check przed analizą (oświetlenie/kąt).
 - Barcode scanner kosmetyków + safety check (pregnancy/allergies).
 
-*Ostatnia aktualizacja: 2026-08-23*
+*Ostatnia aktualizacja: 2026-11-02 — bieżące prace wg `decisions/ACTION_PLAN_2026-11-01.md`*

@@ -130,7 +130,7 @@ export default function NutritionLooks() {
 
         {analysis && (
           <div className="mt-4 p-4 bg-gray-50 rounded">
-            <div className="text-2xl font-bold text-green-600">Score: {analysis.score}/100</div>
+            <div className="text-2xl font-bold text-green-600">Stan: {analysis.status_label ?? '—'}</div>
             {analysis.issues?.length > 0 && (
               <div className="mt-2">
                 <div className="font-semibold text-red-600">Issues:</div>

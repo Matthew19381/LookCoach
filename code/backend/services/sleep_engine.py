@@ -1,3 +1,20 @@
+from .lifestyle_status import status_from_issues
+
+
+def _bedtime_minutes(value: str) -> int | None:
+    """'HH:MM' -> minutes on an evening axis (01:00 -> 25*60), None if unparsable.
+
+    Bedtimes were compared as strings until 2026-11-02, so "22:30" > "00:00"
+    counted as "after midnight" and "01:00" <= "23:00" as an early night."""
+    try:
+        hours, minutes = (int(x) for x in str(value).split(":")[:2])
+    except ValueError:
+        return None
+    if not (0 <= hours < 24 and 0 <= minutes < 60):
+        return None
+    total = hours * 60 + minutes
+    return total + 24 * 60 if hours < 12 else total
+
 
 class SleepEngine:
     """Optimize sleep for looks (skin repair, hormone regulation)."""
@@ -66,7 +83,8 @@ class SleepEngine:
     def analyze_sleep(sleep_data: dict) -> dict:
         """Analyze sleep and recommend improvements for looks."""
         result = {
-            "score": 0,
+            "status": None,
+            "status_label": None,
             "issues": [],
             "recommendations": [],
         }
@@ -76,38 +94,14 @@ class SleepEngine:
 
         duration = sleep_data.get("hours", 0)
         quality = sleep_data.get("quality", "poor")
-        timing = sleep_data.get("bedtime", "00:00")
-
-        # Score calculation
-        score = 0
-        if duration >= 7:
-            score += 30
-        elif duration >= 6:
-            score += 15
-
-        if quality == "deep":
-            score += 30
-        elif quality == "medium":
-            score += 15
-
-        if timing <= "23:00":
-            score += 20
-        elif timing <= "00:00":
-            score += 10
-
-        if sleep_data.get("back_sleeping"):
-            score += 10
-        if sleep_data.get("silk_pillow"):
-            score += 10
-
-        result["score"] = min(score, 100)
+        bedtime = _bedtime_minutes(sleep_data.get("bedtime", "00:00"))
 
         # Issues
         if duration < 7:
             result["issues"].append("Insufficient sleep (<7h)")
         if quality in ["poor", "light"]:
             result["issues"].append("Poor sleep quality")
-        if timing > "00:00":
+        if bedtime is not None and bedtime > 24 * 60:
             result["issues"].append("Late bedtime (after midnight)")
         if not sleep_data.get("back_sleeping"):
             result["issues"].append("Not sleeping on back")
@@ -117,11 +111,12 @@ class SleepEngine:
             result["recommendations"].append("Increase sleep to 7-9 hours")
         if quality in ["poor", "light"]:
             result["recommendations"].append("Improve sleep quality - dark room, no screens 1h before")
-        if timing > "23:00":
+        if bedtime is not None and bedtime > 23 * 60:
             result["recommendations"].append("Move bedtime earlier (10-11PM)")
         if not sleep_data.get("back_sleeping"):
             result["recommendations"].append("Try back sleeping for posture + puffiness reduction")
 
+        result.update(status_from_issues(len(result["issues"])))
         return result
 
     @staticmethod

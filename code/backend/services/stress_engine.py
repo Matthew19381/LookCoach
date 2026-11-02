@@ -1,3 +1,5 @@
+from .lifestyle_status import status_from_issues
+
 
 class StressEngine:
     """Manage stress impact on looks (cortisol, skin, hair)."""
@@ -47,7 +49,8 @@ class StressEngine:
     def analyze_stress(stress_data: dict) -> dict:
         """Analyze stress and recommend relaxation for looks."""
         result = {
-            "score": 0,
+            "status": None,
+            "status_label": None,
             "effects": [],
             "recommendations": [],
         }
@@ -58,25 +61,17 @@ class StressEngine:
         level = stress_data.get("level", "low")  # low, medium, high
         physical_signs = stress_data.get("physical_signs", [])
 
-        # Score calculation (lower stress = higher score)
-        score = 100
-        if level == "medium":
-            score -= 30
-        elif level == "high":
-            score -= 50
-
         # Check physical signs
         if "acne" in physical_signs or "oily skin" in physical_signs:
-            score -= 15
             result["effects"].append(StressEngine.STRESS_EFFECTS["cortisol_spike"])
         if "dull skin" in physical_signs or "dark circles" in physical_signs:
-            score -= 15
             result["effects"].append(StressEngine.STRESS_EFFECTS["stress_skin"])
         if "frown lines" in physical_signs or "jaw tension" in physical_signs:
-            score -= 10
             result["effects"].append(StressEngine.STRESS_EFFECTS["tension_face"])
 
-        result["score"] = max(score, 0)
+        # High stress alone is "needs attention"; medium counts as one issue.
+        issues = len(result["effects"]) + {"medium": 1, "high": 3}.get(level, 0)
+        result.update(status_from_issues(issues))
 
         # Recommendations
         if level in ["medium", "high"]:

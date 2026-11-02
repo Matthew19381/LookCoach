@@ -1,3 +1,6 @@
+> **NIEAKTUALNE od 2026-08 — stan faktyczny: `CLAUDE.md`, plan: `decisions/ACTION_PLAN_2026-11-01.md`.**
+> (Ta notatka opisuje MVP z maja 2026: React 18, 7 routerów.)
+
 # Projekt: LookCoach (Wygląd)
 
 ## Kontekst

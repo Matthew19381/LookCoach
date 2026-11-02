@@ -65,7 +65,7 @@ describe('NutritionLooks', () => {
   })
 
   it('analyzes diet', async () => {
-    analyzeDiet.mockResolvedValue({ score: 75, issues: ['Low water'], recommendations: ['Drink more'] })
+    analyzeDiet.mockResolvedValue({ status: 'needs_improvement', status_label: 'do poprawy', issues: ['Low water'], recommendations: ['Drink more'] })
     const user = userEvent.setup()
     render(
       <BrowserRouter>

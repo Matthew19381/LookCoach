@@ -29,18 +29,19 @@ class TestStressEngine:
         stress_data = {"level": "low", "triggers": []}
         result = StressEngine.analyze_stress(stress_data)
         assert isinstance(result, dict)
-        assert "score" in result
+        assert "status" in result and "score" not in result
 
     def test_analyze_stress_high(self):
         stress_data = {"level": "high", "triggers": ["work", "relationships"]}
         result = StressEngine.analyze_stress(stress_data)
         assert isinstance(result, dict)
-        assert "score" in result
+        assert "status" in result and "score" not in result
+        assert result["status"] == "needs_attention"
 
     def test_analyze_stress_empty(self):
         result = StressEngine.analyze_stress({})
         assert isinstance(result, dict)
-        assert "score" in result
+        assert "status" in result and "score" not in result
 
     def test_analyze_stress_medium(self):
         stress_data = {"level": "medium", "triggers": ["work"]}
@@ -60,16 +61,16 @@ class TestStressEngine:
             assert "5" in tech["duration"] or "5 min" in tech["duration"]
 
     def test_stress_score_range(self):
-        """Verify stress scores are in valid range."""
+        """Verify stress status is one of the qualitative categories (no X/100)."""
         for level in ["low", "medium", "high"]:
             stress_data = {"level": level, "triggers": []}
             result = StressEngine.analyze_stress(stress_data)
-            assert "score" in result
+            assert "status" in result and "score" not in result
 
     def test_stress_signs_detection(self):
         stress_data = {"level": "high", "triggers": ["work"]}
         result = StressEngine.analyze_stress(stress_data)
-        assert "score" in result
+        assert "status" in result and "score" not in result
 
     def test_technique_count(self):
         techniques = StressEngine.get_techniques()
@@ -82,4 +83,4 @@ class TestStressEngine:
     def test_stress_with_multiple_triggers(self):
         stress_data = {"level": "high", "triggers": ["work", "money", "health"]}
         result = StressEngine.analyze_stress(stress_data)
-        assert "score" in result
+        assert "status" in result and "score" not in result

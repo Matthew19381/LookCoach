@@ -60,8 +60,8 @@
   + `vite build` na każdy push/PR.
   Pliki: `.github/workflows/ci.yml`.
   Kryterium: zielony przebieg na gałęzi.
-- [ ] **0.6 Aktualizacja dokumentacji stanu**: liczby testów w `CLAUDE.md`,
-  stopka `TASKS.md`, zamknięcie/archiwizacja `IMPROVEMENTS.md` (z czerwca, większość
+- [x] **0.6 Aktualizacja dokumentacji stanu**: liczby testów w `CLAUDE.md`,
+  stopka `TASKS.md`, zamknięcie/archiwizacja `IMPROVEMENTS.md` (→ `decisions/IMPROVEMENTS_2026-06_archiwum.md`) (z czerwca, większość
   zrobiona), `memory/projects/Wyglad.md` (React 18, 7 routerów — nieaktualne).
   Kryterium: brak sprzeczności z kodem (sprawdzone ręcznie).
 
@@ -95,20 +95,25 @@
   Pliki: `services/confidence_presence.py:161`, router, `api/client.js`,
   `ConfidencePresence.jsx`, testy.
   Kryterium: `grep -ri attractiveness_boost code/` puste.
-- [ ] **1.6 Event Mode oznaczony jako `[HIPOTEZA]`** — backend zwraca
+- [x] **1.6 Event Mode oznaczony jako `[HIPOTEZA]`** — backend zwraca
   `evidence_level: "hipoteza"` + ostrzeżenie; UI pokazuje baner.
   (CLAUDE.md twierdzi, że już jest — nie jest.)
   Kryterium: test backend + vitest na baner.
-- [ ] **1.7 Wyniki „X/100” w Sen / Stres / Żywienie** → kategorie
+  [WYKONANE 2026-11-02: + filtr LC-8 (nerki → bez wody/sodu); naprawione pole `emergency_day_of`]
+- [x] **1.7 Wyniki „X/100” w Sen / Stres / Żywienie** → kategorie
   (`dobry / do poprawy / wymaga uwagi`) z listą czynników; patrz też Faza 3
   (dane mają przychodzić z modułów-źródeł).
   Pliki: `services/sleep_engine.py`, `stress_engine.py`, `nutrition_looks.py`,
   odpowiednie strony.
   Kryterium: żadna strona nie renderuje `/100`.
-- [ ] **1.8 `integrations/output` zwraca zawsze pustą listę** — usunąć albo zwracać
-  realne rekomendacje (po 1.3).
-- [ ] **1.9 Placeholder `_recompose_plan`** w `services/feedback_loop.py:313` —
+  [WYKONANE 2026-11-02: `services/lifestyle_status.py`; przy okazji naprawione porównanie godzin
+  snu jako tekstu. Dane z modułów-źródeł — Faza 3.8]
+- [x] **1.8 `integrations/output` zwraca zawsze pustą listę** — usunąć albo zwracać
+  realne rekomendacje (po 1.3). [USUNIĘTE 2026-11-02 — nikt go nie wołał, także hub]
+- [x] **1.9 Placeholder `_recompose_plan`** w `services/feedback_loop.py:313` —
   dokończyć (ROIEngine na realnych danych) albo usunąć ścieżkę z API.
+  [WYKONANE 2026-11-02: protokoły to rutyny, nie wpisy EVIDENCE_DB — wybór 3 najlepiej
+  utrzymywanych protokołów opisany uczciwie; usunięty też udawany `POST /thresholds`]
 
 ---
 

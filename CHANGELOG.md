@@ -2,6 +2,28 @@
 
 ---
 
+## [Unreleased] — 2026-11-02 (plan działania 2026-11-01, Fazy 0–1)
+### Usunięte (zmyślone dane i oceny — LC-1/LC-9)
+- Wykres „Look Score” w Postępie: linia `50 + i*5` rosła o 5 pkt na każde zdjęcie niezależnie od analizy.
+  W zamian porównanie dwóch zdjęć słowami (np. „Obrzęk twarzy: średni → niski”).
+- `delta_score` (zawsze 0.0), `/confidence/attractiveness-impact` („do +20% atrakcyjności” bez źródła),
+  hasło „Confidence is the #1 most attractive quality”, wyniki „X/100” w Śnie/Stresie/Żywieniu (wagi bez
+  źródła) → status `dobry / do poprawy / wymaga uwagi` z listą przyczyn, `v_taper_score`/`posture_score`.
+- Atrapy analizy: rekomendacje (pusta analiza), Confidence (`dummy_analysis`), Postawa (`mockAnalysis`
+  w przeglądarce), Wideo (dane przykładowe). Martwe `/integrations/output` i udawany `POST /feedback-loop/thresholds`.
+### Naprawione
+- Rekomendacje zależą od Twoich zdjęć: priorytet z analizy i wykrytej dźwigni (skóra/włosy), ROI sortuje
+  dopiero w obrębie priorytetu; zapytania nie mutują już globalnej bazy dowodów.
+- Postawa oceniana z ostatniego zdjęcia z boku (`GET /posture/assessment`); prompt zwraca pola postawy.
+- Event Mode oznaczony jako HIPOTEZA (API + baner); przy chorobie nerek bez zaleceń wody/sodu (LC-8);
+  sekcja „w dniu wydarzenia” wreszcie się wyświetla (frontend czytał złe pole).
+- Sen: godzina zaśnięcia porównywana jako czas, nie tekst („22:30” liczyło się jako „po północy”).
+- Docker: zdjęcia trafiały do `/app/uploads`, poza wolumen — znikały z kontenerem. `uploads/` i `.cache/`
+  kotwiczone w `backend/paths.py` i ignorowane przez git niezależnie od katalogu startu.
+- Instalacja: `npm ci` (lockfile), Python 3.13 (pillow 11.3.0, sqlalchemy 2.0.36).
+### Dodane
+- CI (GitHub Actions): ruff, pytest, `verify_evidence_db`, vitest, build.
+
 ## [Unreleased] — 2026-10-04 (plan dnia Systemu Głównego)
 ### Naprawione
 - **LookCoach nie wysyłał do huba żadnych eventów**: `integration_publisher` był przetestowany, ale żaden

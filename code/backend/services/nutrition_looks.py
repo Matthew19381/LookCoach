@@ -1,3 +1,5 @@
+from .lifestyle_status import status_from_issues
+
 
 class NutritionLooksEngine:
     """Nutrition recommendations for looks optimization."""
@@ -86,7 +88,8 @@ class NutritionLooksEngine:
     def analyze_diet(diet_log: dict) -> dict:
         """Analyze diet and recommend improvements for looks."""
         result = {
-            "score": 0,
+            "status": None,
+            "status_label": None,
             "issues": [],
             "recommendations": [],
         }
@@ -109,14 +112,5 @@ class NutritionLooksEngine:
             result["issues"].append("High sodium (puffiness risk)")
             result["recommendations"].append("Reduce to <1500mg/day")
 
-        # Calculate score
-        score = 50
-        if water >= 2.5:
-            score += 20
-        if sodium < 1500:
-            score += 15
-        if diet_log.get("protein_g", 0) > 100:
-            score += 15
-
-        result["score"] = min(score, 100)
+        result.update(status_from_issues(len(result["issues"])))
         return result

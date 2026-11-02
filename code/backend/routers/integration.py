@@ -69,7 +69,4 @@ async def list_events(user_id: str, db: Session = Depends(get_db)):
     ]
 
 
-@router.get("/output")
-async def integration_output(module: str = "", user_id: int = 1, db: Session = Depends(get_db)):
-    """Return recommendations for external system."""
-    return {"module": module, "recommendations": []}
+# GET /output removed 2026-11-02: it always returned an empty list and nothing called it.

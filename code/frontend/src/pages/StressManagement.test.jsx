@@ -61,7 +61,7 @@ describe('StressManagement', () => {
   })
 
   it('analyzes stress data', async () => {
-    analyzeStress.mockResolvedValue({ score: 70, effects: [], recommendations: ['Meditate'] })
+    analyzeStress.mockResolvedValue({ status: 'needs_improvement', status_label: 'do poprawy', effects: [], recommendations: ['Meditate'] })
     const user = userEvent.setup()
     render(
       <BrowserRouter>

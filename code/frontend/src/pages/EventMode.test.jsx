@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { BrowserRouter } from 'react-router-dom'
 
@@ -41,6 +41,23 @@ const mockTips = [
 describe('EventMode', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+  })
+
+  it('always shows the HIPOTEZA banner (LC-5)', () => {
+    render(<EventMode />)
+    expect(screen.getByRole('note')).toHaveTextContent('HIPOTEZA')
+  })
+
+  it('shows day-of actions from emergency_day_of (backend field)', async () => {
+    generateEventPlan.mockResolvedValue({
+      event_type: 'general', days_until_event: 3, timeline: [],
+      emergency_day_of: ['Cold water splash 30 min before event'],
+    })
+    render(<EventMode />)
+    const dateInput = document.querySelector('input[type="date"]')
+    fireEvent.change(dateInput, { target: { value: '2030-01-01' } })
+    fireEvent.submit(dateInput.closest('form'))
+    expect(await screen.findByText(/Cold water splash/)).toBeInTheDocument()
   })
 
   it('renders title and form', () => {

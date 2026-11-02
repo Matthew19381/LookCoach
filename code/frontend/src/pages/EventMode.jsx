@@ -8,6 +8,8 @@ export default function EventMode() {
   const [plan, setPlan] = useState(null)
   const [loading, setLoading] = useState(false)
   const [tips, setTips] = useState([])
+  // Backend field is emergency_day_of; day_of_event kept for older responses.
+  const dayOf = plan?.emergency_day_of ?? plan?.day_of_event ?? []
 
   const handleGeneratePlan = async (e) => {
     e.preventDefault()
@@ -37,6 +39,11 @@ export default function EventMode() {
       <div className="flex items-center gap-3">
         <Calendar size={28} className="text-purple-600" />
         <h1 className="text-3xl font-bold text-gray-900">Event Mode</h1>
+      </div>
+
+      <div role="note" className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-sm text-amber-900">
+        <strong>HIPOTEZA.</strong> Protokół przed wydarzeniem to zestaw rozsądnych nawyków, a nie
+        przebadana interwencja — efekty krótkoterminowe są niepewne i indywidualne.
       </div>
 
       <div className="bg-white border rounded-lg p-6">
@@ -84,6 +91,12 @@ export default function EventMode() {
         </form>
       </div>
 
+      {plan?.warnings?.length > 0 && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-sm text-red-900">
+          {plan.warnings.map((w, i) => <p key={i}>{w}</p>)}
+        </div>
+      )}
+
       {plan && plan.timeline && (
         <div className="space-y-4">
           <div className="bg-purple-50 border border-purple-200 rounded-lg p-6">
@@ -119,11 +132,11 @@ export default function EventMode() {
             ))}
           </div>
 
-          {plan.day_of_event && plan.day_of_event.length > 0 && (
+          {dayOf.length > 0 && (
             <div className="bg-green-50 border border-green-200 rounded-lg p-6">
               <h4 className="font-medium text-green-900 mb-3">Day of Event - Quick Actions</h4>
               <ul className="space-y-2">
-                {plan.day_of_event.map((action, i) => (
+                {dayOf.map((action, i) => (
                   <li key={i} className="flex items-start gap-2">
                     <Sun size={16} className="text-green-600 mt-0.5" />
                     <span className="text-green-800">{action}</span>

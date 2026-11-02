@@ -366,6 +366,31 @@ class TestEventModeRouter:
     def test_get_event_tips(self):
         response = client.get("/api/v1/event-mode/tips/wedding")
         assert response.status_code == 200
+        assert response.json()["evidence_level"] == "hipoteza"
+
+    def test_plan_is_marked_hypothesis(self):
+        from datetime import date, timedelta
+        future = (date.today() + timedelta(days=5)).isoformat()
+        data = client.post("/api/v1/event-mode/plan?user_id=9301", json={"event_date": future}).json()
+        assert data["evidence_level"] == "hipoteza"
+        assert "HIPOTEZA" in data["disclaimer"]
+
+    def test_kidney_disease_removes_water_and_sodium_targets(self):
+        """LC-8: no water/sodium targets with kidney disease."""
+        import json
+        from datetime import date, timedelta
+        from backend.models.profile import UserProfile
+
+        db = TestSessionLocal()
+        db.add(UserProfile(user_id=9302, health=json.dumps({"kidney_disease": True})))
+        db.commit()
+        db.close()
+        future = (date.today() + timedelta(days=5)).isoformat()
+        data = client.post("/api/v1/event-mode/plan?user_id=9302", json={"event_date": future}).json()
+        actions = [a for day in data["timeline"] for a in day["actions"]] + data["emergency_day_of"]
+        assert actions
+        assert not any("water" in a.lower() or "sodium" in a.lower() for a in actions)
+        assert any("nerek" in w for w in data["warnings"])
 
 
 # ========== CONFIDENCE ROUTER ==========

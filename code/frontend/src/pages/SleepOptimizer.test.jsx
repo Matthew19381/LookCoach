@@ -46,7 +46,7 @@ describe('SleepOptimizer', () => {
   })
 
   it('analyzes sleep data', async () => {
-    analyzeSleep.mockResolvedValue({ score: 80, issues: [], recommendations: ['Sleep more'] })
+    analyzeSleep.mockResolvedValue({ status: 'needs_improvement', status_label: 'do poprawy', issues: [], recommendations: ['Sleep more'] })
     const user = userEvent.setup()
     render(
       <BrowserRouter>
@@ -61,6 +61,8 @@ describe('SleepOptimizer', () => {
     await waitFor(() => {
       expect(analyzeSleep).toHaveBeenCalled()
     })
+    expect(await screen.findByText('Stan: do poprawy')).toBeInTheDocument()
+    expect(document.body.textContent).not.toMatch(/\/100/)
   })
 
   it('loads pre-event tips', async () => {
