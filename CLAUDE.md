@@ -23,7 +23,7 @@ docker compose up --build   # z katalogu code/
 
 ```bash
 # Backend — uruchamiać Z code/backend (stare importy top-level wymagają cwd w sys.path)
-cd code/backend && python -m pytest tests/        # obecnie 431 testów
+cd code/backend && python -m pytest tests/        # obecnie 433 testów
 
 # Frontend
 cd code/frontend && npm test -- --run             # obecnie 125 testów (vitest)
@@ -60,9 +60,10 @@ Router → Service → SQLAlchemy Session (get_db dependency)
   `require_module_key_or_local` (dyrektywy; hub jeszcze nie wysyła klucza).
 - **Ostatnia analiza użytkownika**: zawsze przez `services/analysis_store.load_latest_analysis()`
   — nie twórz atrap analizy w routerach ani we frontendzie.
-- **Migracje**: `code/backend/migrations/versions/` (baseline `d976f9108a12`,
-  `ebfa423f2a35` health JSON). Nowy model → zaimportuj w `models/__init__.py`
-  oraz w `init_db()` w `database.py`; zmianę schematu rób migracją, nie create_all.
+- **Migracje**: `code/backend/migrations/versions/` — `init_db()` przy starcie robi `alembic upgrade head`
+  (baza sprzed Alembica jest najpierw oznaczana na baseline `d976f9108a12`; późniejsze migracje są
+  idempotentne). Zmiana schematu = nowa migracja (`cd code/backend && alembic revision --autogenerate`),
+  NIE `create_all`. Nowy model → zaimportuj w `models/__init__.py`.
 
 ### Routery (22, wszystkie pod `/api/v1/`)
 

@@ -19,6 +19,10 @@
 > - D8. Podgląd fryzury/zarostu na własnym zdjęciu (generowanie obrazu) — **tak, jako opcja**.
 > - D9. Kolorystyka ubrań — **tak, jako `[HIPOTEZA]`**.
 > - D10. „Do projektu zostanie dodane AI” = **asystent AI wewnątrz LookCoach** (Faza 8).
+> - D11 (2026-11-02). Mentalność: zmiany wolno robić na gałęzi `claude/...` (H-6).
+> - D12. Zęby/uśmiech: **tak, jako opcjonalne 4. ujęcie** (4.6).
+> - D13. Domyślny dostawca AI: **zostaje OpenRouter** (4.11).
+> - D14. Baza: **migracja catch-up + `alembic upgrade head` przy starcie** (7.8).
 >
 > Zasady, które obowiązują w każdym punkcie: **LC-9** (zero liczbowych ocen
 > atrakcyjności), **LC-1** (rct/meta muszą mieć PMID/DOI, reszta oznaczona
@@ -331,9 +335,10 @@ każda zmiana promptu = test na kształt JSON + test na brak liczb ocen.
 - [x] **4.10 Nakładka-szablon w aparacie** (PWA, `getUserMedia`): sylwetka/owal
   do ustawienia kadru + przypomnienie o tym samym świetle i odległości.
   [WYKONANE 2026-11-02: `components/CameraCapture.jsx` — owal / sylwetka / koło, zdjęcie idzie tą samą ścieżką uploadu]
-- [ ] **4.11 Wybór modelu AI zgodny z dokumentacją**: domyślnie `AI_SERVICE=gemini`
+- [x] **4.11 Wybór modelu AI zgodny z dokumentacją**: domyślnie `AI_SERVICE=gemini`
   (dziś `openrouter`), lub zaktualizować CLAUDE.md — decyzja przy realizacji;
   klucz cache zależny od modelu i wersji promptu (dziś `prompt[:50]`).
+  [ZAMKNIĘTE (D13): zostaje OpenRouter; CLAUDE.md opisuje to od 2026-11-02]
 - [x] **4.13 Podgląd fryzury/zarostu na własnym zdjęciu (D8)** — opcjonalny przycisk przy
   propozycjach z 4.2/4.3; model generowania obrazu przez OpenRouter/Gemini; wynik tylko
   w pamięci/na żądanie (nie zapisywany jako „po”), ostrzeżenie LC-9 („to wizualizacja, nie
@@ -436,11 +441,14 @@ każda zmiana promptu = test na kształt JSON + test na brak liczb ocen.
   [WYKONANE 2026-11-02: sen, stres, żywienie, postawa, pewność siebie, wydarzenia, regularność,
   eksperymenty, nazwy rekomendacji i ćwiczeń. Zostały: nazwy składników (klucze do konfliktów),
   tytuły filmów (prawdziwe tytuły), komunikaty feedback_loop (niewidoczne w UI)]
-- [ ] **7.8 Alembic rozjechany z modelami**: tabele `adherence_logs`, `protocol_adherence`,
+- [x] **7.8 Alembic rozjechany z modelami**: tabele `adherence_logs`, `protocol_adherence`,
   `consistency_metrics`, `directive_states`, `skin_reactions`, `skincare_products`,
   `ingredient_usage`, `outbox_events` powstają przez `create_all` w `init_db()` i nie mają
   migracji. Decyzja: dogenerować migrację „catch-up” i przejść na `alembic upgrade head`
   przy starcie (jak hub), albo oficjalnie zostać przy `create_all` i poprawić CLAUDE.md.
+  [WYKONANE (D14): migracja `00cc1dae6214` (14 tabel, tylko brakujące), `init_db` = stamp baseline dla
+  starej bazy + upgrade head. PRZY OKAZJI: łańcuch migracji nie działał na czystej bazie (ebfa423f2a35
+  usuwała nieistniejącą kolumnę), a env.py brał względną ścieżkę bazy od katalogu startu — naprawione]
 - [x] **7.6 Testy kontraktowe z hubem** [WYKONANE 2026-11-02: `tests/test_hub_contract.py` — schemat ModuleEvent
   huba; ZNALEZIONE: `/summary` oddawał hubowi cudze eventy w starym formacie (hub je odrzucał) — teraz własne
   eventy LookCoach + `wellbeing_contribution: null`]: fixture z przykładami z
@@ -487,5 +495,5 @@ każda zmiana promptu = test na kształt JSON + test na brak liczb ocen.
 
 - [x] Q1. Podgląd fryzury/zarostu na zdjęciu → tak, jako opcja (D8, pkt 4.13).
 - [x] Q2. Kolorystyka ubrań → tak, jako `[HIPOTEZA]` (D9, pkt 4.8).
-- [ ] Q3. Czy LookCoach może czytać pomiary z ForgeBody bezpośrednio (własne API ForgeBody),
-  czy wyłącznie przez hub (H-5)? Rekomendacja: przez hub.
+- [x] Q3. Czy LookCoach może czytać pomiary z ForgeBody bezpośrednio (własne API ForgeBody),
+  czy wyłącznie przez hub (H-5)? Rekomendacja: przez hub. [ZROBIONE przez hub (3.8, H-5)]
