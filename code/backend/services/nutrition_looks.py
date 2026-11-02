@@ -1,6 +1,3 @@
-from .lifestyle_status import status_from_issues
-
-
 class NutritionLooksEngine:
     """Nutrition recommendations for looks optimization."""
 
@@ -44,29 +41,6 @@ class NutritionLooksEngine:
         },
     }
 
-    # Meal timing for looks
-    MEAL_TIMING = {
-        "pre_event": {
-            "name": "Pre-Event Nutrition",
-            "timing": "24-48h before",
-            "actions": [
-                "Reduce sodium to <1000mg",
-                "Drink 3L water",
-                "Avoid alcohol 48h before",
-                "Sleep 8+ hours 2 nights before",
-            ],
-        },
-        "day_of": {
-            "name": "Day-Of Event",
-            "timing": "Morning of event",
-            "actions": [
-                "Drink 500ml water on waking",
-                "Light meal - avoid bloat",
-                "No dairy 8h before (reduces puffiness)",
-                "Green tea - reduces water retention",
-            ],
-        },
-    }
 
     @staticmethod
     def get_recommendations(user_profile: dict = None) -> list:
@@ -78,39 +52,3 @@ class NutritionLooksEngine:
                 **info,
             })
         return recs
-
-    @staticmethod
-    def get_meal_plan(plan_type: str = "pre_event") -> dict:
-        """Get meal timing plan."""
-        return NutritionLooksEngine.MEAL_TIMING.get(plan_type, {})
-
-    @staticmethod
-    def analyze_diet(diet_log: dict) -> dict:
-        """Analyze diet and recommend improvements for looks."""
-        result = {
-            "status": None,
-            "status_label": None,
-            "issues": [],
-            "recommendations": [],
-        }
-
-        if not diet_log:
-            return result
-
-        # Check water intake
-        water = diet_log.get("water_liters", 0)
-        if water < 2.0:
-            result["issues"].append("Low water intake")
-            result["recommendations"].append("Increase to 2.5-3L daily")
-        elif water > 4.0:
-            result["issues"].append("Excessive water (risk of imbalance)")
-            result["recommendations"].append("Reduce to 3L daily")
-
-        # Check sodium
-        sodium = diet_log.get("sodium_mg", 0)
-        if sodium > 2300:
-            result["issues"].append("High sodium (puffiness risk)")
-            result["recommendations"].append("Reduce to <1500mg/day")
-
-        result.update(status_from_issues(len(result["issues"])))
-        return result

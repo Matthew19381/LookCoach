@@ -207,7 +207,7 @@
   Kryterium: testy.
   [WYKONANE 2026-11-02: `priority` → kategoria na samej górze rekomendacji. `quiet_hours` jest
   zapisywane, a zastosowanie wejdzie z powiadomieniami (5.5) — dziś LookCoach nic nie wysyła]
-- [ ] **3.8 Klient danych z innych modułów** (`services/ecosystem_client.py`):
+- [x] **3.8 Klient danych z innych modułów** (`services/ecosystem_client.py`):
   odczyt z huba `GET /api/v1/integrations/events?module=…&event_type=…&since=…`
   (sprawdzić wymagania `get_read_user` — H-5):
   - ForgeBody `measurement_logged` (waga, % tłuszczu, talia) i `workout_completed`
@@ -216,17 +216,21 @@
   - Mentalność / Affect `affect_logged` (sen, stres) → zastępuje ręczne ankiety
     w Sen/Stres (pkt 1.7, INT-4 z TASKS).
   Fallback: gdy hub niedostępny — ostatnie dane z lokalnego cache, w UI „dane z …”.
+  [WYKONANE 2026-11-02: `services/ecosystem_client.py`, `GET /ecosystem/overview`; sód z Diety
+  czeka na H-2b (meal_logged nie zawiera sodu); sen — gdy Mentalność zacznie publikować]
 - [x] **3.9 Napraw schemat `POST /integrations/event`** na kontrakt 1.2
   (`module`, `data`), zachowując zgodność wstecz; odbiór eventów zasila 3.8.
 - [x] **3.10 Plan dnia**: pozycja „Zdjęcia kontrolne” co 14–28 dni
   (`complete_on: ["state_observation:observation_type=photo_session"]`),
   nie częściej (wspiera LC-9 — przeciw kompulsywnemu skanowaniu).
-- [ ] **3.11 LC-4: usuń własne plany treningowe i jadłospisy.**
+- [x] **3.11 LC-4: usuń własne plany treningowe i jadłospisy.**
   `services/aesthetic_training.py:generate_plan` (serie/powtórzenia) oraz
   `services/nutrition_looks.py:get_meal_plan` dublują ForgeBody i Dietę.
   Zostaw edukację „dlaczego”, a przycisk „Wyślij do ForgeBody / Diety” uruchamia 3.3 / 3.5.
   Kryterium: brak endpointów generujących serie/powtórzenia i jadłospisy.
-- [ ] **3.12 Panel „Połączenia” w UI**: status huba, ostatnio wysłane dyrektywy
+  [WYKONANE: usunięte /aesthetic-training/plan(s), /nutrition/meal-plan, /nutrition/analyze
+  (formularz był też zepsuty); strony Trening i Żywienie pokazują potrzeby + „Wyślij”]
+- [x] **3.12 Panel „Połączenia” w UI**: status huba, ostatnio wysłane dyrektywy
   i odpowiedź modułów, ostatnie dane pobrane z ForgeBody/Diety/Mentalności.
 
 ### 3B. Zmiany po stronie innych repo (do zrobienia w ich sesjach — tu tylko śledzenie)

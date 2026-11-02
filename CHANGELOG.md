@@ -2,6 +2,28 @@
 
 ---
 
+## [Unreleased] — 2026-11-02 (Faza 3 — wymiana danych z ekosystemem)
+### Dodane
+- **Kolejka do huba** (`outbox_events`): każdy event jest najpierw zapisywany, potem wysyłany z ponawianiem
+  (worker co 60 s). Wyłączony hub, zły lub brak klucza nie gubią już eventów.
+- **Analiza → ForgeBody/Dieta**: po analizie LookCoach wysyła (przez hub, event `module_directive`) priorytet
+  mięśni do ForgeBody i potrzeby żywieniowe do Diety (limit sodu przy obrzęku, niski ładunek glikemiczny przy
+  trądziku — RCT Smith 2007), tylko gdy coś się zmieniło; Health Safety (nerki) respektowane. Plus
+  `state_observation` ze słownym stanem sesji zdjęć.
+- **Dane z innych modułów** (`GET /ecosystem/overview`): pomiary i treningi z ForgeBody, waga z Diety,
+  samopoczucie (`affect`); przy niedostępnym hubie ostatnie zapisane dane.
+- Strona **Połączenia**: dane z modułów, kolejka wysyłki, dyrektywy huba.
+- Plan dnia huba: „Zdjęcia kontrolne” co 14 dni (odhaczane po sesji zdjęć).
+- Dyrektywa `priority` z huba wpływa na kolejność rekomendacji.
+### Zmienione (LC-4)
+- Usunięte generowanie planów treningowych i jadłospisów oraz własny formularz diety (był też zepsuty —
+  wysyłał inne pola niż czytał backend). Strony Trening i Żywienie pokazują, co LookCoach przekazuje do
+  ForgeBody/Diety, z przyciskiem „Wyślij”.
+- `POST /integrations/event` przyjmuje kontrakt huba (`module`/`data`) i stary format.
+### Wymaga zmian w innych repo (zrobione na gałęziach `claude/lookcoach-integracja`, bez merge)
+- System-Glowny: routing `module_directive`, klucz modułu przy dyrektywach, odczyt eventów kluczem modułu.
+- ForgeBody: mapa mięśni (rear_delts/quads nic nie zmieniały). Dieta: dyrektywa `nutrition_needs`.
+
 ## [Unreleased] — 2026-11-02 (Faza 2 — bezpieczeństwo i prywatność zdjęć)
 ### Dodane
 - Strona **Prywatność**: pobranie wszystkich danych (ZIP: JSON + zdjęcia) i trwałe usunięcie

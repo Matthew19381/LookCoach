@@ -1,7 +1,7 @@
 # CLAUDE.md — LookCoach
 
 Instrukcje dla asystenta AI pracującego w tym repo. Opisuje **stan faktyczny**
-(aktualizacja 2026-11-02, po Fazach 0–2 z `decisions/ACTION_PLAN_2026-11-01.md`), nie plany.
+(aktualizacja 2026-11-02, po Fazach 0–3 z `decisions/ACTION_PLAN_2026-11-01.md`), nie plany.
 Bieżący plan z checkboxami: `decisions/ACTION_PLAN_2026-11-01.md`.
 
 ## Uruchamianie
@@ -23,10 +23,10 @@ docker compose up --build   # z katalogu code/
 
 ```bash
 # Backend — uruchamiać Z code/backend (stare importy top-level wymagają cwd w sys.path)
-cd code/backend && python -m pytest tests/        # obecnie 367 testów
+cd code/backend && python -m pytest tests/        # obecnie 373 testów
 
 # Frontend
-cd code/frontend && npm test -- --run             # obecnie 101 testów (vitest)
+cd code/frontend && npm test -- --run             # obecnie 104 testów (vitest)
 
 # Brama rzetelności dowodów — Z katalogu code/
 python -m backend.scripts.verify_evidence_db      # failuje gdy wpis rct/meta nie ma źródła
@@ -62,7 +62,7 @@ Router → Service → SQLAlchemy Session (get_db dependency)
   `ebfa423f2a35` health JSON). Nowy model → zaimportuj w `models/__init__.py`
   oraz w `init_db()` w `database.py`; zmianę schematu rób migracją, nie create_all.
 
-### Routery (21, wszystkie pod `/api/v1/`)
+### Routery (22, wszystkie pod `/api/v1/`)
 
 | Router | Prefiks | Odpowiedzialność |
 |---|---|---|
@@ -78,15 +78,16 @@ Router → Service → SQLAlchemy Session (get_db dependency)
 | event_mode | `/api/v1/event-mode` | Event Mode — odpowiedź ma `evidence_level: "hipoteza"` + baner w UI; LC-8 filtr nerek |
 | confidence | `/api/v1/confidence` | Confidence & Presence |
 | experiments | `/api/v1/experiments` | eksperymenty N=1 — persystencja w DB |
-| aesthetic_training | `/api/v1/aesthetic-training` | trening estetyczny |
+| aesthetic_training | `/api/v1/aesthetic-training` | edukacja o ćwiczeniach + jakościowa analiza sylwetki (bez planów — LC-4) |
 | posture | `/api/v1/posture` | korekta postawy |
-| nutrition | `/api/v1/nutrition` | żywienie a wygląd |
+| nutrition | `/api/v1/nutrition` | czynniki żywieniowe a wygląd (bez jadłospisów — LC-4) |
 | sleep | `/api/v1/sleep` | optymalizacja snu |
 | stress | `/api/v1/stress` | zarządzanie stresem |
 | consistency | `/api/v1/consistency` | Consistency Tracker (LC-7), publikuje `protocol_done/skipped` |
 | directives | `/api/v1/directives` | dyrektywy huba (survival_mode, priority, quiet_hours) |
 | feedback_loop | `/api/v1/feedback-loop` | Smart Feedback Loop (redukcja/przekomponowanie planu) |
 | data | `/api/v1/data` | prywatność: eksport ZIP, trwałe usunięcie (`confirm=USUN-WSZYSTKO`) |
+| ecosystem | `/api/v1/ecosystem` | dane z innych modułów (`/overview`), potrzeby dla ForgeBody/Diety (`/needs`, `/needs/send`), stan łącza (`/connection`) |
 
 Nowy router: zdefiniuj w `routers/`, zaimportuj w `main.py`,
 `app.include_router(router, prefix="/api/v1/<name>", tags=[...])`.
@@ -121,6 +122,13 @@ Kontrakt po stronie LookCoach (hub: port 8000):
   `X-Module-Key` zgodnego z env `MODULE_KEY` (brak/zły klucz → **401**, także gdy header
   nieobecny). Eventy są persystowane w tabeli `integration_events`.
 - `POST /api/v1/directives` — dyrektywy huba; klucz opcjonalny tylko z localhost, zły klucz → 401.
+- **Wysyłka do huba wyłącznie przez kolejkę** `services/outbox.enqueue()` (nie wołaj
+  `IntegrationPublisher` bezpośrednio); worker w `main.lifespan` ponawia (`LOOKCOACH_OUTBOX_INTERVAL`).
+- **Potrzeby dla innych modułów**: `services/goal_router.py` (analiza → `aesthetic_priority` dla
+  ForgeBody w jego słowniku mięśni, `nutrition_needs` dla Diety z `evidence_id`),
+  `services/ecosystem_dispatch.py` (event `module_directive`, kontrakt huba §1.5, tylko przy zmianie).
+- **Dane z innych modułów**: `services/ecosystem_client.py` (hub `GET /integrations/events`, snapshot
+  `ecosystem_snapshots` jako zapas).
 
 Pełna architektura docelowa: sekcja "Architektura docelowa" w `decisions/ACTION_PLAN_2026-08-09_wykonane_2026-08-23.md` (archiwum);
 audyt naukowy: `NEURO_PLAN.md` §4.

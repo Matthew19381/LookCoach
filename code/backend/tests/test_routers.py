@@ -487,19 +487,10 @@ class TestExperimentsRouter:
 
 # ========== AESTHETIC TRAINING ROUTER ==========
 class TestAestheticTrainingRouter:
-    def test_get_plans(self):
-        response = client.get("/api/v1/aesthetic-training/plans")
-        assert response.status_code == 200
-        data = response.json()
-        assert isinstance(data, list)
-        assert len(data) > 0
-
-    def test_generate_plan(self):
-        response = client.post("/api/v1/aesthetic-training/plan", json={
-            "goal": "v_taper",
-            "fitness_level": "beginner"
-        })
-        assert response.status_code == 200
+    def test_no_training_plans_in_lookcoach(self):
+        """LC-4: training plans belong to ForgeBody."""
+        assert client.get("/api/v1/aesthetic-training/plans").status_code == 404
+        assert client.post("/api/v1/aesthetic-training/plan", json={}).status_code in (404, 405)
 
     def test_get_exercises(self):
         response = client.get("/api/v1/aesthetic-training/exercises")
@@ -558,18 +549,6 @@ class TestNutritionRouter:
         assert response.status_code == 200
         assert isinstance(response.json(), list)
 
-    def test_get_meal_plan(self):
-        response = client.get("/api/v1/nutrition/meal-plan/pre_event")
-        assert response.status_code == 200
-
-    def test_analyze_diet(self):
-        response = client.post("/api/v1/nutrition/analyze", json={
-            "diet_log": {"calories": 2000, "protein": 150}
-        })
-        assert response.status_code == 200
-
-
-# ========== SLEEP ROUTER ==========
 class TestSleepRouter:
     def test_get_factors(self):
         response = client.get("/api/v1/sleep/factors")

@@ -1,114 +1,62 @@
-import { useState, useEffect } from 'react'
-import { Dumbbell, Target } from 'lucide-react'
-import { getAvailablePlans, generateTrainingPlan } from '../api/client'
+import { useState, useEffect, useCallback } from 'react'
+import { Dumbbell } from 'lucide-react'
+import { getEcosystemNeeds, sendEcosystemNeeds } from '../api/client'
+import NeedsCard, { MUSCLE_PL } from '../components/NeedsCard'
 
+// LC-4: LookCoach nie układa planów treningowych. Z analizy zdjęć wynika, które partie
+// mięśni warto podciągnąć — ten priorytet trafia do ForgeBody (przez hub), który
+// dobiera ćwiczenia w Twoim planie.
 export default function AestheticTraining() {
-  const [plans, setPlans] = useState([])
-  const [selectedPlan, setSelectedPlan] = useState(null)
+  const [needs, setNeeds] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [generating, setGenerating] = useState(false)
+  const [sending, setSending] = useState(false)
+  const [message, setMessage] = useState(null)
 
-  useEffect(() => {
-    getAvailablePlans().then(data => {
-      setPlans(data)
-      setLoading(false)
-    }).catch(() => setLoading(false))
+  const load = useCallback(() => {
+    return getEcosystemNeeds().then(setNeeds).catch(() => setNeeds(null)).finally(() => setLoading(false))
   }, [])
 
-  const handleSelectPlan = async (planId) => {
-    setGenerating(true)
+  useEffect(() => { load() }, [load])
+
+  const handleSend = async (force) => {
+    setSending(true)
     try {
-      const result = await generateTrainingPlan(planId, 'beginner')
-      setSelectedPlan(result)
-    } catch (e) {
-      console.error('Plan generation failed:', e)
+      const res = await sendEcosystemNeeds(force)
+      setMessage(res.queued?.includes('aesthetic_priority') ? 'Priorytet przekazany do ForgeBody.' : 'Nic nowego do wysłania.')
+      await load()
+    } catch {
+      setMessage('Nie udało się wysłać — spróbuj później.')
     } finally {
-      setGenerating(false)
+      setSending(false)
     }
   }
 
-  if (loading) {
-    return <div className="text-center py-20">Loading training plans...</div>
-  }
+  if (loading) return <div className="text-center py-20">Ładowanie...</div>
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-2xl">
       <div className="flex items-center gap-3">
         <Dumbbell size={28} className="text-blue-600" />
-        <h1 className="text-3xl font-bold text-gray-900">Aesthetic Training</h1>
+        <h1 className="text-3xl font-bold text-gray-900">Trening</h1>
       </div>
-
-      {selectedPlan ? (
-        <div className="space-y-4">
-          <div className="bg-white border rounded-lg p-6">
-            <h2 className="text-xl font-semibold mb-2">{selectedPlan.name}</h2>
-            <p className="text-gray-600 mb-4">{selectedPlan.description}</p>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-              <div className="bg-blue-50 p-3 rounded-lg text-center">
-                <p className="text-sm text-gray-600">Frequency</p>
-                <p className="font-bold text-blue-600">{selectedPlan.frequency}</p>
-              </div>
-              <div className="bg-green-50 p-3 rounded-lg text-center">
-                <p className="text-sm text-gray-600">Duration</p>
-                <p className="font-bold text-green-600">{selectedPlan.duration_weeks} weeks</p>
-              </div>
-              <div className="bg-purple-50 p-3 rounded-lg text-center">
-                <p className="text-sm text-gray-600">Reps</p>
-                <p className="font-bold text-purple-600">{selectedPlan.reps}</p>
-              </div>
-            </div>
-            {selectedPlan.notes && (
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                <p className="text-sm text-yellow-800">{selectedPlan.notes}</p>
-              </div>
-            )}
-          </div>
-
-          {selectedPlan.weekly_schedule && (
-            <div className="bg-white border rounded-lg p-6">
-              <h3 className="text-lg font-semibold mb-4">Weekly Schedule</h3>
-              {Object.entries(selectedPlan.weekly_schedule).map(([day, exercises]) => (
-                <div key={day} className="mb-4">
-                  <h4 className="font-medium text-gray-700 capitalize mb-2">{day}</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                    {exercises.map((ex, i) => (
-                      <div key={i} className="bg-gray-50 p-3 rounded border">
-                        <p className="font-medium text-sm">{ex.replace('_', ' ')}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          <button
-            onClick={() => setSelectedPlan(null)}
-            className="text-blue-600 hover:text-blue-800"
-          >
-            ← Back to plans
-          </button>
-        </div>
-      ) : (
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {plans.map((plan) => (
-            <div
-              key={plan.id}
-              className="bg-white border rounded-lg p-6 hover:shadow-md transition-shadow cursor-pointer"
-              onClick={() => handleSelectPlan(plan.id)}
-            >
-              <div className="flex items-center gap-2 mb-3">
-                <Target size={20} className="text-blue-500" />
-                <h3 className="font-semibold">{plan.name}</h3>
-              </div>
-              <p className="text-sm text-gray-600">{plan.description}</p>
-              {generating && plan.id === plan.id && (
-                <p className="text-sm text-blue-600 mt-2">Generating...</p>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
+      <p className="text-gray-700">
+        Plan treningowy prowadzi <strong>ForgeBody</strong>. LookCoach przekazuje mu tylko, które partie
+        warto podciągnąć według analizy Twoich zdjęć (zdjęcie z boku).
+      </p>
+      <NeedsCard
+        title="Priorytet mięśni dla ForgeBody"
+        moduleName="ForgeBody"
+        need={needs?.aesthetic_priority}
+        sending={sending}
+        onSend={handleSend}
+        renderPayload={(p) => (
+          <ul className="list-disc ml-5">
+            {p.muscle_groups.map((g) => <li key={g}>{MUSCLE_PL[g] || g}</li>)}
+            <li className="list-none text-sm text-gray-500 -ml-5 mt-1">na {p.duration_weeks} tyg.</li>
+          </ul>
+        )}
+      />
+      {message && <p className="text-sm text-gray-700">{message}</p>}
     </div>
   )
 }

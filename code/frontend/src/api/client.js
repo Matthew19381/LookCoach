@@ -120,15 +120,18 @@ export const getActiveExperiments = () =>
 export const finishExperiment = (experimentId) =>
   api.post(`/api/v1/experiments/${experimentId}/finish`);
 
-// Aesthetic Training
-export const getAvailablePlans = () =>
-  api.get(`/api/v1/aesthetic-training/plans`);
+// Ecosystem (plan 3.8/3.11/3.12): needs for ForgeBody/Dieta, data from other modules
+export const getEcosystemNeeds = () =>
+  api.get(`/api/v1/ecosystem/needs?user_id=${getUserId()}`);
 
-export const generateTrainingPlan = (goal = "v_taper") =>
-  api.post(`/api/v1/aesthetic-training/plan`, { goal });
+export const sendEcosystemNeeds = (force = false) =>
+  api.post(`/api/v1/ecosystem/needs/send?user_id=${getUserId()}&force=${force}`);
 
-export const analyzePhysique = (measurements) =>
-  api.post(`/api/v1/aesthetic-training/analyze`, { measurements });
+export const getEcosystemOverview = () =>
+  api.get(`/api/v1/ecosystem/overview?user_id=${getUserId()}`);
+
+export const getConnectionStatus = () =>
+  api.get(`/api/v1/ecosystem/connection?user_id=${getUserId()}`);
 
 // Posture Correction
 export const getPostureIssues = () =>
@@ -153,11 +156,6 @@ export const getNutritionFactors = () =>
 export const getNutritionRecommendations = () =>
   api.get(`/api/v1/nutrition/recommendations`);
 
-export const getMealPlan = (planType = "pre_event") =>
-  api.get(`/api/v1/nutrition/meal-plan/${planType}`);
-
-export const analyzeDiet = (dietLog) =>
-  api.post(`/api/v1/nutrition/analyze`, { diet_log: dietLog });
 
 // Sleep Optimization
 export const getSleepFactors = () =>

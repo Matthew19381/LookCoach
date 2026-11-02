@@ -47,11 +47,14 @@ def current_needs(db: Session, user_id: int) -> dict[str, dict | None]:
     }
 
 
-def dispatch_needs(db: Session, user_id: int) -> list[str]:
-    """Queue directives whose content changed. Returns the directive names queued."""
+def dispatch_needs(db: Session, user_id: int, force: bool = False) -> list[str]:
+    """Queue directives whose content changed (or all current ones with force).
+    Returns the directive names queued."""
     queued = []
     for directive, payload in current_needs(db, user_id).items():
-        if payload is None or payload == _last_sent_payload(db, user_id, directive):
+        if payload is None:
+            continue
+        if not force and payload == _last_sent_payload(db, user_id, directive):
             continue
         outbox.enqueue(
             db,
@@ -75,3 +78,27 @@ def observe_session(db: Session, user_id: int, photo_type: str, labels: dict[str
         {"observation_type": "photo_session", "photo_type": photo_type, "labels": labels},
         user_id=user_id,
     )
+
+
+def needs_overview(db: Session, user_id: int) -> dict:
+    """Per directive: target module, what the analysis implies now, what was last queued."""
+    current = current_needs(db, user_id)
+    out = {}
+    for directive, target in TARGETS.items():
+        last = (
+            db.query(OutboxEvent)
+            .filter(OutboxEvent.user_id == user_id, OutboxEvent.event_type == "module_directive")
+            .order_by(OutboxEvent.id.desc())
+            .all()
+        )
+        last_row = next((r for r in last if json.loads(r.data).get("directive") == directive), None)
+        out[directive] = {
+            "target_module": target,
+            "current": current[directive],
+            "last_sent": {
+                "payload": json.loads(last_row.data).get("payload"),
+                "status": last_row.status,
+                "timestamp": last_row.timestamp,
+            } if last_row else None,
+        }
+    return out

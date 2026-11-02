@@ -1,14 +1,7 @@
 from fastapi import APIRouter
-from pydantic import BaseModel
 from ..services.nutrition_looks import NutritionLooksEngine
 
 router = APIRouter()
-
-class DietLogRequest(BaseModel):
-    diet_log: dict
-
-class MealPlanRequest(BaseModel):
-    plan_type: str = "pre_event"
 
 @router.get("/factors")
 async def get_factors():
@@ -20,12 +13,7 @@ async def get_recommendations():
     """Get nutrition recommendations."""
     return NutritionLooksEngine.get_recommendations()
 
-@router.get("/meal-plan/{plan_type}")
-async def get_meal_plan(plan_type: str = "pre_event"):
-    """Get meal timing plan for looks."""
-    return NutritionLooksEngine.get_meal_plan(plan_type)
-
-@router.post("/analyze")
-async def analyze_diet(body: DietLogRequest):
-    """Analyze diet and recommend improvements."""
-    return NutritionLooksEngine.analyze_diet(body.diet_log)
+# /meal-plan and /analyze removed 2026-11-02 (LC-4, D3): meal plans and the food
+# log belong to Dieta. LookCoach sends needs (sodium limit, low glycemic load) to
+# Dieta via the hub - GET/POST /ecosystem/needs. The /analyze form was also
+# broken (sent water/sugar/veg, read water_liters/sodium_mg).

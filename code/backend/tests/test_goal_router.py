@@ -89,3 +89,35 @@ def test_dispatch_respects_health_flags(db_session):
     db_session.add(a)
     db_session.commit()
     assert dispatch_needs(db_session, 2) == []
+
+
+def test_needs_endpoints():
+    from fastapi import FastAPI
+    from fastapi.testclient import TestClient
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import sessionmaker
+    from sqlalchemy.pool import StaticPool
+
+    from backend.database import get_db
+    from backend.models.base import Base
+    from backend.routers import ecosystem
+
+    engine = create_engine("sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool)
+    Base.metadata.create_all(engine)
+    db_session = sessionmaker(bind=engine)()
+    _analysed_side_photo(db_session, 7, {"missing_muscles": [{"muscle": "glutes", "priority": "high"}]})
+    app = FastAPI()
+    app.include_router(ecosystem.router, prefix="/api/v1/ecosystem")
+    app.dependency_overrides[get_db] = lambda: db_session
+    c = TestClient(app)
+
+    needs = c.get("/api/v1/ecosystem/needs?user_id=7").json()
+    assert needs["aesthetic_priority"]["current"]["muscle_groups"] == ["glutes"]
+    assert needs["aesthetic_priority"]["last_sent"] is None
+    assert needs["nutrition_needs"]["current"] is None
+
+    assert c.post("/api/v1/ecosystem/needs/send?user_id=7").json() == {"queued": ["aesthetic_priority"]}
+    assert c.post("/api/v1/ecosystem/needs/send?user_id=7").json() == {"queued": []}
+    assert c.post("/api/v1/ecosystem/needs/send?user_id=7&force=true").json() == {"queued": ["aesthetic_priority"]}
+    sent = c.get("/api/v1/ecosystem/needs?user_id=7").json()["aesthetic_priority"]["last_sent"]
+    assert sent["payload"]["muscle_groups"] == ["glutes"] and sent["status"] == "pending"
