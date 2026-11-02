@@ -12,6 +12,9 @@ from ..services.photo_storage import MAX_UPLOAD_BYTES, InvalidPhoto, quality_che
 
 router = APIRouter()
 
+# "smile": optional 4th view for teeth (plan 4.6, D12)
+PHOTO_TYPES = ("front", "side", "back", "smile")
+
 
 @router.post("/upload")
 async def upload_photo(
@@ -20,8 +23,8 @@ async def upload_photo(
     user_id: int = Form(1),
     db: Session = Depends(get_db),
 ):
-    if photo_type not in ["front", "side", "back"]:
-        raise HTTPException(400, "photo_type must be front, side, or back")
+    if photo_type not in PHOTO_TYPES:
+        raise HTTPException(400, "photo_type must be front, side, back or smile")
 
     # Read one byte past the limit so an oversized upload is rejected without
     # loading arbitrarily large files into memory.

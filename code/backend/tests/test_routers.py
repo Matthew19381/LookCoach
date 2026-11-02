@@ -192,6 +192,28 @@ class TestAnalysisRouter:
         assert latest["skin"]["skin_type"] == "dry"
         assert latest["hair"]["hairline_status"] == "stable"
 
+    def test_smile_photo_is_analysed_into_smile_section(self):
+        """Plan 4.6 (D12): optional 4th view."""
+        from datetime import datetime
+        from unittest.mock import patch
+        from backend.models.photo import Photo
+
+        tmp = tempfile.NamedTemporaryFile(suffix=".jpg", delete=False)
+        tmp.write(b"\xff\xd8x")
+        tmp.close()
+        db = TestSessionLocal()
+        photo = Photo(user_id=9605, photo_type="smile", file_path=tmp.name, uploaded_at=datetime.utcnow())
+        db.add(photo)
+        db.commit()
+        photo_id = photo.id
+        db.close()
+        with patch("backend.routers.analysis.VISION_SERVICE.analyze_smile",
+                   return_value={"teeth_visible": True, "discoloration": "mild"}):
+            assert client.post(f"/api/v1/analysis/analyze/{photo_id}").status_code == 200
+        os.unlink(tmp.name)
+        latest = client.get("/api/v1/analysis/latest?user_id=9605").json()
+        assert latest["smile"]["discoloration"] == "mild"
+
     def test_ai_unavailable_stores_nothing(self):
         """No AI -> 503 and no invented analysis (the old fallback said 'swelling: medium')."""
         from datetime import datetime

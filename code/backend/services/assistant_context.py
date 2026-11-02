@@ -61,6 +61,7 @@ def build_context(db: Session, user_id: int) -> dict:
             "skin": _labels(analysis["skin"], ("skin_type", "problems", "hydration_status")),
             "hair": _labels(analysis["hair"], ("hairline_status", "density_status", "hair_type", "crown_density")),
             "body": _labels(analysis["body"], ("posture", "missing_muscles", "proportions")),
+            "smile": _labels(latest.get("smile"), ("discoloration", "gums", "alignment")),
         },
         "main_focus": lever,
         "recommendations": [

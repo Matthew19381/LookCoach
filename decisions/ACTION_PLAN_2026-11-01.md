@@ -292,7 +292,8 @@ każda zmiana promptu = test na kształt JSON + test na brak liczb ocen.
   [WYKONANE 2026-11-02: brwi/zarost/kształt twarzy/okolica oczu jako pola `face_data` (bez migracji),
   włosy scalane z przodu i tyłu. PRZY OKAZJI: lokalny fallback zwracał zmyślone obserwacje
   („obrzęk: średni”) — teraz brak AI = 503 i nic nie jest zapisywane]
-> 4.1–4.8 [WYKONANE 2026-11-02]: `services/style_advisor.py` (regułowo, bez AI), `GET /api/v1/style`,
+> 4.1–4.8 [WYKONANE 2026-11-02; 4.6 dołożone po decyzji D12 — opcjonalne ujęcie „uśmiech”, kolumna
+> `analyses.smile_data` (migracja 75de7bceaf5d), porady w Stylu]: `services/style_advisor.py` (regułowo, bez AI), `GET /api/v1/style`,
 > strona Styl. Każda porada ma poziom (porada stylistyczna / hipoteza / evidence_id / blokada LC-8).
 > Minoksydyl na brodę oznaczony jako hipoteza — źródło niezweryfikowane (LC-1). 4.6 (zęby) pominięte:
 > zdjęcie z przodu ma neutralną twarz, uśmiech nie jest widoczny — wymaga osobnego ujęcia (decyzja).
@@ -319,7 +320,7 @@ każda zmiana promptu = test na kształt JSON + test na brak liczb ocen.
   i 3.4 (żywienie dla Diety). Kryterium: test — brak liczb poza pomiarami użytkownika.
 - [x] **4.5 Okolica oczu** (cienie, opuchnięcie) → powiązanie ze snem (3.8)
   i sodem (Dieta) — tylko korelacja jakościowa.
-- [ ] **4.6 Uśmiech/zęby** (przebarwienia: brak/lekkie/wyraźne) → higiena,
+- [x] **4.6 Uśmiech/zęby** (przebarwienia: brak/lekkie/wyraźne) → higiena,
   wybielanie (dowody dla nadtlenku karbamidu — zweryfikować PMID), dentysta.
 - [x] **4.7 Okulary i oprawki** (jeśli nosi): propozycje kształtu oprawek do kształtu
   twarzy — porada stylistyczna.

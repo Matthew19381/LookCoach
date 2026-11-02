@@ -72,3 +72,11 @@ def test_colors_are_always_hypothesis():
 def test_no_photos_no_advice():
     advice = style_advice({"face": None, "hair": None, "body": None}, {}, {})
     assert advice["hair"] is None and advice["brows"] == [] and advice["clothing"] == []
+
+
+def test_teeth_advice_from_optional_smile_photo():
+    """Plan 4.6 (D12)."""
+    advice = style_advice({"face": FACE, "smile": {"discoloration": "marked", "gums": "redness"}}, {}, {})
+    texts = " ".join(i["text"] for i in advice["teeth"])
+    assert "higienizacja" in texts and "dziąseł" in texts
+    assert style_advice({"face": FACE}, {}, {})["teeth"] == []  # no smile photo -> nothing

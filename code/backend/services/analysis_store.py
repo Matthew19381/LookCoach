@@ -16,6 +16,7 @@ SECTIONS_BY_TYPE = {
     "front": ("face", "skin", "hair"),
     "side": ("body",),
     "back": ("hair",),
+    "smile": ("smile",),  # optional (plan 4.6)
 }
 
 _GETTERS = {
@@ -23,11 +24,12 @@ _GETTERS = {
     "body": Analysis.get_body_data,
     "skin": Analysis.get_skin_data,
     "hair": Analysis.get_hair_data,
+    "smile": Analysis.get_smile_data,
 }
 
 
 def load_latest_analysis(db: Session, user_id: int) -> dict:
-    """{"face", "body", "skin", "hair": dict | None, "photos_analyzed": int}.
+    """{"face", "body", "skin", "hair", "smile": dict | None, "photos_analyzed": int}.
 
     Each section comes from the newest analysed photo of the type that fills it.
     """
@@ -37,7 +39,7 @@ def load_latest_analysis(db: Session, user_id: int) -> dict:
         .order_by(Photo.uploaded_at.desc(), Photo.id.desc())
         .all()
     )
-    result: dict = {"face": None, "body": None, "skin": None, "hair": None}
+    result: dict = {"face": None, "body": None, "skin": None, "hair": None, "smile": None}
     seen: set[tuple[str, str]] = set()  # (photo_type, section) already taken from a newer photo
     for photo in photos:
         sections = [s for s in SECTIONS_BY_TYPE.get(photo.photo_type, ()) if (photo.photo_type, s) not in seen]

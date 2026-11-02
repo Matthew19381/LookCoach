@@ -178,6 +178,27 @@ def eye_advice(face: dict, health: dict) -> list[dict]:
     return out
 
 
+# --- 4.6 smile (optional photo, D12) ------------------------------------------
+def teeth_advice(smile: dict) -> list[dict]:
+    if not smile:
+        return []
+    out = []
+    if smile.get("discoloration") in ("mild", "marked"):
+        out.append(_item("Przebarwienia: higienizacja u dentysty (kamień, osad) to pierwszy krok — często wystarcza."))
+        out.append(_item(
+            "Wybielanie nadtlenkiem karbamidu działa, ale może uwrażliwiać zęby — najbezpieczniej pod kontrolą dentysty.",
+            "expert",
+        ))
+        out.append(_item("Kawa, herbata, czerwone wino i papierosy nasilają osad — płucz usta wodą po wypiciu."))
+    if smile.get("gums") in ("redness", "receding"):
+        out.append(_item("Zmiany dziąseł (zaczerwienienie, cofanie się) — umów kontrolę u dentysty lub periodontologa.", "expert"))
+    if smile.get("alignment") == "uneven":
+        out.append(_item("Nierówne ustawienie zębów: o możliwościach (np. nakładki) zdecyduje ortodonta."))
+    if not out:
+        out.append(_item("Bez uwag — wystarczy codzienna higiena i kontrola u dentysty raz w roku."))
+    return out
+
+
 # --- 4.7 glasses ------------------------------------------------------------
 FRAMES = {
     "round": "Prostokątne lub kwadratowe oprawki — dodają kątów.",
@@ -236,6 +257,7 @@ def style_advice(latest: dict, profile_goals: dict, health: dict) -> dict:
         "glasses": glasses_advice(face),
         "clothing": body_advice(body) if body else [],
         "colors": color_advice(face),
+        "teeth": teeth_advice(latest.get("smile") or {}),
         "has_front_photo": bool(face),
         "has_side_photo": bool(body),
     }

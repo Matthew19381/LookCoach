@@ -6,6 +6,8 @@ const GUIDES = {
     shape: <ellipse cx="50" cy="45" rx="22" ry="30" /> },
   side: { facing: 'environment', hint: 'Cała sylwetka z profilu w ramce, telefon na wysokości bioder.',
     shape: <path d="M50 8 a6 6 0 1 1 0.1 0 M44 20 h12 l4 30 h-6 l-2 38 h-4 l-2 -38 h-6 z" /> },
+  smile: { facing: 'user', hint: 'Usta w prostokącie, szeroki uśmiech, światło od przodu.',
+    shape: <rect x="28" y="50" width="44" height="20" rx="8" /> },
   back: { facing: 'environment', hint: 'Czubek głowy w kole, zdjęcie z tyłu i lekko z góry.',
     shape: <circle cx="50" cy="45" r="24" /> },
 }

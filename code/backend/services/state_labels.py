@@ -23,6 +23,8 @@ FIELDS: list[tuple[str, tuple[str, ...], str]] = [
     ("face", ("beard", "evenness"), "Zarost — równomierność"),
     ("face", ("eye_area", "dark_circles"), "Cienie pod oczami"),
     ("face", ("eye_area", "puffiness"), "Opuchnięcie pod oczami"),
+    ("smile", ("discoloration",), "Zęby — przebarwienia"),
+    ("smile", ("gums",), "Dziąsła"),
 ]
 
 VALUE_PL = {
@@ -57,6 +59,8 @@ VALUE_PL = {
     "not_applicable": "nie dotyczy",
     "mild": "lekkie",
     "marked": "wyraźne",
+    "redness": "zaczerwienienie",
+    "receding": "cofanie się",
 }
 
 
@@ -77,6 +81,7 @@ def state_labels(analysis) -> dict[str, str]:
         "face": analysis.get_face_data(),
         "skin": analysis.get_skin_data(),
         "hair": analysis.get_hair_data(),
+        "smile": analysis.get_smile_data(),
     }
     out: dict[str, str] = {}
     for section, path, label in FIELDS:

@@ -78,6 +78,18 @@ Describe observable state only — do NOT rate or score the person. Return ONLY 
 Respond ONLY with valid JSON."""
 
 
+SMILE_PROMPT = """This photo shows a person smiling, teeth visible. Look only at the teeth and gums.
+Describe observable state only — do NOT rate or score the person or their smile. Return ONLY valid JSON with:
+{
+  "teeth_visible": true,
+  "discoloration": "none|mild|marked|unclear",
+  "alignment": "even|slightly_uneven|uneven|unclear",
+  "gums": "normal|redness|receding|unclear",
+  "observations": ["short text observations"]
+}
+Respond ONLY with valid JSON."""
+
+
 def _cache_key(image_bytes: bytes, analysis_type: str) -> str:
     h = hashlib.sha256(image_bytes + analysis_type.encode()).hexdigest()
     return str(CACHE_DIR / f"{h}.json")
@@ -96,7 +108,7 @@ def _save_to_cache(key: str, data: dict):
 def forget_image(image_bytes: bytes) -> int:
     """Remove every cached analysis of this image (called when a photo is deleted)."""
     removed = 0
-    for prompt in (FACE_PROMPT, BODY_PROMPT, SKIN_PROMPT, HAIR_PROMPT, CROWN_PROMPT, LABEL_PROMPT):
+    for prompt in (FACE_PROMPT, BODY_PROMPT, SKIN_PROMPT, HAIR_PROMPT, CROWN_PROMPT, SMILE_PROMPT, LABEL_PROMPT):
         path = Path(_cache_key(image_bytes, prompt[:50]))
         if path.exists():
             path.unlink()
@@ -192,6 +204,12 @@ class GeminiVisionService:
         return self._analyze(
             image_bytes, CROWN_PROMPT,
             lambda b: self._call_openrouter(b, CROWN_PROMPT) or self._get_fallback().analyze_image_fallback(b, "crown"),
+        )
+
+    def analyze_smile(self, image_bytes: bytes) -> dict:
+        return self._analyze(
+            image_bytes, SMILE_PROMPT,
+            lambda b: self._call_openrouter(b, SMILE_PROMPT) or self._get_fallback().analyze_image_fallback(b, "smile"),
         )
 
     def read_ingredient_label(self, image_bytes: bytes) -> dict:

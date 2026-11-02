@@ -8,14 +8,15 @@ const PHOTO_GUIDE = {
   front: { title: 'Przód', what: 'twarz, skóra, brwi, zarost, linia włosów', how: 'twarz na wprost, równe światło dzienne, bez filtrów' },
   side: { title: 'Bok', what: 'sylwetka i postawa', how: 'cała sylwetka z profilu, swobodna postawa' },
   back: { title: 'Tył', what: 'czubek głowy (gęstość włosów)', how: 'z tyłu i lekko z góry, widoczny czubek głowy' },
+  smile: { title: 'Uśmiech (opcjonalnie)', what: 'zęby i dziąsła', how: 'szeroki uśmiech, zęby widoczne, światło z przodu' },
 }
 
 export default function PhotoUpload() {
-  const [uploading, setUploading] = useState({ front: false, side: false, back: false })
-  const [uploaded, setUploaded] = useState({ front: null, side: null, back: null })
+  const [uploading, setUploading] = useState({ front: false, side: false, back: false, smile: false })
+  const [uploaded, setUploaded] = useState({ front: null, side: null, back: null, smile: null })
   const [error, setError] = useState('')
   // per view: {state: 'analyzing'|'done'|'quality'|'failed', problems?, message?}
-  const [analysis, setAnalysis] = useState({ front: null, side: null, back: null })
+  const [analysis, setAnalysis] = useState({ front: null, side: null, back: null, smile: null })
   const [wellbeing, setWellbeing] = useState(null)
   const [camera, setCamera] = useState(null) // photo type being taken with the guide overlay
 
@@ -98,8 +99,8 @@ export default function PhotoUpload() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {['front', 'side', 'back'].map((type) => (
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+        {['front', 'side', 'back', 'smile'].map((type) => (
           <div
             key={type}
             onDrop={(e) => handleDrop(e, type)}

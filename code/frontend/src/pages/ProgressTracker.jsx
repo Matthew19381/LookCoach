@@ -5,7 +5,7 @@ import { getTimeline, comparePhotos, getStateTimeline, getCorrelations } from '.
 // Do 2026-11-02 była tu linia „Look Score” rosnąca o 5 pkt na każde zdjęcie,
 // niezależnie od analizy — usunięta jako zmyślona ocena wyglądu.
 
-const PHOTO_TYPE_PL = { front: 'przód', side: 'bok', back: 'tył' }
+const PHOTO_TYPE_PL = { front: 'przód', side: 'bok', back: 'tył', smile: 'uśmiech' }
 
 const formatDate = (iso) => (iso ? new Date(iso).toLocaleDateString('pl-PL') : '')
 

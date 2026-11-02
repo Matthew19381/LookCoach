@@ -150,6 +150,7 @@ export default function Style() {
       <Items title="Oprawki okularów" items={advice.glasses} />
       <Items title="Ubiór i sylwetka" items={advice.clothing} />
       <Items title="Kolorystyka (HIPOTEZA)" items={advice.colors} />
+      <Items title="Uśmiech" items={advice.teeth} />
     </div>
   )
 }

@@ -38,6 +38,7 @@ describe('PhotoUpload', () => {
     expect(screen.getByText('Przód')).toBeInTheDocument()
     expect(screen.getByText('Bok')).toBeInTheDocument()
     expect(screen.getByText('Tył')).toBeInTheDocument()
+    expect(screen.getByText('Uśmiech (opcjonalnie)')).toBeInTheDocument() // plan 4.6
     // D1: skin and hairline come from the front photo
     expect(screen.getByText(/Analiza: twarz, skóra, brwi, zarost, linia włosów/)).toBeInTheDocument()
   })

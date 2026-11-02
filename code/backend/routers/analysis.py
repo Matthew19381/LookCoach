@@ -92,6 +92,10 @@ async def analyze_photo(
             crown = VISION_SERVICE.analyze_crown(image_bytes)
             _require_ai(crown)
             analysis.set_hair_data(crown or {})
+        elif photo.photo_type == "smile":
+            smile = VISION_SERVICE.analyze_smile(image_bytes)
+            _require_ai(smile)
+            analysis.set_smile_data(smile or {})
 
         lever = AttractivenessLevers.detect_lever(
             analysis.get_face_data(),

@@ -14,6 +14,7 @@ class Analysis(Base):
     body_data = Column(Text)  # JSON: qualitative observations, asymmetries, missing_muscles
     skin_data = Column(Text)  # JSON: skin_type, problems, hydration_status
     hair_data = Column(Text)  # JSON: hairline_status, density_status, recommendations
+    smile_data = Column(Text)  # JSON: teeth (optional "smile" photo, plan 4.6 / D12)
     attractiveness_lever = Column(Text)  # JSON: primary_lever, secondary_levers
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
@@ -44,3 +45,9 @@ class Analysis(Base):
 
     def set_hair_data(self, data: dict):
         self.hair_data = json.dumps(data)
+
+    def get_smile_data(self):
+        return json.loads(self.smile_data) if self.smile_data else {}
+
+    def set_smile_data(self, data: dict):
+        self.smile_data = json.dumps(data)
