@@ -39,7 +39,7 @@ export default function VideoLearning() {
       </div>
 
       <form onSubmit={handleSearch} className="flex gap-2">
-        <input
+        <input aria-label="Szukaj filmów"
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}

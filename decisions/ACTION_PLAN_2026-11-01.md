@@ -404,9 +404,13 @@ każda zmiana promptu = test na kształt JSON + test na brak liczb ocen.
   (Sen, Stres, Żywienie, Postawa), *Więcej* (Eksperymenty, Wideo, Event Mode,
   Pewność siebie, Połączenia, Prywatność). Menu mobilne (hamburger / dolny pasek).
   [WYKONANE: boczny panel z grupami + hamburger na telefonie, etykiety po polsku]
-- [ ] **6.3 Stany puste i błędy**: każda strona bez danych mówi, co zrobić dalej
+- [x] **6.3 Stany puste i błędy**: każda strona bez danych mówi, co zrobić dalej
   (np. „Zrób zdjęcia z przodu, żeby zobaczyć analizę skóry”).
-- [ ] **6.4 Dostępność**: kontrast, etykiety `aria`, obsługa klawiaturą.
+  [WYKONANE: Dziś, Styl, Postęp, Pewność siebie, Postawa, Trening, Żywienie, Połączenia, Asystent mają
+  komunikat „co dalej” zamiast pustej strony]
+- [x] **6.4 Dostępność**: kontrast, etykiety `aria`, obsługa klawiaturą.
+  [WYKONANE 2026-11-02 częściowo: etykiety dla wszystkich pól formularzy, role dialog/note/alert, menu
+  mobilne z aria-expanded; kontrast kolorów nie był mierzony narzędziem]
 
 ---
 

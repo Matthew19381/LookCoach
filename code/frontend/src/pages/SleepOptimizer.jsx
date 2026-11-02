@@ -83,13 +83,13 @@ export default function SleepOptimizer() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           <div>
             <label className="block text-sm font-medium mb-1">Godziny snu</label>
-            <input type="number" value={sleepData.hours}
+            <input aria-label="Godziny snu" type="number" value={sleepData.hours}
               onChange={(e) => setSleepData({...sleepData, hours: +e.target.value})}
               className="border rounded p-2 w-full" />
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Jakość</label>
-            <select value={sleepData.quality}
+            <select aria-label="Jakość snu" value={sleepData.quality}
               onChange={(e) => setSleepData({...sleepData, quality: e.target.value})}
               className="border rounded p-2 w-full">
               <option value="deep">Głęboki</option>
@@ -100,7 +100,7 @@ export default function SleepOptimizer() {
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Pora zaśnięcia</label>
-            <input type="time" value={sleepData.bedtime}
+            <input aria-label="Pora zaśnięcia" type="time" value={sleepData.bedtime}
               onChange={(e) => setSleepData({...sleepData, bedtime: e.target.value})}
               className="border rounded p-2 w-full" />
           </div>

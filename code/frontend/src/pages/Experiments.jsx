@@ -152,7 +152,7 @@ export default function Experiments() {
             <div className="space-y-3">
               <div>
                 <label className="block text-sm font-medium mb-1">Ocena dnia (1-10)</label>
-                <input
+                <input aria-label="Ocena dnia"
                   type="range"
                   min="1"
                   max="10"
@@ -164,7 +164,7 @@ export default function Experiments() {
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Notatki</label>
-                <textarea
+                <textarea aria-label="Notatki z dnia"
                   value={dayNotes}
                   onChange={e => setDayNotes(e.target.value)}
                   className="w-full p-2 border rounded"
@@ -283,7 +283,7 @@ export default function Experiments() {
                 </div>
               ))}
             </div>
-            <input
+            <input aria-label="Własna nazwa eksperymentu"
               type="text"
               placeholder="Własna nazwa (opcjonalnie)"
               value={customName}
