@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 import {
   deleteProduct, getMyRotation, getProducts, getSkincareRoutine, logProductUsage,
-  logSkinReaction, parseProductText, saveProduct, scanProductLabel,
+  logSkinReaction, parseProductText, saveProduct, scanProductLabel, lookupProductBarcode,
 } from '../api/client'
+import BarcodeBox from '../components/BarcodeBox'
 import { AlertTriangle, Camera, Check, Droplets, Info, Moon, RotateCcw, Sun, Trash2 } from 'lucide-react'
 
 const SLOTS = [['morning', 'Rano'], ['evening', 'Wieczór'], ['both', 'Rano i wieczór']]
@@ -59,6 +60,11 @@ function ProductReport({ report, onSaved, onCancel }) {
           <AlertTriangle size={16} className="mt-0.5 flex-shrink-0" /> {c.message}
         </div>
       ))}
+      {(report.health_warnings || []).map((w) => (
+        <div key={w} role="alert" className="text-sm text-red-900 bg-red-100 border border-red-300 rounded p-2 flex gap-2">
+          <AlertTriangle size={16} className="mt-0.5 flex-shrink-0" /> {w}
+        </div>
+      ))}
       {report.tolerance_warnings.map((t) => (
         <div key={t.ingredient} className="text-sm text-red-800 bg-red-50 border border-red-200 rounded p-2">{t.message}</div>
       ))}
@@ -90,6 +96,10 @@ function MyProducts({ onChange }) {
     setErr(''); setBusy(true)
     try { setReport(await scanProductLabel(file)) } catch (e) { setErr(errText(e)) } finally { setBusy(false) }
   }
+  const barcode = async (code) => {
+    setErr(''); setBusy(true)
+    try { setReport(await lookupProductBarcode(code)) } catch (e) { setErr(errText(e)) } finally { setBusy(false) }
+  }
   const parse = async () => {
     setErr('')
     try { setReport(await parseProductText(text)); setText('') } catch (e) { setErr(errText(e)) }
@@ -111,6 +121,7 @@ function MyProducts({ onChange }) {
             <textarea className="border rounded p-2 text-sm flex-1" rows={3} placeholder="…albo wklej skład: Aqua, Glycerin, Niacinamide, …" value={text} onChange={(e) => setText(e.target.value)} />
             <button onClick={parse} disabled={!text.trim()} className="bg-blue-600 disabled:opacity-50 text-white rounded py-2 text-sm">Sprawdź skład</button>
           </div>
+          <div className="md:col-span-2"><BarcodeBox onCode={barcode} busy={busy} /></div>
         </div>
       )}
       {err && <p className="text-sm text-red-600">{err}</p>}

@@ -251,3 +251,7 @@ export const clearAssistantHistory = () =>
 
 export const getCorrelations = () =>
   api.get(`/api/v1/progress/correlations?user_id=${getUserId()}`);
+
+// Plan 5.7: barcode -> Open Beauty Facts -> local INCI analysis
+export const lookupProductBarcode = (code) =>
+  api.post(`/api/v1/skincare/products/barcode?user_id=${getUserId()}`, { code });

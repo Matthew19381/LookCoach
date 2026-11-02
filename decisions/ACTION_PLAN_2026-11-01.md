@@ -373,8 +373,11 @@ każda zmiana promptu = test na kształt JSON + test na brak liczb ocen.
   [WYKONANE 2026-11-02: `services/wellbeing_guard.py` — uwaga od 4 dni/tydz.; niepokój przy 3× to samo
   ujęcie/24 h, 9 zdjęć/24 h lub 6 dniach/tydz. → analiza wymaga potwierdzenia, sygnał
   `photo_checking_pattern` do huba max raz/tydz. Mentalność musi go jeszcze odbierać (H-6)]
-- [ ] **5.7 Skaner kosmetyków — kod kreskowy** (Open Beauty Facts) + ostrzeżenia
+- [x] **5.7 Skaner kosmetyków — kod kreskowy** (Open Beauty Facts) + ostrzeżenia
   z Health Safety (ciąża, alergie) obok istniejącego skanu składu.
+  [WYKONANE 2026-11-02: `services/barcode_lookup.py`, `POST /skincare/products/barcode`, pole + skan kamerą
+  (BarcodeDetector, gdzie dostępny); raport produktu ma `health_warnings` (retinoid w ciąży, kwasy przy
+  wrażliwej skórze) — dotyczy też zdjęcia i wklejonego składu]
 
 ---
 

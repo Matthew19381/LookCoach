@@ -117,3 +117,62 @@ def test_openrouter_retries_unavailable_model(monkeypatch):
     monkeypatch.setattr(orr.httpx, "post", fake_post)
     assert orr._post("http://x", {}, {"model": "retired/model"}, 5).status_code == 200
     assert seen == ["retired/model", orr.FALLBACK_MODEL]
+
+
+# --- Plan 5.7: barcode via Open Beauty Facts -----------------------------------
+import httpx  # noqa: E402
+import pytest  # noqa: E402
+
+from backend.services import barcode_lookup  # noqa: E402
+from backend.services.barcode_lookup import BarcodeError, lookup  # noqa: E402
+
+
+def _obf(payload, status=200):
+    def get(url, params, timeout, headers):
+        return httpx.Response(status, json=payload, request=httpx.Request("GET", url))
+    return get
+
+
+def test_lookup_prefers_polish_ingredients_and_builds_name():
+    get = _obf({"status": 1, "product": {"brands": "CeraVe, L'Oréal", "product_name": "Cleanser",
+                                          "ingredients_text": "Aqua", "ingredients_text_pl": "Aqua, Niacinamide"}})
+    found = lookup("3337875597197", get=get)
+    assert found == {"product_name": "CeraVe Cleanser", "ingredients_text": "Aqua, Niacinamide",
+                     "source": "Open Beauty Facts"}
+
+
+@pytest.mark.parametrize("payload,code,status", [
+    ({"status": 0}, "3600523405290", 404),
+    ({"status": 1, "product": {"product_name": "X", "ingredients_text": ""}}, "3600523405290", 404),
+    ({}, "12ab", 422),
+])
+def test_lookup_errors(payload, code, status):
+    with pytest.raises(BarcodeError) as e:
+        lookup(code, get=_obf(payload))
+    assert e.value.status == status
+
+
+def test_lookup_network_error():
+    def down(url, params, timeout, headers):
+        raise httpx.ConnectError("x", request=httpx.Request("GET", url))
+    with pytest.raises(BarcodeError) as e:
+        lookup("3337875597197", get=down)
+    assert e.value.status == 503
+
+
+def test_barcode_endpoint_runs_local_analysis_and_pregnancy_warning(monkeypatch):
+    import json
+
+    from backend.models.profile import UserProfile
+
+    db = next(_db())
+    db.add(UserProfile(user_id=77, health=json.dumps({"pregnancy": True})))
+    db.commit()
+    monkeypatch.setattr(barcode_lookup, "lookup", lambda code: {
+        "product_name": "Night Serum", "ingredients_text": "Aqua, Retinol, Glycerin", "source": "Open Beauty Facts"})
+    r = client.post("/api/v1/skincare/products/barcode?user_id=77", json={"code": "5900000000000"})
+    assert r.status_code == 200, r.text
+    data = r.json()
+    assert "Retinol 0.25-1%" in [a["name"] for a in data["actives"]]
+    assert any("ciąży" in w for w in data["health_warnings"])
+    assert data["source"] == "Open Beauty Facts"

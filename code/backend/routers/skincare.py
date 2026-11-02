@@ -158,7 +158,26 @@ def _product_report(db: Session, user_id: int, ingredients: list[str], name: str
             tolerance.append({"ingredient": n, "reaction_level": level,
                               "message": f"Po składniku {n} zapisane były reakcje skóry ({level}). Wprowadzaj ostrożnie albo pomiń."})
     return {"name": name, "ingredients": ingredients, "actives": found["actives"], "flags": found["flags"],
-            "conflicts": conflicts, "tolerance_warnings": tolerance, "routine_actives": routine_actives}
+            "conflicts": conflicts, "tolerance_warnings": tolerance, "routine_actives": routine_actives,
+            "health_warnings": _health_warnings(db, user_id, new)}
+
+
+# LC-8 for products (plan 5.7): retinoids in pregnancy, strong acids with sensitive skin.
+_RETINOIDS = {"Retinol 0.25-1%", "Retinaldehyde"}
+_STRONG_ACIDS = {"AHA (Glycolic Acid)", "BHA (Salicylic Acid)", "Lactic Acid"}
+
+
+def _health_warnings(db: Session, user_id: int, actives: list[str]) -> list[str]:
+    from ..models.profile import UserProfile
+
+    profile = db.query(UserProfile).filter(UserProfile.user_id == user_id).first()
+    health = profile.get_health() if profile else {}
+    out = []
+    if health.get("pregnancy") and _RETINOIDS & set(actives):
+        out.append("Zawiera retinoid — przeciwwskazany w ciąży i podczas karmienia. Nie używaj bez zgody lekarza.")
+    if health.get("sensitive_skin") and _STRONG_ACIDS & set(actives):
+        out.append("Zawiera kwasy złuszczające — przy wrażliwej skórze zacznij od 1× w tygodniu albo pomiń.")
+    return out
 
 
 @router.post("/products/parse")
@@ -170,6 +189,26 @@ async def parse_product(req: ParseRequest, user_id: int = 1, db: Session = Depen
     if not ingredients:
         raise HTTPException(422, "Nie znaleziono składników — wklej listę INCI oddzieloną przecinkami.")
     return _product_report(db, user_id, ingredients, req.name)
+
+
+class BarcodeRequest(BaseModel):
+    code: str
+
+
+@router.post("/products/barcode")
+async def barcode_product(req: BarcodeRequest, user_id: int = 1, db: Session = Depends(get_db)):
+    """Plan 5.7: barcode -> INCI from Open Beauty Facts -> the same local analysis."""
+    from ..services.barcode_lookup import BarcodeError, lookup
+    from ..services.ingredient_label import parse_inci
+
+    try:
+        found = lookup(req.code)
+    except BarcodeError as e:
+        raise HTTPException(e.status, e.message) from e
+    ingredients = parse_inci(found["ingredients_text"])
+    if not ingredients:
+        raise HTTPException(422, "Skład z bazy jest nieczytelny — wklej listę składników ręcznie.")
+    return {**_product_report(db, user_id, ingredients, found["product_name"]), "source": found["source"]}
 
 
 @router.post("/products/scan")
