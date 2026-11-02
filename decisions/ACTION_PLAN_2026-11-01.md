@@ -252,9 +252,10 @@
 - [x] **H-3 (ForgeBody)**: poprawka mapy w `routers/directives.py`
   (`"quads_special populations_"` to literówka) — oraz `rear_delts` → „rear delts”, czego nie
   ma w żadnym splicie; teraz test pilnuje zgodności ze SPLITS.
-- [ ] **H-3b (ForgeBody)**: `aesthetic_priority` tylko DOKŁADA grupy do `focus_muscles`
+- [x] **H-3b (ForgeBody)**: `aesthetic_priority` tylko DOKŁADA grupy do `focus_muscles`
   (nigdy nie zdejmuje) i ignoruje `duration_weeks`. Potrzebne: zapamiętanie, które grupy dodał
   LookCoach (nowa kolumna/tabela + migracja), zastępowanie zestawu i wygasanie po N tyg.
+  [WYKONANE 2026-11-02 na gałęzi ForgeBody `claude/lookcoach-integracja`: migracja 0016, 463 testy OK]
 - [~] **H-2b (Dieta)**: liczenie sodu w dzienniku posiłków i uwzględnianie `nutrition_needs`
   (limit sodu, niski ładunek glikemiczny) przy układaniu planu; dziś potrzeby są tylko zapisane
   i widoczne w `GET /directives/{user_id}`.
