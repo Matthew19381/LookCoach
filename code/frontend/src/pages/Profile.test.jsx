@@ -2,10 +2,18 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
-vi.mock('../api/client', () => ({ getProfile: vi.fn(), updateProfile: vi.fn() }))
+vi.mock('../api/client', () => ({
+  getProfile: vi.fn(),
+  updateProfile: vi.fn(),
+  getReminderSettings: vi.fn(() => Promise.resolve({
+    enabled: true, morning_time: '07:30', evening_time: '21:30', photo_reminders: true, subscriptions: 0, configured: false,
+  })),
+  putReminderSettings: vi.fn((s) => Promise.resolve(s)),
+  getVapidKey: vi.fn(), pushSubscribe: vi.fn(), testPush: vi.fn(),
+}))
 
 import Profile from './Profile'
-import { getProfile, updateProfile } from '../api/client'
+import { getProfile, updateProfile, putReminderSettings } from '../api/client'
 
 const base = {
   goals: { focus: ['skin'], deadline: null, minutes_per_day: 10, styling_minutes: null, constraints: null },
@@ -40,5 +48,17 @@ describe('Profile', () => {
     render(<Profile />)
     await user.click(await screen.findByRole('button', { name: 'Zapisz' }))
     expect(await screen.findByText(/poza zakresem/)).toBeInTheDocument()
+  })
+
+  it('reminder settings: explains missing VAPID keys and saves times (plan 5.5)', async () => {
+    getProfile.mockResolvedValue(base)
+    const user = userEvent.setup()
+    render(<Profile />)
+    expect(await screen.findByText(/nie ma jeszcze kluczy VAPID/)).toBeInTheDocument()
+    await user.click(screen.getByLabelText(/zdjęciach kontrolnych/))
+    await user.click(screen.getByRole('button', { name: 'Zapisz przypomnienia' }))
+    expect(putReminderSettings).toHaveBeenCalledWith({
+      enabled: true, morning_time: '07:30', evening_time: '21:30', photo_reminders: false,
+    })
   })
 })

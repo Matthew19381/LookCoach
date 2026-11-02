@@ -35,12 +35,13 @@ from .routers import (
     style,
     today,
     assistant,
+    notifications,
 )
 
 # Database
 from .database import init_db
 from .paths import UPLOAD_DIR
-from .services import outbox
+from .services import outbox, reminders
 
 logger = logging.getLogger(__name__)
 
@@ -54,10 +55,12 @@ OUTBOX_INTERVAL_S = int(os.getenv("LOOKCOACH_OUTBOX_INTERVAL", "60"))
 
 
 async def _outbox_worker() -> None:
-    """Plan 3.1: retry queued hub events (hub restarted, network back, key fixed)."""
+    """Plan 3.1: retry queued hub events (hub restarted, network back, key fixed).
+    Plan 5.5: the same tick sends due push reminders (no-op without VAPID keys)."""
     while True:
         await asyncio.sleep(OUTBOX_INTERVAL_S)
         await outbox.deliver_in_new_session()
+        await asyncio.to_thread(reminders.run_in_new_session)
 
 
 @asynccontextmanager
@@ -130,6 +133,7 @@ app.include_router(ecosystem.router, prefix="/api/v1/ecosystem", tags=["ecosyste
 app.include_router(style.router, prefix="/api/v1/style", tags=["style"])
 app.include_router(today.router, prefix="/api/v1/today", tags=["today"])
 app.include_router(assistant.router, prefix="/api/v1/assistant", tags=["assistant"])
+app.include_router(notifications.router, prefix="/api/v1/notifications", tags=["notifications"])
 
 
 if __name__ == "__main__":

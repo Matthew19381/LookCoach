@@ -371,8 +371,12 @@ każda zmiana promptu = test na kształt JSON + test na brak liczb ocen.
   (survival/priority), ostatnie dane z innych modułów.
   [WYKONANE: `GET /api/v1/today`, strona Dziś jako start (zdjęcia pod /photos); dane z modułów
   z zapisanego snapshotu — bez czekania na hub]
-- [ ] **5.5 Przypomnienia PWA (push)** — rano/wieczór skincare, zdjęcia co 2–4 tyg.;
+- [x] **5.5 Przypomnienia PWA (push)** — rano/wieczór skincare, zdjęcia co 2–4 tyg.;
   respektują `quiet_hours` (3.7) i `survival_mode`.
+  [WYKONANE 2026-11-02: własna implementacja Web Push (RFC 8291 + VAPID) na `cryptography` — pywebpush
+  odpada, jego zależność http-ece nie buduje się; szyfrowanie sprawdzone wektorem z RFC 8291. Wymaga
+  kluczy VAPID w .env (`python -m backend.scripts.generate_vapid_keys`) — CZYNNOŚĆ WŁAŚCICIELA.
+  Niesprawdzone na prawdziwym telefonie]
 - [x] **5.6 Detektor kompulsywnego skanowania** (otwarte E-3 z TASKS): > N analiz
   w tygodniu lub wielokrotne zdjęcia tego samego dnia → miękki komunikat, limit,
   `state_observation` do Mentalności (H-6).

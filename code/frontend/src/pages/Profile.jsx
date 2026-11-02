@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { User } from 'lucide-react'
 import { getProfile, updateProfile } from '../api/client'
+import ReminderSettings from '../components/ReminderSettings'
 
 // Plan 4.12 + LC-8: cele (wpływają na kolejność rekomendacji) i flagi zdrowotne
 // (twarde blokady przeciwwskazań — np. ciąża → bez retinolu).
@@ -129,6 +130,8 @@ export default function Profile() {
       </button>
       {saved && <p className="text-green-700">{saved}</p>}
       {error && <p className="text-red-700">{error}</p>}
+
+      <ReminderSettings />
     </div>
   )
 }

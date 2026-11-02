@@ -1,7 +1,7 @@
 # CLAUDE.md — LookCoach
 
 Instrukcje dla asystenta AI pracującego w tym repo. Opisuje **stan faktyczny**
-(aktualizacja 2026-11-02, po Fazach 0–3 z `decisions/ACTION_PLAN_2026-11-01.md`), nie plany.
+(aktualizacja 2026-11-02, po Fazach 0–8 (poza decyzjami właściciela) z `decisions/ACTION_PLAN_2026-11-01.md`), nie plany.
 Bieżący plan z checkboxami: `decisions/ACTION_PLAN_2026-11-01.md`.
 
 ## Uruchamianie
@@ -23,10 +23,10 @@ docker compose up --build   # z katalogu code/
 
 ```bash
 # Backend — uruchamiać Z code/backend (stare importy top-level wymagają cwd w sys.path)
-cd code/backend && python -m pytest tests/        # obecnie 373 testów
+cd code/backend && python -m pytest tests/        # obecnie 431 testów
 
 # Frontend
-cd code/frontend && npm test -- --run             # obecnie 104 testów (vitest)
+cd code/frontend && npm test -- --run             # obecnie 125 testów (vitest)
 
 # Brama rzetelności dowodów — Z katalogu code/
 python -m backend.scripts.verify_evidence_db      # failuje gdy wpis rct/meta nie ma źródła
@@ -39,7 +39,8 @@ cd code/backend && alembic upgrade head
 
 **Stack**: FastAPI · SQLAlchemy 2 + Alembic (SQLite) · vision przez OpenRouter (domyślnie,
 `AI_SERVICE=openrouter`) z fallbackiem Gemini → Ollama/heurystyka · React 19 · Vite · Vitest · Tailwind.
-CI: `.github/workflows/ci.yml` (ruff, pytest, verify_evidence_db, vitest, build).
+CI: `.github/workflows/ci.yml` (ruff, pytest, mypy na modułach z planu, verify_evidence_db, eslint, vitest, build).
+Pre-commit: `.pre-commit-config.yaml`. Nowe modele pisz w stylu `Mapped[...]` (mypy).
 
 ```
 Router → Service → SQLAlchemy Session (get_db dependency)
@@ -49,7 +50,8 @@ Router → Service → SQLAlchemy Session (get_db dependency)
   są kotwiczone do katalogu `database.py` (`Path(__file__).parent`), więc app/testy/alembic
   zawsze trafiają w ten sam plik niezależnie od CWD.
 - **`.env`**: ładowany z roota projektu (`PROJECT_ROOT / ".env"`). Klucze: `GEMINI_API_KEY`,
-  `OPENROUTER_API_KEY`, `MODULE_KEY`, opcjonalnie `DATABASE_URL`.
+  `OPENROUTER_API_KEY`, `MODULE_KEY`, opcjonalnie `DATABASE_URL`, `VAPID_*` (przypomnienia push),
+  `STYLE_PREVIEW_MODEL` (podgląd fryzury).
 - **Zdjęcia i cache AI**: `code/backend/uploads/` i `code/backend/.cache/` — kotwiczone w
   `backend/paths.py` (nie od CWD; nadpisanie: `LOOKCOACH_UPLOAD_DIR`, `LOOKCOACH_CACHE_DIR`).
   Ścieżkę pliku zdjęcia rozwiązuj przez `paths.photo_path()`, URL przez `paths.photo_url()`.

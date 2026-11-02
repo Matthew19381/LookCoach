@@ -255,3 +255,12 @@ export const getCorrelations = () =>
 // Plan 5.7: barcode -> Open Beauty Facts -> local INCI analysis
 export const lookupProductBarcode = (code) =>
   api.post(`/api/v1/skincare/products/barcode?user_id=${getUserId()}`, { code });
+
+// Push reminders (plan 5.5)
+export const getVapidKey = () => api.get(`/api/v1/notifications/vapid-public-key`);
+export const pushSubscribe = (subscription) =>
+  api.post(`/api/v1/notifications/subscribe?user_id=${getUserId()}`, subscription);
+export const getReminderSettings = () => api.get(`/api/v1/notifications/settings?user_id=${getUserId()}`);
+export const putReminderSettings = (settings) =>
+  api.put(`/api/v1/notifications/settings?user_id=${getUserId()}`, settings);
+export const testPush = () => api.post(`/api/v1/notifications/test?user_id=${getUserId()}`);
