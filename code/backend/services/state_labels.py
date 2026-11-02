@@ -16,6 +16,13 @@ FIELDS: list[tuple[str, tuple[str, ...], str]] = [
     ("skin", ("hydration_status",), "Nawilżenie skóry"),
     ("hair", ("hairline_status",), "Linia włosów"),
     ("hair", ("density_status",), "Gęstość włosów"),
+    ("hair", ("crown_density",), "Czubek głowy"),
+    ("face", ("brows", "density"), "Brwi — gęstość"),
+    ("face", ("brows", "symmetry"), "Brwi — symetria"),
+    ("face", ("beard", "density"), "Zarost — gęstość"),
+    ("face", ("beard", "evenness"), "Zarost — równomierność"),
+    ("face", ("eye_area", "dark_circles"), "Cienie pod oczami"),
+    ("face", ("eye_area", "puffiness"), "Opuchnięcie pod oczami"),
 ]
 
 VALUE_PL = {
@@ -37,6 +44,19 @@ VALUE_PL = {
     "advanced_recession": "zaawansowana recesja",
     "thin": "rzadkie",
     "full": "gęste",
+    "thinning": "przerzedzenie",
+    "unclear": "nie do oceny",
+    "sparse": "rzadkie",
+    "dense": "gęste",
+    "symmetric": "symetryczne",
+    "slight_asymmetry": "lekka asymetria",
+    "clear_asymmetry": "wyraźna asymetria",
+    "none": "brak",
+    "even": "równomierny",
+    "patchy": "nierównomierny",
+    "not_applicable": "nie dotyczy",
+    "mild": "lekkie",
+    "marked": "wyraźne",
 }
 
 

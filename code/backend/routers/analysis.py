@@ -30,6 +30,15 @@ async def get_latest_analysis(user_id: int = 1, db: Session = Depends(get_db)):
     return {**latest, "lever": lever}
 
 
+class AIUnavailable(Exception):
+    """Every AI provider failed - nothing is stored (no invented state)."""
+
+
+def _require_ai(*results: dict | None) -> None:
+    if any((r or {}).get("fallback") for r in results):
+        raise AIUnavailable
+
+
 @router.post("/analyze/{photo_id}")
 async def analyze_photo(photo_id: int, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     photo = db.query(Photo).filter(Photo.id == photo_id).first()
@@ -44,17 +53,24 @@ async def analyze_photo(photo_id: int, background_tasks: BackgroundTasks, db: Se
 
         analysis = Analysis(photo_id=photo.id)
 
+        # D1 (2026-11-02): skin and hairline come from the FRONT photo (until
+        # then skin + hair were read from the back photo). Back = crown density.
         if photo.photo_type == "front":
-            data = VISION_SERVICE.analyze_face(image_bytes)
-            analysis.set_face_data(data or {})
+            face = VISION_SERVICE.analyze_face(image_bytes)
+            skin = VISION_SERVICE.analyze_skin(image_bytes)
+            hair = VISION_SERVICE.analyze_hair(image_bytes)
+            _require_ai(face, skin, hair)
+            analysis.set_face_data(face or {})
+            analysis.set_skin_data(skin or {})
+            analysis.set_hair_data(hair or {})
         elif photo.photo_type == "side":
-            data = VISION_SERVICE.analyze_body(image_bytes)
-            analysis.set_body_data(data or {})
+            body = VISION_SERVICE.analyze_body(image_bytes)
+            _require_ai(body)
+            analysis.set_body_data(body or {})
         elif photo.photo_type == "back":
-            skin_data = VISION_SERVICE.analyze_skin(image_bytes)
-            hair_data = VISION_SERVICE.analyze_hair(image_bytes)
-            analysis.set_skin_data(skin_data or {})
-            analysis.set_hair_data(hair_data or {})
+            crown = VISION_SERVICE.analyze_crown(image_bytes)
+            _require_ai(crown)
+            analysis.set_hair_data(crown or {})
 
         lever = AttractivenessLevers.detect_lever(
             analysis.get_face_data(),
@@ -78,6 +94,11 @@ async def analyze_photo(photo_id: int, background_tasks: BackgroundTasks, db: Se
             logger.exception("Queueing ecosystem events after analysis %s failed", analysis.id)
 
         return {"message": "Analysis complete", "analysis_id": analysis.id}
+    except AIUnavailable:
+        db.rollback()
+        photo.analysis_status = "failed"
+        db.commit()
+        raise HTTPException(503, "Usługa AI jest teraz niedostępna — spróbuj ponownie później.")
     except Exception:
         # Details go to the log, not to the client (they can contain paths or
         # provider responses - plan 2.6).

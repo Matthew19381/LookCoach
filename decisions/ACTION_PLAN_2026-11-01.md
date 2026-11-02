@@ -274,7 +274,7 @@ Wspólne wymaganie dla 4.x: wynik **wyłącznie kategoryczny/opisowy**, rekomend
 z poziomem dowodów (`rct/meta/obs/ekspert/hipoteza` albo „porada stylistyczna”),
 każda zmiana promptu = test na kształt JSON + test na brak liczb ocen.
 
-- [ ] **4.0 Nowe mapowanie zdjęć (D1).**
+- [x] **4.0 Nowe mapowanie zdjęć (D1).**
   - przód → twarz + **skóra** + **linia włosów** + **brwi** + **zarost**,
   - bok → sylwetka, postawa, profil (podbródek/szyja),
   - tył → plecy/postawa od tyłu + **czubek głowy (gęstość włosów)**.
@@ -282,6 +282,9 @@ każda zmiana promptu = test na kształt JSON + test na brak liczb ocen.
   (instrukcje kadrowania), migracja jeśli trzeba nowych kolumn (`brows_data`,
   `beard_data`, `style_data` w `analyses` albo jedna kolumna JSON `extras`).
   Kryterium: test — zdjęcie przód zapisuje `skin` i `hair.hairline`; tył `hair.crown`.
+  [WYKONANE 2026-11-02: brwi/zarost/kształt twarzy/okolica oczu jako pola `face_data` (bez migracji),
+  włosy scalane z przodu i tyłu. PRZY OKAZJI: lokalny fallback zwracał zmyślone obserwacje
+  („obrzęk: średni”) — teraz brak AI = 503 i nic nie jest zapisywane]
 - [ ] **4.1 Brwi.** Prompt: kształt (prosty/łukowaty/opadający), gęstość
   (rzadkie/średnie/gęste), symetria (symetryczne/lekka/wyraźna asymetria),
   zarośnięcie środka. Rekomendacje: pielęgnacja/regulacja „tylko nadmiar”,

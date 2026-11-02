@@ -47,40 +47,14 @@ class LocalLLMService:
         return ""
 
     def analyze_image_fallback(self, image_bytes: bytes, analysis_type: str) -> dict:
-        """Basic heuristic fallback when Gemini is unavailable. Qualitative only."""
-        note = "Fallback analysis - limited accuracy"
-        if analysis_type == "face":
-            return {
-                "observations": [note],
-                "swelling": {"level": "medium", "areas": []},
-                "muscle_tension": {"level": "medium", "areas": []},
-                "skin_quality": {"status": "fair", "issues": []},
-                "focus_areas": [
-                    {"area": "skincare", "priority": "medium", "reason": note},
-                ],
-            }
-        elif analysis_type == "body":
-            return {
-                "observations": [note],
-                "asymmetries": [],
-                "missing_muscles": [],
-                "posture_notes": [],
-                "focus_areas": [
-                    {"area": "training", "priority": "medium", "reason": note},
-                ],
-            }
-        elif analysis_type == "skin":
-            return {
-                "skin_type": "unknown",
-                "problems": [],
-                "hydration_status": "adequate",
-                "observations": [note],
-            }
-        elif analysis_type == "hair":
-            return {
-                "hairline_status": "stable",
-                "density_status": "normal",
-                "recommendations": ["Consult a professional for accurate analysis"],
-                "observations": [note],
-            }
-        return {"error": f"Unknown analysis type: {analysis_type}", "observations": [note]}
+        """No AI available: say so - never invent a state.
+
+        Until 2026-11-02 this returned fixed observations ("swelling: medium",
+        "skin: fair") that looked like a real analysis and drove recommendations
+        (and would have sent a sodium limit to Dieta). The caller sees
+        `fallback: True` and refuses to store the result."""
+        return {
+            "fallback": True,
+            "analysis_type": analysis_type,
+            "observations": ["Analiza AI niedostępna - brak wyniku"],
+        }

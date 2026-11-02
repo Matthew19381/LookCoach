@@ -177,10 +177,10 @@ class TestAnalysisRouter:
             "skin_quality": {"status": "good", "issues": []},
             "focus_areas": [{"area": "skincare", "priority": "medium", "reason": "hydration"}],
         }
-        with patch(
-            "backend.routers.analysis.VISION_SERVICE.analyze_face",
-            return_value=fake_face_data,
-        ):
+        # D1: the front photo also gives skin and hairline
+        with patch("backend.routers.analysis.VISION_SERVICE.analyze_face", return_value=fake_face_data), \
+             patch("backend.routers.analysis.VISION_SERVICE.analyze_skin", return_value={"skin_type": "dry"}), \
+             patch("backend.routers.analysis.VISION_SERVICE.analyze_hair", return_value={"hairline_status": "stable"}):
             response = client.post(f"/api/v1/analysis/analyze/{photo_id}")
 
         os.unlink(tmp.name)
@@ -188,6 +188,55 @@ class TestAnalysisRouter:
         body = response.json()
         assert body["message"] == "Analysis complete"
         assert isinstance(body["analysis_id"], int)
+        latest = client.get("/api/v1/analysis/latest?user_id=1").json()
+        assert latest["skin"]["skin_type"] == "dry"
+        assert latest["hair"]["hairline_status"] == "stable"
+
+    def test_ai_unavailable_stores_nothing(self):
+        """No AI -> 503 and no invented analysis (the old fallback said 'swelling: medium')."""
+        from datetime import datetime
+        from unittest.mock import patch
+        from backend.models.analysis import Analysis
+        from backend.models.photo import Photo
+
+        tmp = tempfile.NamedTemporaryFile(suffix=".jpg", delete=False)
+        tmp.write(b"\xff\xd8x")
+        tmp.close()
+        db = TestSessionLocal()
+        photo = Photo(user_id=9401, photo_type="side", file_path=tmp.name, uploaded_at=datetime.utcnow())
+        db.add(photo)
+        db.commit()
+        photo_id = photo.id
+        db.close()
+        with patch("backend.routers.analysis.VISION_SERVICE.analyze_body",
+                   return_value={"fallback": True, "observations": ["x"]}):
+            response = client.post(f"/api/v1/analysis/analyze/{photo_id}")
+        os.unlink(tmp.name)
+        assert response.status_code == 503
+        db = TestSessionLocal()
+        assert db.query(Analysis).filter(Analysis.photo_id == photo_id).count() == 0
+        assert db.get(Photo, photo_id).analysis_status == "failed"
+        db.close()
+
+    def test_back_photo_reads_crown_and_merges_with_front_hairline(self):
+        from datetime import datetime, timedelta
+        from backend.models.analysis import Analysis
+        from backend.models.photo import Photo
+
+        db = TestSessionLocal()
+        for ptype, data, age in (("front", {"hairline_status": "mild_recession", "hair_type": "wavy"}, 2),
+                                 ("back", {"crown_density": "thinning"}, 1)):
+            photo = Photo(user_id=9402, photo_type=ptype, file_path="uploads/h.jpg", analysis_status="done",
+                          uploaded_at=datetime.utcnow() - timedelta(days=age))
+            db.add(photo)
+            db.commit()
+            a = Analysis(photo_id=photo.id)
+            a.set_hair_data(data)
+            db.add(a)
+            db.commit()
+        db.close()
+        hair = client.get("/api/v1/analysis/latest?user_id=9402").json()["hair"]
+        assert hair == {"hairline_status": "mild_recession", "hair_type": "wavy", "crown_density": "thinning"}
 
     def test_latest_analysis_has_no_numeric_person_scores(self):
         """/api/v1/analysis/latest must not expose numeric attractiveness ratings (LC-9)."""

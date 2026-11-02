@@ -35,9 +35,11 @@ describe('PhotoUpload', () => {
       </BrowserRouter>
     )
 
-    expect(screen.getByText('front View')).toBeInTheDocument()
-    expect(screen.getByText('side View')).toBeInTheDocument()
-    expect(screen.getByText('back View')).toBeInTheDocument()
+    expect(screen.getByText('Przód')).toBeInTheDocument()
+    expect(screen.getByText('Bok')).toBeInTheDocument()
+    expect(screen.getByText('Tył')).toBeInTheDocument()
+    // D1: skin and hairline come from the front photo
+    expect(screen.getByText(/Analiza: twarz, skóra, brwi, zarost, linia włosów/)).toBeInTheDocument()
   })
 
   it('shows "Uploaded!" after successful upload', async () => {

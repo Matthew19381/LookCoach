@@ -2,6 +2,13 @@ import { useState } from 'react'
 import { Camera, Upload, CheckCircle, Loader2 } from 'lucide-react'
 import { uploadPhoto, getPhotos } from '../api/client'
 
+// D1 (2026-11-02): co jest analizowane z którego ujęcia
+const PHOTO_GUIDE = {
+  front: { title: 'Przód', what: 'twarz, skóra, brwi, zarost, linia włosów', how: 'twarz na wprost, równe światło dzienne, bez filtrów' },
+  side: { title: 'Bok', what: 'sylwetka i postawa', how: 'cała sylwetka z profilu, swobodna postawa' },
+  back: { title: 'Tył', what: 'czubek głowy (gęstość włosów)', how: 'z tyłu i lekko z góry, widoczny czubek głowy' },
+}
+
 export default function PhotoUpload() {
   const [uploading, setUploading] = useState({ front: false, side: false, back: false })
   const [uploaded, setUploaded] = useState({ front: null, side: null, back: null })
@@ -69,7 +76,9 @@ export default function PhotoUpload() {
                 )}
               </div>
               <div>
-                <p className="font-medium capitalize">{type} View</p>
+                <p className="font-medium">{PHOTO_GUIDE[type].title}</p>
+                <p className="text-xs text-gray-600">Analiza: {PHOTO_GUIDE[type].what}</p>
+                <p className="text-xs text-gray-500">{PHOTO_GUIDE[type].how}</p>
                 <p className="text-sm text-gray-500">
                   {uploaded[type] ? 'Uploaded!' : 'Drop image or click to upload'}
                 </p>

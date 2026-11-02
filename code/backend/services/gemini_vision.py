@@ -22,8 +22,13 @@ FACE_PROMPT = """Analyze this face photo. Describe observable state only — do 
   "swelling": {"level": "low|medium|high", "areas": ["cheeks"]},
   "muscle_tension": {"level": "low|medium|high", "areas": ["jaw"]},
   "skin_quality": {"status": "good|fair|needs_attention", "issues": ["dryness"]},
+  "face_shape": "oval|round|square|oblong|heart|diamond|unclear",
+  "brows": {"shape": "straight|arched|soft_angled|unclear", "density": "sparse|medium|dense", "symmetry": "symmetric|slight_asymmetry|clear_asymmetry", "unibrow": false},
+  "beard": {"present": false, "density": "none|sparse|medium|full", "evenness": "even|patchy|not_applicable", "neckline": "defined|undefined|not_applicable"},
+  "eye_area": {"dark_circles": "none|mild|marked", "puffiness": "none|mild|marked"},
   "focus_areas": [{"area": "skincare|beauty_technique|posture|sleep|nutrition|stress", "priority": "high|medium|low", "reason": "why"}]
 }
+Describe brows and beard neutrally (shape, density, evenness) - no judgement of looks.
 Respond ONLY with valid JSON."""
 
 BODY_PROMPT = """Analyze this body photo. Describe observable state only — do NOT rate or score the person's attractiveness. Return ONLY valid JSON with:
@@ -46,11 +51,22 @@ SKIN_PROMPT = """Analyze this skin photo. Describe observable state only — do 
 }
 Respond ONLY with valid JSON."""
 
-HAIR_PROMPT = """Analyze this hair photo. Describe observable state only — do NOT rate or score the person. Return ONLY valid JSON with:
+HAIR_PROMPT = """Analyze the hair in this front photo. Describe observable state only — do NOT rate or score the person. Return ONLY valid JSON with:
 {
   "hairline_status": "stable|mild_recession|moderate_recession|advanced_recession",
   "density_status": "thin|normal|full",
+  "hair_type": "straight|wavy|curly|coily|unclear",
+  "length": "very_short|short|medium|long",
   "recommendations": ["styling or care suggestions"],
+  "observations": ["short text observations"]
+}
+Respond ONLY with valid JSON."""
+
+
+CROWN_PROMPT = """This photo shows the person from behind. Look only at the top/back of the head (crown).
+Describe observable state only — do NOT rate or score the person. Return ONLY valid JSON with:
+{
+  "crown_density": "normal|thinning|unclear",
   "observations": ["short text observations"]
 }
 Respond ONLY with valid JSON."""
@@ -74,7 +90,7 @@ def _save_to_cache(key: str, data: dict):
 def forget_image(image_bytes: bytes) -> int:
     """Remove every cached analysis of this image (called when a photo is deleted)."""
     removed = 0
-    for prompt in (FACE_PROMPT, BODY_PROMPT, SKIN_PROMPT, HAIR_PROMPT, LABEL_PROMPT):
+    for prompt in (FACE_PROMPT, BODY_PROMPT, SKIN_PROMPT, HAIR_PROMPT, CROWN_PROMPT, LABEL_PROMPT):
         path = Path(_cache_key(image_bytes, prompt[:50]))
         if path.exists():
             path.unlink()
@@ -165,6 +181,12 @@ class GeminiVisionService:
 
     def analyze_hair(self, image_bytes: bytes) -> dict:
         return self._analyze(image_bytes, HAIR_PROMPT, self._fallback_hair)
+
+    def analyze_crown(self, image_bytes: bytes) -> dict:
+        return self._analyze(
+            image_bytes, CROWN_PROMPT,
+            lambda b: self._call_openrouter(b, CROWN_PROMPT) or self._get_fallback().analyze_image_fallback(b, "crown"),
+        )
 
     def read_ingredient_label(self, image_bytes: bytes) -> dict:
         """OCR of a cosmetic label: {"product_name", "ingredients_text"} (empty text = unreadable).
