@@ -67,7 +67,7 @@ describe('ConfidencePresence', () => {
     )
 
     await waitFor(() => {
-      expect(screen.getByText('Confidence & Presence')).toBeInTheDocument()
+      expect(screen.getByText('Pewność siebie')).toBeInTheDocument()
     })
   })
 
@@ -82,10 +82,10 @@ describe('ConfidencePresence', () => {
     )
 
     await waitFor(() => {
-      expect(screen.getByText('Posture Indicators')).toBeInTheDocument()
+      expect(screen.getByText('Postawa')).toBeInTheDocument()
     })
 
-    expect(screen.getByText('Needs work')).toBeInTheDocument()
+    expect(screen.getByText('Do pracy')).toBeInTheDocument()
     expect(screen.getByText('• Slouching')).toBeInTheDocument()
     expect(screen.getByText('• Forward head posture')).toBeInTheDocument()
     // No numeric rating rendered
@@ -103,10 +103,10 @@ describe('ConfidencePresence', () => {
     )
 
     await waitFor(() => {
-      expect(screen.getByText('Facial Expressions')).toBeInTheDocument()
+      expect(screen.getByText('Mimika')).toBeInTheDocument()
     })
 
-    expect(screen.getByText('Good')).toBeInTheDocument()
+    expect(screen.getByText('Dobrze')).toBeInTheDocument()
     expect(screen.getByText('• Smile at strangers')).toBeInTheDocument()
     expect(screen.getByText('• Practice power poses')).toBeInTheDocument()
   })
@@ -122,7 +122,7 @@ describe('ConfidencePresence', () => {
     )
 
     await waitFor(() => {
-      expect(screen.getByText('Posture Indicators')).toBeInTheDocument()
+      expect(screen.getByText('Postawa')).toBeInTheDocument()
     })
     expect(document.body.textContent).not.toMatch(/most attractive|boost|%/i)
   })
@@ -140,7 +140,7 @@ describe('ConfidencePresence', () => {
     )
 
     expect(await screen.findByText('Brak analizy zdjęć — zrób zdjęcia.')).toBeInTheDocument()
-    expect(screen.queryByText('Posture Indicators')).not.toBeInTheDocument()
+    expect(screen.queryByText('Postawa')).not.toBeInTheDocument()
   })
 
   it('displays action plan', async () => {
@@ -154,13 +154,13 @@ describe('ConfidencePresence', () => {
     )
 
     await waitFor(() => {
-      expect(screen.getByText('7-Day Confidence Building Plan')).toBeInTheDocument()
+      expect(screen.getByText('7-dniowy plan')).toBeInTheDocument()
     })
 
-    expect(screen.getByText('Day 1:')).toBeInTheDocument()
+    expect(screen.getByText('Dzień 1:')).toBeInTheDocument()
     expect(screen.getByText('Posture')).toBeInTheDocument()
     expect(screen.getByText(/Shoulder rolls/)).toBeInTheDocument()
-    expect(screen.getByText('Day 2:')).toBeInTheDocument()
+    expect(screen.getByText('Dzień 2:')).toBeInTheDocument()
     expect(screen.getByText('Eye contact')).toBeInTheDocument()
   })
 

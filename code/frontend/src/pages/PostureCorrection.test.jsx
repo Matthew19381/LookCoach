@@ -21,7 +21,7 @@ describe('PostureCorrection', () => {
       { id: 'forward_head', name: 'Forward Head', description: 'Head too forward', looks_impact: 'Medium' },
     ]);
     render(<PostureCorrection />);
-    expect(await screen.findByText(/Posture Correction/i)).toBeInTheDocument();
+    expect(await screen.findByText(/Postawa/i)).toBeInTheDocument();
   });
 
   it('loads and displays posture issues', async () => {
@@ -67,7 +67,7 @@ describe('PostureCorrection', () => {
       ],
     });
     render(<PostureCorrection />);
-    const getPlanBtn = await screen.findByText(/Get Correction Plan/i);
+    const getPlanBtn = await screen.findByText(/Pokaż ćwiczenia korygujące/i);
     fireEvent.click(getPlanBtn);
     expect(getCorrectionPlan).toHaveBeenCalled();
   });

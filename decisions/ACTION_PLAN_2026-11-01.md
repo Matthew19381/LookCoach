@@ -377,9 +377,12 @@ każda zmiana promptu = test na kształt JSON + test na brak liczb ocen.
 
 ## FAZA 6 — UX i język (D4)
 
-- [ ] **6.1 Cały interfejs po polsku** (15 stron + Layout + komunikaty błędów API
+- [x] **6.1 Cały interfejs po polsku** (15 stron + Layout + komunikaty błędów API
   pokazywane w UI). Teksty w jednym pliku `src/i18n/pl.js`, żeby łatwo poprawiać.
   Kryterium: vitest — brak angielskich etykiet nawigacji.
+  [WYKONANE 2026-11-02: wszystkie strony po polsku (bez osobnego pliku i18n — teksty w komponentach;
+  wydzielenie do `pl.js` tylko jeśli zechcesz łatwo poprawiać słownictwo). Treści z backendu
+  (nazwy czynników, opisy ćwiczeń, wskazówki snu/stresu) nadal po angielsku — do tłumaczenia w serwisach]
 - [x] **6.2 Nawigacja w 4 grupach**: *Analiza* (Zdjęcia, Wyniki, Postęp),
   *Plan* (Dziś, Rekomendacje, Pielęgnacja, Regularność), *Styl życia*
   (Sen, Stres, Żywienie, Postawa), *Więcej* (Eksperymenty, Wideo, Event Mode,
@@ -398,6 +401,11 @@ każda zmiana promptu = test na kształt JSON + test na brak liczb ocen.
 - [ ] **7.3 `logging` zamiast `print`** w `main.py`, `gemini_vision.py`, `local_llm.py`.
 - [ ] **7.4 Wersja API spójna** (`main.py` mówi `0.2.0`, TASKS `v0.3.0`).
 - [ ] **7.5 `datetime.utcnow()` → `datetime.now(UTC)`** (ostrzeżenia w testach).
+- [ ] **7.9 ESLint w CI + naprawa 6 istniejących błędów** (setState synchronicznie w efektach:
+  AnalysisResults, Experiments, NutritionLooks, SleepOptimizer, StressManagement; użycie zmiennej
+  przed deklaracją w ConsistencyTracker) i nieużywanych importów.
+- [ ] **7.10 Tłumaczenie treści z backendu** (FACTORS, EXERCISES, wskazówki snu/stresu, nazwy
+  rekomendacji w EVIDENCE_DB) — dziś po angielsku w polskim interfejsie.
 - [ ] **7.8 Alembic rozjechany z modelami**: tabele `adherence_logs`, `protocol_adherence`,
   `consistency_metrics`, `directive_states`, `skin_reactions`, `skincare_products`,
   `ingredient_usage`, `outbox_events` powstają przez `create_all` w `init_db()` i nie mają

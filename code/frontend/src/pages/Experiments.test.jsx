@@ -63,7 +63,7 @@ describe('Experiments', () => {
       expect(screen.getByText('Personal Experiment Engine')).toBeInTheDocument()
     })
 
-    expect(screen.getByRole('button', { name: /Start Experiment/ })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Zacznij eksperyment/ })).toBeInTheDocument()
   })
 
   it('shows available templates', async () => {
@@ -77,7 +77,7 @@ describe('Experiments', () => {
     )
 
     await waitFor(() => {
-      expect(screen.getByText('Available Templates')).toBeInTheDocument()
+      expect(screen.getByText('Dostępne eksperymenty')).toBeInTheDocument()
     })
 
     expect(screen.getByText('Vitamin C Serum Test')).toBeInTheDocument()
@@ -120,7 +120,7 @@ describe('Experiments', () => {
     })
 
     // Click Start Experiment button
-    const startButton = screen.getByRole('button', { name: /Start Experiment/ })
+    const startButton = screen.getByRole('button', { name: /Zacznij eksperyment/ })
     await user.click(startButton)
 
     // Modal should appear with templates
@@ -167,11 +167,11 @@ describe('Experiments', () => {
     await user.click(screen.getByText('Active Vitamin C Test'))
 
     await waitFor(() => {
-      expect(screen.getByText(/Daily Log/)).toBeInTheDocument()
+      expect(screen.getByText(/Wpisy dzienne/)).toBeInTheDocument()
     })
 
-    expect(screen.getByText('Rating (1-10)')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /Log Day/ })).toBeInTheDocument()
+    expect(screen.getByText('Ocena dnia (1-10)')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Zapisz dzień/ })).toBeInTheDocument()
   })
 
   it('displays logged days', async () => {
@@ -194,7 +194,7 @@ describe('Experiments', () => {
     await user.click(screen.getByText('Active Vitamin C Test'))
 
     await waitFor(() => {
-      expect(screen.getByText(/Daily Logs/)).toBeInTheDocument()
+      expect(screen.getByText(/Wpisy dzienne/)).toBeInTheDocument()
     })
 
     expect(screen.getByText('Day 1')).toBeInTheDocument()

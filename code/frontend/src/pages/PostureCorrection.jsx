@@ -35,14 +35,14 @@ export default function PostureCorrection() {
   }
 
   if (loading) {
-    return <div className="text-center py-20">Loading posture issues...</div>
+    return <div className="text-center py-20">Ładowanie...</div>
   }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
         <StretchVertical size={28} className="text-green-600" />
-        <h1 className="text-3xl font-bold text-gray-900">Posture Correction</h1>
+        <h1 className="text-3xl font-bold text-gray-900">Postawa</h1>
       </div>
 
       <div className="flex gap-2">
@@ -72,7 +72,7 @@ export default function PostureCorrection() {
           ))}
           {assessment.daily_habits && (
             <div className="mt-4">
-              <h4 className="font-medium mb-2">Daily Habits:</h4>
+              <h4 className="font-medium mb-2">Codzienne nawyki:</h4>
               <ul className="space-y-1">
                 {assessment.daily_habits.map((habit, i) => (
                   <li key={i} className="text-sm text-gray-700 flex items-start gap-2">
@@ -99,7 +99,7 @@ export default function PostureCorrection() {
               onClick={() => handleGetCorrection(issue.id)}
               className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm"
             >
-              Get Correction Plan
+              Pokaż ćwiczenia korygujące
             </button>
           </div>
         ))}

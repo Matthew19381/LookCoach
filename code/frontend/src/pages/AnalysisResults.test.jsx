@@ -29,7 +29,7 @@ describe('AnalysisResults', () => {
     });
     render(<AnalysisResults />);
     expect(
-      await screen.findByRole('heading', { name: /Observations/i })
+      await screen.findByRole('heading', { name: /Obserwacje/i })
     ).toBeInTheDocument();
     expect(screen.getAllByText(/mild puffiness in cheeks/i).length).toBeGreaterThan(0);
     // No numeric person rating may be rendered
@@ -41,6 +41,6 @@ describe('AnalysisResults', () => {
       photos_analyzed: 0,
     });
     render(<AnalysisResults />);
-    expect(await screen.findByText(/upload all 3 photos/i)).toBeInTheDocument();
+    expect(await screen.findByText(/Zrób zdjęcia/i)).toBeInTheDocument();
   });
 });

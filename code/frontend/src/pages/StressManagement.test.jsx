@@ -71,7 +71,7 @@ describe('StressManagement', () => {
     await waitFor(() => {
       expect(screen.getByText('Stress Management')).toBeInTheDocument()
     })
-    const analyzeBtn = screen.getByText('Analyze Stress')
+    const analyzeBtn = screen.getByText('Oceń stres')
     await user.click(analyzeBtn)
     await waitFor(() => {
       expect(analyzeStress).toHaveBeenCalled()

@@ -24,8 +24,8 @@ describe('PhotoUpload', () => {
       </BrowserRouter>
     )
 
-    expect(screen.getByText('Upload Your Photos')).toBeInTheDocument()
-    expect(screen.getByText(/Upload front, side, and back photos/)).toBeInTheDocument()
+    expect(screen.getByText('Zdjęcia')).toBeInTheDocument()
+    expect(screen.getByText(/analiza ruszy automatycznie/)).toBeInTheDocument()
   })
 
   it('shows 3 upload zones (front, side, back)', () => {
@@ -42,7 +42,7 @@ describe('PhotoUpload', () => {
     expect(screen.getByText(/Analiza: twarz, skóra, brwi, zarost, linia włosów/)).toBeInTheDocument()
   })
 
-  it('shows "Uploaded!" after successful upload', async () => {
+  it('shows "Wysłane" after successful upload', async () => {
     uploadPhoto.mockResolvedValue({ id: 1, url: 'test.jpg' })
     const user = userEvent.setup()
 
@@ -53,13 +53,13 @@ describe('PhotoUpload', () => {
     )
 
     // Find the file input and upload a file
-    const fileInputs = screen.getAllByLabelText('Choose File')
+    const fileInputs = screen.getAllByLabelText('Wybierz plik')
     const file = new File([''], 'test.jpg', { type: 'image/jpeg' })
 
     await user.upload(fileInputs[0], file)
 
     await waitFor(() => {
-      expect(screen.getByText('Uploaded!')).toBeInTheDocument()
+      expect(screen.getByText('Wysłane')).toBeInTheDocument()
     })
   })
 
@@ -73,7 +73,7 @@ describe('PhotoUpload', () => {
       </BrowserRouter>
     )
 
-    const fileInputs = screen.getAllByLabelText('Choose File')
+    const fileInputs = screen.getAllByLabelText('Wybierz plik')
     const file = new File([''], 'front.jpg', { type: 'image/jpeg' })
 
     await user.upload(fileInputs[0], file)
@@ -93,7 +93,7 @@ describe('PhotoUpload', () => {
       </BrowserRouter>
     )
 
-    const fileInputs = screen.getAllByLabelText('Choose File')
+    const fileInputs = screen.getAllByLabelText('Wybierz plik')
     const file = new File([''], 'test.jpg', { type: 'image/jpeg' })
 
     await user.upload(fileInputs[0], file)
@@ -113,7 +113,7 @@ describe('PhotoUpload', () => {
         <PhotoUpload />
       </BrowserRouter>
     )
-    await user.upload(screen.getAllByLabelText('Choose File')[0], new File(['x'], 'a.jpg', { type: 'image/jpeg' }))
+    await user.upload(screen.getAllByLabelText('Wybierz plik')[0], new File(['x'], 'a.jpg', { type: 'image/jpeg' }))
     expect(await screen.findByText(/limit 15 MB/)).toBeInTheDocument()
   })
 
@@ -126,7 +126,7 @@ describe('PhotoUpload', () => {
         <PhotoUpload />
       </BrowserRouter>
     )
-    await user.upload(screen.getAllByLabelText('Choose File')[0], new File(['x'], 'a.jpg', { type: 'image/jpeg' }))
+    await user.upload(screen.getAllByLabelText('Wybierz plik')[0], new File(['x'], 'a.jpg', { type: 'image/jpeg' }))
     expect(await screen.findByText('Analiza gotowa')).toBeInTheDocument()
     expect(analyzePhoto).toHaveBeenCalledWith(7, false)
     expect(screen.getByText('Zobacz wyniki analizy')).toBeInTheDocument()
@@ -143,7 +143,7 @@ describe('PhotoUpload', () => {
         <PhotoUpload />
       </BrowserRouter>
     )
-    await user.upload(screen.getAllByLabelText('Choose File')[1], new File(['x'], 'b.jpg', { type: 'image/jpeg' }))
+    await user.upload(screen.getAllByLabelText('Wybierz plik')[1], new File(['x'], 'b.jpg', { type: 'image/jpeg' }))
     expect(await screen.findByText(/nieostre/)).toBeInTheDocument()
     expect(analyzePhoto).not.toHaveBeenCalled()
     await user.click(screen.getByText('Analizuj mimo to'))
@@ -161,7 +161,7 @@ describe('PhotoUpload', () => {
         <PhotoUpload />
       </BrowserRouter>
     )
-    await user.upload(screen.getAllByLabelText('Choose File')[2], new File(['x'], 'c.jpg', { type: 'image/jpeg' }))
+    await user.upload(screen.getAllByLabelText('Wybierz plik')[2], new File(['x'], 'c.jpg', { type: 'image/jpeg' }))
     expect(await screen.findByText(/AI jest teraz niedostępna/)).toBeInTheDocument()
   })
 
@@ -179,7 +179,7 @@ describe('PhotoUpload', () => {
         <PhotoUpload />
       </BrowserRouter>
     )
-    await user.upload(screen.getAllByLabelText('Choose File')[0], new File(['x'], 'd.jpg', { type: 'image/jpeg' }))
+    await user.upload(screen.getAllByLabelText('Wybierz plik')[0], new File(['x'], 'd.jpg', { type: 'image/jpeg' }))
     expect(await screen.findByRole('note')).toHaveTextContent('bardzo dużo zdjęć')
     await user.click(await screen.findByText('Rozumiem, analizuj'))
     expect(analyzePhoto).toHaveBeenLastCalledWith(10, true)

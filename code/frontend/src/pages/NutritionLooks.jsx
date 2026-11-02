@@ -85,7 +85,7 @@ export default function NutritionLooks() {
       {/* Factors */}
       {factors && (
         <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <h2 className="text-xl font-semibold mb-4">Nutrition Factors</h2>
+          <h2 className="text-xl font-semibold mb-4">Czynniki żywieniowe</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {Object.entries(factors).map(([key, factor]) => (
               <div key={key} className="border rounded p-4">
@@ -105,7 +105,7 @@ export default function NutritionLooks() {
       {/* Recommendations */}
       {recommendations && (
         <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <h2 className="text-xl font-semibold mb-4">Recommendations</h2>
+          <h2 className="text-xl font-semibold mb-4">Wskazówki</h2>
           <ul className="space-y-2">
             {recommendations.map((rec, i) => (
               <li key={i} className="flex items-start gap-2">

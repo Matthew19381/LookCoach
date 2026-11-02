@@ -13,7 +13,7 @@ vi.mock('../api/client', () => ({
 
 const mockFactors = {
   duration: { name: 'Sleep Duration', looks_impact: 'Skin repair', optimal: '7-9 hours', poor: '<6' },
-  quality: { name: 'Sleep Quality', looks_impact: 'Skin glow', optimal: 'Deep', poor: 'Fragmented' },
+  quality: { name: 'Sleep Quality', looks_impact: 'Skin glow', optimal: 'Głęboki', poor: 'Fragmented' },
 }
 
 describe('SleepOptimizer', () => {
@@ -56,7 +56,7 @@ describe('SleepOptimizer', () => {
     await waitFor(() => {
       expect(screen.getByText('Sleep Optimizer')).toBeInTheDocument()
     })
-    const analyzeBtn = screen.getByText('Analyze Sleep')
+    const analyzeBtn = screen.getByText('Oceń sen')
     await user.click(analyzeBtn)
     await waitFor(() => {
       expect(analyzeSleep).toHaveBeenCalled()
@@ -76,7 +76,7 @@ describe('SleepOptimizer', () => {
     await waitFor(() => {
       expect(screen.getByText('Sleep Optimizer')).toBeInTheDocument()
     })
-    const getTipsBtn = screen.getByText('Get Tips')
+    const getTipsBtn = screen.getByText('Pokaż wskazówki')
     await user.click(getTipsBtn)
     await waitFor(() => {
       expect(getPreEventSleepTips).toHaveBeenCalled()

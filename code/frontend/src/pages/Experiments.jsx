@@ -53,7 +53,7 @@ export default function Experiments() {
     if (!currentExp) return
     try {
       await logDaily(currentExp.id, dayNumber, dayRating, dayNotes)
-      alert(`Day ${dayNumber} logged!`)
+      alert(`Zapisano dzień ${dayNumber}.`)
       setDayNotes('')
       setDayNumber(d => d + 1)
     } catch (e) {
@@ -85,7 +85,7 @@ export default function Experiments() {
     }
   }
 
-  if (loading) return <div className="p-8 text-center">Loading experiments...</div>
+  if (loading) return <div className="p-8 text-center">Ładowanie eksperymentów...</div>
 
   return (
     <div className="max-w-4xl mx-auto p-6">
@@ -97,7 +97,7 @@ export default function Experiments() {
           onClick={() => setShowStart(true)}
           className="bg-purple-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-purple-600"
         >
-          <Plus size={18} /> Start Experiment
+          <Plus size={18} /> Zacznij eksperyment
         </button>
       </div>
 
@@ -120,14 +120,14 @@ export default function Experiments() {
                   <div>
                     <h3 className="font-semibold text-lg">{exp.name}</h3>
                     <p className="text-sm text-gray-600">
-                      {exp.category} • Day {exp.daily_logs?.length || 0}/{exp.duration_days}
+                      {exp.category} • dzień {exp.daily_logs?.length || 0}/{exp.duration_days}
                     </p>
                     <p className="text-xs text-gray-500 mt-1">
                       {exp.start_date} → {exp.end_date}
                     </p>
                   </div>
                   <span className="bg-green-100 text-green-700 px-2 py-1 rounded text-sm">
-                    Active
+                    Aktywny
                   </span>
                 </div>
               </div>
@@ -147,11 +147,11 @@ export default function Experiments() {
           {/* Log Daily */}
           <div className="bg-gray-50 rounded-lg p-4 mb-4">
             <h3 className="font-semibold mb-3 flex items-center gap-2">
-              <Calendar size={18} /> Log Day {dayNumber}
+              <Calendar size={18} /> Zapisz dzień {dayNumber}
             </h3>
             <div className="space-y-3">
               <div>
-                <label className="block text-sm font-medium mb-1">Rating (1-10)</label>
+                <label className="block text-sm font-medium mb-1">Ocena dnia (1-10)</label>
                 <input
                   type="range"
                   min="1"
@@ -163,13 +163,13 @@ export default function Experiments() {
                 <div className="text-center font-bold text-purple-600">{dayRating}/10</div>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Notes</label>
+                <label className="block text-sm font-medium mb-1">Notatki</label>
                 <textarea
                   value={dayNotes}
                   onChange={e => setDayNotes(e.target.value)}
                   className="w-full p-2 border rounded"
                   rows="2"
-                  placeholder="How did it go today?"
+                  placeholder="Jak poszło dziś?"
                 />
               </div>
               <div className="flex gap-2">
@@ -177,13 +177,13 @@ export default function Experiments() {
                   onClick={handleLogDay}
                   className="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600"
                 >
-                  <Check size={16} className="inline mr-1" /> Log Day {dayNumber}
+                  <Check size={16} className="inline mr-1" /> Zapisz dzień {dayNumber}
                 </button>
                 <button
                   onClick={handleFinish}
                   className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
                 >
-                  Finish Experiment
+                  Zakończ eksperyment
                 </button>
               </div>
             </div>
@@ -192,7 +192,7 @@ export default function Experiments() {
           {/* Logs */}
           {currentExp.daily_logs?.length > 0 && (
             <div>
-              <h3 className="font-semibold mb-2">Daily Logs</h3>
+              <h3 className="font-semibold mb-2">Wpisy dzienne</h3>
               <div className="space-y-2 max-h-48 overflow-y-auto">
                 {currentExp.daily_logs.map((log, i) => (
                   <div key={i} className="flex items-center gap-4 text-sm bg-gray-50 p-2 rounded">
@@ -224,7 +224,7 @@ export default function Experiments() {
 
           {results.variant_results && (
             <div className="space-y-2">
-              <h4 className="font-semibold">All Variants:</h4>
+              <h4 className="font-semibold">Wszystkie warianty:</h4>
               {Object.entries(results.variant_results).map(([idx, data]) => (
                 <div key={idx} className="bg-white p-3 rounded flex justify-between items-center">
                   <span>{data.variant_name}</span>
@@ -240,7 +240,7 @@ export default function Experiments() {
 
       {/* Templates */}
       <div>
-        <h2 className="text-xl font-semibold mb-4">Available Templates</h2>
+        <h2 className="text-xl font-semibold mb-4">Dostępne eksperymenty</h2>
         <div className="grid md:grid-cols-2 gap-4">
           {templates.map((tpl, i) => (
             <div key={i} className="border rounded-lg p-4 hover:border-purple-300 transition-colors">
@@ -266,7 +266,7 @@ export default function Experiments() {
       {showStart && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-md w-full max-h-[80vh] overflow-y-auto">
-            <h2 className="text-2xl font-bold mb-4">Start New Experiment</h2>
+            <h2 className="text-2xl font-bold mb-4">Nowy eksperyment</h2>
             <div className="space-y-3 mb-4">
               {templates.map((tpl, i) => (
                 <div
@@ -285,7 +285,7 @@ export default function Experiments() {
             </div>
             <input
               type="text"
-              placeholder="Custom name (optional)"
+              placeholder="Własna nazwa (opcjonalnie)"
               value={customName}
               onChange={e => setCustomName(e.target.value)}
               className="w-full p-2 border rounded mb-4"
@@ -296,13 +296,13 @@ export default function Experiments() {
                 disabled={!selectedTemplate}
                 className="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600 disabled:bg-gray-300"
               >
-                Start Experiment
+                Zacznij eksperyment
               </button>
               <button
                 onClick={() => { setShowStart(false); setSelectedTemplate(null) }}
                 className="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400"
               >
-                Cancel
+                Anuluj
               </button>
             </div>
           </div>
