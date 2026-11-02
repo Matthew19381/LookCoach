@@ -23,7 +23,7 @@ docker compose up --build   # z katalogu code/
 
 ```bash
 # Backend — uruchamiać Z code/backend (stare importy top-level wymagają cwd w sys.path)
-cd code/backend && python -m pytest tests/        # obecnie 433 testów
+cd code/backend && python -m pytest tests/        # obecnie 435 testów
 
 # Frontend
 cd code/frontend && npm test -- --run             # obecnie 125 testów (vitest)
@@ -65,7 +65,7 @@ Router → Service → SQLAlchemy Session (get_db dependency)
   idempotentne). Zmiana schematu = nowa migracja (`cd code/backend && alembic revision --autogenerate`),
   NIE `create_all`. Nowy model → zaimportuj w `models/__init__.py`.
 
-### Routery (22, wszystkie pod `/api/v1/`)
+### Routery (26, wszystkie pod `/api/v1/`)
 
 | Router | Prefiks | Odpowiedzialność |
 |---|---|---|
@@ -89,6 +89,10 @@ Router → Service → SQLAlchemy Session (get_db dependency)
 | consistency | `/api/v1/consistency` | Consistency Tracker (LC-7), publikuje `protocol_done/skipped` |
 | directives | `/api/v1/directives` | dyrektywy huba (survival_mode, priority, quiet_hours) |
 | feedback_loop | `/api/v1/feedback-loop` | Smart Feedback Loop (redukcja/przekomponowanie planu) |
+| style | `/api/v1/style` | porady: fryzura, brwi, zarost, oczy, oprawki, ubiór, kolory, uśmiech; podgląd fryzury |
+| today | `/api/v1/today` | ekran Dziś |
+| assistant | `/api/v1/assistant` | asystent AI (zasady LC-1/4/8/9 w prompcie + filtr ocen) |
+| notifications | `/api/v1/notifications` | przypomnienia push (Web Push, VAPID) |
 | data | `/api/v1/data` | prywatność: eksport ZIP, trwałe usunięcie (`confirm=USUN-WSZYSTKO`) |
 | ecosystem | `/api/v1/ecosystem` | dane z innych modułów (`/overview`), potrzeby dla ForgeBody/Diety (`/needs`, `/needs/send`), stan łącza (`/connection`) |
 

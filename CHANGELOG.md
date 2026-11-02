@@ -2,6 +2,24 @@
 
 ---
 
+## [Unreleased] — 2026-11-02 (domknięcie planu: push, kod kreskowy, aparat, migracje, uśmiech, Mentalność)
+### Dodane
+- **Przypomnienia push** (Profil → Przypomnienia): rutyna rano/wieczorem i zdjęcia kontrolne, z ciszą nocną
+  i trybem przetrwania z huba; własna implementacja Web Push (RFC 8291 + VAPID). Wymaga kluczy VAPID w `.env`
+  (`python -m backend.scripts.generate_vapid_keys`).
+- **Kod kreskowy kosmetyku** (Open Beauty Facts) + ostrzeżenia zdrowotne produktu (retinoid w ciąży, kwasy przy
+  wrażliwej skórze).
+- **Aparat z szablonem kadru**, suwak przed/po, korelacje „Co idzie w parze” (pielęgnacja–skóra, stres i sód–obrzęk).
+- **Opcjonalne zdjęcie „uśmiech”** (zęby, dziąsła) z poradami w Stylu.
+- Sygnał do **Mentalności** przy bardzo częstym sprawdzaniu wyglądu lub cierpieniu z jego powodu.
+- Treści z backendu po polsku; CI: mypy, ESLint; pre-commit.
+### Naprawione
+- Migracje Alembic: łańcuch nie działał na czystej bazie; start aplikacji robi teraz `alembic upgrade head`
+  (stara baza bez utraty danych).
+- `/summary` oddawał hubowi cudze eventy w starym formacie — teraz własne, zgodnie z kontraktem.
+- Regularność: zapis pielęgnacji z UI zawsze kończył się błędem 400 (zła lista protokołów).
+- Filtr nerkowy w Event Mode działa na polskich treściach.
+
 ## [Unreleased] — 2026-11-02 (Fazy 4, 5, 6.2, 8)
 ### Dodane
 - **Asystent AI** (strona Asystent): rozmowa na podstawie Twoich analiz, rutyn, profilu i danych z innych
