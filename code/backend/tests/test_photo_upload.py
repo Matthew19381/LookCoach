@@ -109,3 +109,70 @@ def test_startup_removes_orphaned_analyses(monkeypatch):
     monkeypatch.setattr(database, "engine", engine)
     assert database.remove_orphaned_analyses() == 1
     assert database.remove_orphaned_analyses() == 0
+
+
+# --- Plan 4.9: quality check ---------------------------------------------------
+def _textured(size=(800, 1000), fill=128):
+    import random
+
+    from PIL import ImageDraw
+
+    rnd = random.Random(1)
+    img = Image.new("L", size, fill)
+    d = ImageDraw.Draw(img)
+    for _ in range(300):
+        x, y = rnd.randint(0, size[0]), rnd.randint(0, size[1])
+        d.rectangle([x, y, x + rnd.randint(5, 60), y + rnd.randint(5, 60)], fill=rnd.randint(60, 200))
+    return img
+
+
+def _bytes(img):
+    out = io.BytesIO()
+    img.convert("RGB").save(out, format="JPEG", quality=95)
+    return out.getvalue()
+
+
+def test_good_photo_passes():
+    from backend.services.photo_storage import quality_check
+
+    assert quality_check(_bytes(_textured()))["ok"] is True
+
+
+def test_blurry_dark_and_small_photos_are_flagged():
+    from PIL import ImageFilter
+
+    from backend.services.photo_storage import quality_check
+
+    blurry = quality_check(_bytes(_textured().filter(ImageFilter.GaussianBlur(8))))
+    assert not blurry["ok"] and any("nieostre" in p for p in blurry["problems"])
+
+    dark = quality_check(_bytes(_textured().point(lambda v: v // 6)))
+    assert any("ciemne" in p for p in dark["problems"])
+
+    small = quality_check(_bytes(_textured(size=(300, 400))))
+    assert any("rozdzielczość" in p for p in small["problems"])
+
+
+def test_analysis_refuses_bad_photo_unless_forced(db_session, monkeypatch):
+    import asyncio
+
+    from fastapi import BackgroundTasks, HTTPException
+    from PIL import ImageFilter
+
+    from backend.models.photo import Photo
+    from backend.paths import UPLOAD_DIR
+    from backend.routers import analysis
+
+    file = UPLOAD_DIR / "front_1_blurry.jpg"
+    file.write_bytes(_bytes(_textured().filter(ImageFilter.GaussianBlur(8))))
+    photo = Photo(user_id=1, photo_type="side", file_path=str(file))
+    db_session.add(photo)
+    db_session.commit()
+
+    with pytest.raises(HTTPException) as exc:
+        asyncio.run(analysis.analyze_photo(photo.id, BackgroundTasks(), db=db_session))
+    assert exc.value.status_code == 422
+
+    monkeypatch.setattr(analysis.VISION_SERVICE, "analyze_body", lambda b: {"posture_notes": []})
+    result = asyncio.run(analysis.analyze_photo(photo.id, BackgroundTasks(), force=True, db=db_session))
+    assert result["message"] == "Analysis complete"

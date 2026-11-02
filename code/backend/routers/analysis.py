@@ -11,6 +11,7 @@ from ..services.analysis_store import has_any, load_latest_analysis
 from ..services import outbox
 from ..services.attractiveness_levers import AttractivenessLevers
 from ..services.ecosystem_dispatch import dispatch_needs, observe_session
+from ..services.photo_storage import quality_check
 from ..services.state_labels import state_labels
 
 router = APIRouter()
@@ -40,10 +41,23 @@ def _require_ai(*results: dict | None) -> None:
 
 
 @router.post("/analyze/{photo_id}")
-async def analyze_photo(photo_id: int, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+async def analyze_photo(
+    photo_id: int, background_tasks: BackgroundTasks, force: bool = False, db: Session = Depends(get_db),
+):
     photo = db.query(Photo).filter(Photo.id == photo_id).first()
     if not photo:
         raise HTTPException(404, "Photo not found")
+
+    # Plan 4.9: an unusable photo is not analysed (and does not cost an AI call)
+    # unless the user explicitly insists (force=true).
+    path = photo_path(photo.file_path)
+    if not force and path.exists():
+        try:
+            quality = quality_check(path.read_bytes())
+        except Exception:  # not decodable - let the analysis path report it
+            quality = {"ok": True}
+        if not quality["ok"]:
+            raise HTTPException(422, {"message": "Zdjęcie ma słabą jakość.", "problems": quality["problems"]})
 
     photo.analysis_status = "processing"
     db.commit()

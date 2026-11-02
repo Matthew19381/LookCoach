@@ -58,3 +58,57 @@ def sanitize_image(content: bytes) -> tuple[bytes, str]:
         # No exif=/pnginfo= passed -> metadata (EXIF, GPS, XMP, text chunks) is dropped.
         img.save(out, format=fmt, **save_kwargs)
     return out.getvalue(), ext
+
+
+# --- Plan 4.9: photo quality check before analysis -------------------------
+# Comparisons over time only make sense for usable photos. Thresholds are
+# deliberately loose (flag only clearly bad photos): sharpness = variance of the
+# edge map of a 512 px grayscale copy (calibrated 2026-11-02: sharp ~1800,
+# blur radius 3 ~70, radius 4 ~30, flat 0).
+MIN_SHORT_SIDE = 480
+MIN_SHARPNESS = 30.0
+MIN_BRIGHTNESS = 50
+MAX_BRIGHTNESS = 215
+MAX_CLIPPED = 0.25  # share of pixels at or above 250
+
+
+def quality_check(content: bytes) -> dict:
+    """{"ok": bool, "problems": [Polish messages], "metrics": {...}}."""
+    from PIL import ImageFilter, ImageStat
+
+    with Image.open(io.BytesIO(content)) as img:
+        width, height = img.size
+        gray = img.convert("L")
+    problems = []
+    if min(width, height) < MIN_SHORT_SIDE:
+        problems.append(f"Za mała rozdzielczość ({width}×{height}) — zrób zdjęcie w pełnej rozdzielczości.")
+
+    small = gray.copy()
+    small.thumbnail((512, 512))
+    stat = ImageStat.Stat(small)
+    brightness = stat.mean[0]
+    histogram = small.histogram()
+    clipped = sum(histogram[250:]) / max(sum(histogram), 1)
+    if brightness < MIN_BRIGHTNESS:
+        problems.append("Zdjęcie jest za ciemne — stań przodem do okna lub włącz światło.")
+    elif brightness > MAX_BRIGHTNESS or clipped > MAX_CLIPPED:
+        problems.append("Zdjęcie jest prześwietlone — unikaj ostrego światła i lampy błyskowej.")
+
+    edges = small.filter(ImageFilter.FIND_EDGES)
+    w, h = edges.size
+    if w > 8 and h > 8:
+        edges = edges.crop((4, 4, w - 4, h - 4))
+    sharpness = ImageStat.Stat(edges).var[0]
+    if sharpness < MIN_SHARPNESS:
+        problems.append("Zdjęcie jest nieostre — oprzyj telefon albo użyj samowyzwalacza.")
+
+    return {
+        "ok": not problems,
+        "problems": problems,
+        "metrics": {
+            "width": width,
+            "height": height,
+            "brightness": round(brightness, 1),
+            "sharpness": round(sharpness, 1),
+        },
+    }

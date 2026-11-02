@@ -43,8 +43,8 @@ export const deletePhoto = (id) =>
 export const getAnalysis = () =>
   api.get(`/api/v1/analysis/latest?user_id=${getUserId()}`);
 
-export const analyzePhoto = (photoId) =>
-  api.post(`/api/v1/analysis/analyze/${photoId}`);
+export const analyzePhoto = (photoId, force = false) =>
+  api.post(`/api/v1/analysis/analyze/${photoId}${force ? "?force=true" : ""}`);
 
 export const getRecommendations = (limit = 10) =>
   api.get(`/api/v1/recommendations/?limit=${limit}`);

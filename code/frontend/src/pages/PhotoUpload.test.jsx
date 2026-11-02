@@ -6,11 +6,11 @@ import { BrowserRouter } from 'react-router-dom'
 // Mock the API client
 vi.mock('../api/client', () => ({
   uploadPhoto: vi.fn(),
-  getPhotos: vi.fn()
+  analyzePhoto: vi.fn(() => Promise.resolve({ message: 'Analysis complete' })),
 }))
 
 import PhotoUpload from './PhotoUpload'
-import { uploadPhoto } from '../api/client'
+import { uploadPhoto, analyzePhoto } from '../api/client'
 
 describe('PhotoUpload', () => {
   beforeEach(() => {
@@ -115,5 +115,53 @@ describe('PhotoUpload', () => {
     )
     await user.upload(screen.getAllByLabelText('Choose File')[0], new File(['x'], 'a.jpg', { type: 'image/jpeg' }))
     expect(await screen.findByText(/limit 15 MB/)).toBeInTheDocument()
+  })
+
+  it('starts the analysis after upload (the UI never did before)', async () => {
+    uploadPhoto.mockResolvedValue({ id: 7, url: 'a.jpg', quality: { ok: true, problems: [] } })
+    analyzePhoto.mockResolvedValue({ message: 'Analysis complete' })
+    const user = userEvent.setup()
+    render(
+      <BrowserRouter>
+        <PhotoUpload />
+      </BrowserRouter>
+    )
+    await user.upload(screen.getAllByLabelText('Choose File')[0], new File(['x'], 'a.jpg', { type: 'image/jpeg' }))
+    expect(await screen.findByText('Analiza gotowa')).toBeInTheDocument()
+    expect(analyzePhoto).toHaveBeenCalledWith(7, false)
+    expect(screen.getByText('Zobacz wyniki analizy')).toBeInTheDocument()
+  })
+
+  it('poor quality: shows problems, analyses only on request', async () => {
+    uploadPhoto.mockResolvedValue({
+      id: 8, url: 'b.jpg', quality: { ok: false, problems: ['Zdjęcie jest nieostre — oprzyj telefon albo użyj samowyzwalacza.'] },
+    })
+    analyzePhoto.mockResolvedValue({ message: 'Analysis complete' })
+    const user = userEvent.setup()
+    render(
+      <BrowserRouter>
+        <PhotoUpload />
+      </BrowserRouter>
+    )
+    await user.upload(screen.getAllByLabelText('Choose File')[1], new File(['x'], 'b.jpg', { type: 'image/jpeg' }))
+    expect(await screen.findByText(/nieostre/)).toBeInTheDocument()
+    expect(analyzePhoto).not.toHaveBeenCalled()
+    await user.click(screen.getByText('Analizuj mimo to'))
+    expect(analyzePhoto).toHaveBeenCalledWith(8, true)
+  })
+
+  it('AI unavailable is shown, not hidden', async () => {
+    uploadPhoto.mockResolvedValue({ id: 9, url: 'c.jpg', quality: { ok: true, problems: [] } })
+    const err = new Error('503')
+    err.response = { status: 503, data: { detail: 'Usługa AI jest teraz niedostępna — spróbuj ponownie później.' } }
+    analyzePhoto.mockRejectedValue(err)
+    const user = userEvent.setup()
+    render(
+      <BrowserRouter>
+        <PhotoUpload />
+      </BrowserRouter>
+    )
+    await user.upload(screen.getAllByLabelText('Choose File')[2], new File(['x'], 'c.jpg', { type: 'image/jpeg' }))
+    expect(await screen.findByText(/AI jest teraz niedostępna/)).toBeInTheDocument()
   })
 })

@@ -313,10 +313,13 @@ każda zmiana promptu = test na kształt JSON + test na brak liczb ocen.
   twarzy — porada stylistyczna.
 - [ ] **4.8 Dopasowanie ubioru do sylwetki** (fit, długości, kroje) — porada
   stylistyczna; kolorystyka („typ urody”) jako osobna sekcja oznaczona `[HIPOTEZA]` (D9).
-- [ ] **4.9 Kontrola jakości zdjęcia przed analizą** (lokalnie, Pillow): ostrość
+- [x] **4.9 Kontrola jakości zdjęcia przed analizą** (lokalnie, Pillow): ostrość
   (wariancja Laplasjanu), ekspozycja (histogram), rozdzielczość, wykrycie twarzy
   dla „przód”. Zła jakość → komunikat „zrób ponownie: …”, analiza nie startuje.
   Kryterium: testy na rozmyte/ciemne obrazy.
+  [WYKONANE 2026-11-02: `photo_storage.quality_check` (bez wykrywania twarzy — brak OpenCV); słaba
+  jakość → 422 przed wywołaniem AI, „Analizuj mimo to” = `force=true`. PRZY OKAZJI: UI nigdy nie
+  uruchamiał analizy (analyzePhoto nie był nigdzie wołany) — teraz startuje po wysłaniu zdjęcia]
 - [ ] **4.10 Nakładka-szablon w aparacie** (PWA, `getUserMedia`): sylwetka/owal
   do ustawienia kadru + przypomnienie o tym samym świetle i odległości.
 - [ ] **4.11 Wybór modelu AI zgodny z dokumentacją**: domyślnie `AI_SERVICE=gemini`

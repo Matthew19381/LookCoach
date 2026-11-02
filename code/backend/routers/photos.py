@@ -7,7 +7,7 @@ from ..database import get_db
 from ..models.photo import Photo
 from ..paths import UPLOAD_DIR, photo_path, photo_url
 from ..services.gemini_vision import forget_image
-from ..services.photo_storage import MAX_UPLOAD_BYTES, InvalidPhoto, sanitize_image
+from ..services.photo_storage import MAX_UPLOAD_BYTES, InvalidPhoto, quality_check, sanitize_image
 
 router = APIRouter()
 
@@ -49,6 +49,8 @@ async def upload_photo(
         "photo_type": photo.photo_type,
         "url": f"/uploads/{file_path.name}",
         "status": photo.analysis_status,
+        # Plan 4.9: tell the user right away if the photo is unusable
+        "quality": quality_check(clean),
     }
 
 
