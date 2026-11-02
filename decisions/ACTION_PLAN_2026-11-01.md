@@ -410,8 +410,11 @@ każda zmiana promptu = test na kształt JSON + test na brak liczb ocen.
   [WYKONANE 2026-11-02: `npm run lint` (`--max-warnings 0`) w CI. PRZY OKAZJI: strona Regularność
   oferowała protokoły skincare/exercise/supplements, które API odrzuca (400) — zapis pielęgnacji z UI
   nigdy nie działał; teraz lista = ProtocolType z backendu]
-- [ ] **7.10 Tłumaczenie treści z backendu** (FACTORS, EXERCISES, wskazówki snu/stresu, nazwy
+- [x] **7.10 Tłumaczenie treści z backendu** (FACTORS, EXERCISES, wskazówki snu/stresu, nazwy
   rekomendacji w EVIDENCE_DB) — dziś po angielsku w polskim interfejsie.
+  [WYKONANE 2026-11-02: sen, stres, żywienie, postawa, pewność siebie, wydarzenia, regularność,
+  eksperymenty, nazwy rekomendacji i ćwiczeń. Zostały: nazwy składników (klucze do konfliktów),
+  tytuły filmów (prawdziwe tytuły), komunikaty feedback_loop (niewidoczne w UI)]
 - [ ] **7.8 Alembic rozjechany z modelami**: tabele `adherence_logs`, `protocol_adherence`,
   `consistency_metrics`, `directive_states`, `skin_reactions`, `skincare_products`,
   `ingredient_usage`, `outbox_events` powstają przez `create_all` w `init_db()` i nie mają

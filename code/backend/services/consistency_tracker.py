@@ -305,13 +305,13 @@ class ConsistencyTracker:
     def _get_system_message(self, status: str) -> str:
         """Get supportive message based on system status."""
         messages = {
-            "thriving": "Consistency is excellent. Your plan is well-calibrated.",
-            "stable": "Good consistency. Minor adjustments may help optimize.",
-            "adjusting": "Some protocols need difficulty reduction. This is normal adaptation, not failure.",
-            "minimum_effective": "Running minimum effective protocols. Focus on showing up, not perfection.",
-            "survival": "Survival mode active. Absolute basics only. Be kind to yourself — showing up matters.",
+            "thriving": "Świetna regularność. Plan jest dobrze dopasowany.",
+            "stable": "Dobra regularność. Drobne korekty mogą pomóc.",
+            "adjusting": "Część protokołów warto uprościć. To normalne dopasowanie, nie porażka.",
+            "minimum_effective": "Działasz na wersjach minimum. Liczy się obecność, nie perfekcja.",
+            "survival": "Tryb przetrwania. Tylko absolutne podstawy. Bądź dla siebie wyrozumiały — liczy się, że jesteś.",
         }
-        return messages.get(status, "Tracking consistency...")
+        return messages.get(status, "Zbieram dane o regularności...")
 
     def get_weekly_adherence_trend(self, protocol_type: ProtocolType, weeks: int = 4) -> list[dict]:
         """Weekly adherence for visualization, oldest week first (weeks without logs skipped)."""

@@ -20,7 +20,7 @@ import { getExperimentTemplates, getActiveExperiments } from '../api/client'
 const mockTemplates = [
   {
     id: 'skincare_vitamin_c',
-    name: 'Vitamin C Serum Test',
+    name: 'Serum z witaminą C',
     category: 'skincare',
     description: 'Test Vitamin C effectiveness',
     duration_days: 14,
@@ -28,7 +28,7 @@ const mockTemplates = [
   },
   {
     id: 'diet_water',
-    name: 'Water Intake Test',
+    name: 'Ilość wody',
     category: 'diet',
     description: 'Test effect of water intake',
     duration_days: 14,
@@ -80,8 +80,8 @@ describe('Experiments', () => {
       expect(screen.getByText('Dostępne eksperymenty')).toBeInTheDocument()
     })
 
-    expect(screen.getByText('Vitamin C Serum Test')).toBeInTheDocument()
-    expect(screen.getByText('Water Intake Test')).toBeInTheDocument()
+    expect(screen.getByText('Serum z witaminą C')).toBeInTheDocument()
+    expect(screen.getByText('Ilość wody')).toBeInTheDocument()
     expect(screen.getByText('Test Vitamin C effectiveness')).toBeInTheDocument()
     expect(screen.getByText('Test effect of water intake')).toBeInTheDocument()
   })
@@ -116,7 +116,7 @@ describe('Experiments', () => {
     )
 
     await waitFor(() => {
-      expect(screen.getByText('Vitamin C Serum Test')).toBeInTheDocument()
+      expect(screen.getByText('Serum z witaminą C')).toBeInTheDocument()
     })
 
     // Click Start Experiment button

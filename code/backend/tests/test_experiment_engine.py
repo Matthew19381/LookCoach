@@ -20,7 +20,7 @@ class TestPersonalExperimentEngine:
         result = PersonalExperimentEngine.get_template("skincare_vitamin_c")
         assert isinstance(result, dict)
         if "name" in result:
-            assert "Vitamin C" in result["name"]
+            assert "witamin" in result["name"].lower()
 
     def test_get_template_invalid(self):
         result = PersonalExperimentEngine.get_template("invalid_template_123")

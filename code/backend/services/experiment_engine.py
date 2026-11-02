@@ -8,22 +8,22 @@ class PersonalExperimentEngine:
     # Predefined experiment templates
     EXPERIMENT_TEMPLATES = {
         "skincare_vitamin_c": {
-            "name": "Vitamin C Serum Test",
+            "name": "Serum z witaminą C",
             "category": "skincare",
-            "description": "Test Vitamin C serum effectiveness over 14 days",
+            "description": "Sprawdź działanie serum z witaminą C przez 14 dni",
             "duration_days": 14,
             "variants": [
                 {"name": "10% Vitamin C", "routine": {"morning": ["Vitamin C 10%"]}},
                 {"name": "20% Vitamin C", "routine": {"morning": ["Vitamin C 20%"]}},
-                {"name": "No Vitamin C (control)", "routine": {"morning": []}},
+                {"name": "Bez witaminy C (kontrola)", "routine": {"morning": []}},
             ],
             "metric": "skin_brightness",
             "measurement": "self_rated (1-10 scale)",
         },
         "skincare_retinol": {
-            "name": "Retinol Strength Test",
+            "name": "Stężenie retinolu",
             "category": "skincare",
-            "description": "Compare different retinol concentrations",
+            "description": "Porównaj różne stężenia retinolu",
             "duration_days": 28,
             "variants": [
                 {"name": "0.25% Retinol", "routine": {"evening": ["Retinol 0.25%"]}},
@@ -34,25 +34,25 @@ class PersonalExperimentEngine:
             "measurement": "self_rated + photo comparison",
         },
         "diet_water": {
-            "name": "Water Intake Test",
+            "name": "Ilość wody",
             "category": "diet",
-            "description": "Test effect of increased water intake on skin",
+            "description": "Sprawdź, czy więcej wody zmienia skórę",
             "duration_days": 14,
             "variants": [
-                {"name": "2L water/day", "instruction": "Drink 2L daily"},
-                {"name": "3L water/day", "instruction": "Drink 3L daily"},
-                {"name": "4L water/day", "instruction": "Drink 4L daily"},
+                {"name": "2L water/day", "instruction": "2 l wody dziennie"},
+                {"name": "3L water/day", "instruction": "3 l wody dziennie"},
+                {"name": "4L water/day", "instruction": "4 l wody dziennie"},
             ],
             "metric": "skin_hydration",
             "measurement": "self_rated + skin plumpness",
         },
         "technique_gua_sha": {
-            "name": "Gua Sha Frequency Test",
+            "name": "Jak często gua sha",
             "category": "technique",
-            "description": "Test different Gua Sha massage frequencies",
+            "description": "Sprawdź różną częstotliwość masażu gua sha",
             "duration_days": 21,
             "variants": [
-                {"name": "Daily (7x/week)", "frequency": "daily"},
+                {"name": "Codziennie (7×/tydz.)", "frequency": "daily"},
                 {"name": "3x/week", "frequency": "3x_week"},
                 {"name": "1x/week (control)", "frequency": "1x_week"},
             ],
@@ -60,13 +60,13 @@ class PersonalExperimentEngine:
             "measurement": "morning face check + photos",
         },
         "diet_sodium": {
-            "name": "Low Sodium Test",
+            "name": "Mniej soli",
             "category": "diet",
-            "description": "Test effect of reducing sodium on facial puffiness",
+            "description": "Sprawdź, czy mniej soli zmniejsza opuchliznę twarzy",
             "duration_days": 7,
             "variants": [
-                {"name": "Normal sodium", "max_sodium": 2300},
-                {"name": "Low sodium (<1500mg)", "max_sodium": 1500},
+                {"name": "Zwykła ilość soli", "max_sodium": 2300},
+                {"name": "Mało sodu (<1500 mg)", "max_sodium": 1500},
             ],
             "metric": "facial_puffiness",
             "measurement": "morning face check + photo",
@@ -85,7 +85,7 @@ class PersonalExperimentEngine:
     def start_experiment(template_id: str, user_id: int, custom_name: str = None) -> dict:
         template = PersonalExperimentEngine.EXPERIMENT_TEMPLATES.get(template_id)
         if not template:
-            return {"error": "Template not found"}
+            return {"error": "Nie znaleziono szablonu"}
 
         start_date = datetime.now().date()
         end_date = start_date + timedelta(days=template["duration_days"])
@@ -128,12 +128,12 @@ class PersonalExperimentEngine:
         """Analyze experiment results and pick the best variant."""
         logs = experiment.get("daily_logs", [])
         if not logs:
-            return {"error": "No data logged yet"}
+            return {"error": "Brak wpisów"}
 
         # Group ratings by variant (rotate variants each day)
         variant_count = len(experiment.get("variants", []))
         if variant_count == 0:
-            return {"error": "No variants defined"}
+            return {"error": "Brak wariantów"}
 
         variant_ratings = {i: [] for i in range(variant_count)}
 
@@ -167,8 +167,8 @@ class PersonalExperimentEngine:
                 "index": winner,
                 "name": experiment["variants"][winner]["name"] if winner is not None else "N/A",
                 "average_rating": variant_averages[winner]["average_rating"] if winner is not None else 0,
-            } if winner is not None else {"index": -1, "name": "Insufficient data", "average_rating": 0},
-            "conclusion": f"Best variant: {experiment['variants'][winner]['name'] if winner is not None else 'N/A'} - keep using it!" if winner is not None else "Need more data",
+            } if winner is not None else {"index": -1, "name": "Za mało danych", "average_rating": 0},
+            "conclusion": f"Najlepszy wariant: {experiment['variants'][winner]['name'] if winner is not None else 'brak'} - zostań przy nim!" if winner is not None else "Potrzeba więcej danych",
         }
 
     @staticmethod
@@ -176,6 +176,6 @@ class PersonalExperimentEngine:
         """Get recommendation based on experiment results."""
         winner = experiment_result.get("winner", {})
         if winner.get("index") == -1:
-            return "Continue the experiment for more reliable results."
+            return "Kontynuuj eksperyment, żeby wynik był pewniejszy."
 
-        return f"Continue using '{winner.get('name', 'the winning variant')}' - it scored {winner.get('average_rating', 0):.1f}/10!"
+        return f"Zostań przy '{winner.get('name', 'zwycięskim wariancie')}' - średnia ocena dnia {winner.get('average_rating', 0):.1f}/10."

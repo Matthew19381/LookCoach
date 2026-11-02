@@ -8,19 +8,19 @@ class AestheticTrainingEngine:
         "pull_ups": {
             "name": "Pull-ups",
             "target": "lats, biceps",
-            "aesthetic_impact": "V-taper width",
+            "aesthetic_impact": "Szerokość sylwetki V",
             "difficulty": "intermediate",
             "equipment": "pull-up bar",
         },
         "lat_pulldowns": {
             "name": "Lat Pulldowns",
             "target": "lats",
-            "aesthetic_impact": "V-taper width",
+            "aesthetic_impact": "Szerokość sylwetki V",
             "difficulty": "beginner",
             "equipment": "gym",
         },
         "lateral_raises": {
-            "name": "Lateral Raises",
+            "name": "Wznosy bokiem",
             "target": "side delts",
             "aesthetic_impact": "shoulder width",
             "difficulty": "beginner",
@@ -34,7 +34,7 @@ class AestheticTrainingEngine:
             "equipment": "cable",
         },
         "incline_press": {
-            "name": "Incline Dumbbell Press",
+            "name": "Wyciskanie hantli na skosie",
             "target": "upper chest",
             "aesthetic_impact": "chest fullness",
             "difficulty": "intermediate",
