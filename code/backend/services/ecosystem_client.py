@@ -136,3 +136,12 @@ async def get_overview(db: Session, user_id: int, transport: httpx.AsyncBaseTran
     row.fetched_at = datetime.now(timezone.utc).replace(tzinfo=None)
     db.commit()
     return {"source": "hub", "fetched_at": row.fetched_at.isoformat(), **data}
+
+
+def cached_overview(db: Session, user_id: int) -> dict | None:
+    """Last snapshot without touching the hub (fast; for the 'Dziś' page)."""
+    row = db.query(EcosystemSnapshot).filter(EcosystemSnapshot.user_id == user_id).first()
+    if not row:
+        return None
+    return {"source": "cache", "fetched_at": row.fetched_at.isoformat() if row.fetched_at else None,
+            **json.loads(row.data)}

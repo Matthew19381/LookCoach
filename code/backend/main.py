@@ -32,6 +32,7 @@ from .routers import (
     data,
     ecosystem,
     style,
+    today,
 )
 
 # Database
@@ -123,6 +124,7 @@ app.include_router(feedback_loop.router, prefix="/api/v1/feedback-loop", tags=["
 app.include_router(data.router, prefix="/api/v1/data", tags=["privacy"])
 app.include_router(ecosystem.router, prefix="/api/v1/ecosystem", tags=["ecosystem"])
 app.include_router(style.router, prefix="/api/v1/style", tags=["style"])
+app.include_router(today.router, prefix="/api/v1/today", tags=["today"])
 
 
 if __name__ == "__main__":

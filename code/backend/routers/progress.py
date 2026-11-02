@@ -65,3 +65,34 @@ async def compare_photos(body: CompareRequest, user_id: int = 1, db: Session = D
         "same_type": before.photo_type == after.photo_type,
         "changes": compare_labels(labels(before), labels(after)),
     }
+
+
+@router.get("/states")
+def state_timeline(user_id: int = 1, limit: int = 8, db: Session = Depends(get_db)):
+    """Plan 5.1: how the observed state changed, in words (replaces the 'Look Score' line).
+
+    One column per analysed photo (newest last), one row per label."""
+    photos = (
+        db.query(Photo)
+        .filter(Photo.user_id == user_id, Photo.analysis_status == "done")
+        .order_by(Photo.uploaded_at.desc(), Photo.id.desc())
+        .limit(limit)
+        .all()
+    )[::-1]
+    sessions = []
+    for photo in photos:
+        analysis = db.query(Analysis).filter(Analysis.photo_id == photo.id).first()
+        labels = state_labels(analysis)
+        if labels:
+            sessions.append({
+                "photo_id": photo.id,
+                "photo_type": photo.photo_type,
+                "date": photo.uploaded_at.isoformat() if photo.uploaded_at else None,
+                "labels": labels,
+            })
+    areas = []
+    for session in sessions:
+        for area in session["labels"]:
+            if area not in areas:
+                areas.append(area)
+    return {"sessions": sessions, "areas": areas}

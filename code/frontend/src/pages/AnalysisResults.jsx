@@ -47,7 +47,7 @@ export default function AnalysisResults() {
         <h1 className="text-3xl font-bold text-gray-900">Analysis Results</h1>
         <div className="bg-yellow-50 border border-yellow-200 rounded-md p-6 text-center">
           <p className="text-yellow-800 mb-4">Please upload all 3 photos (front, side, back) to get your analysis.</p>
-          <a href="/" className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+          <a href="/photos" className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
             Go to Upload
           </a>
         </div>

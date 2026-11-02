@@ -19,12 +19,14 @@ import Privacy from './pages/Privacy'
 import Connections from './pages/Connections'
 import Profile from './pages/Profile'
 import Style from './pages/Style'
+import Today from './pages/Today'
 
 function App() {
   return (
     <Routes>
       <Route path="/" element={<Layout />}>
-        <Route index element={<PhotoUpload />} />
+        <Route index element={<Today />} />
+        <Route path="photos" element={<PhotoUpload />} />
         <Route path="analysis" element={<AnalysisResults />} />
         <Route path="recommendations" element={<Recommendations />} />
         <Route path="progress" element={<ProgressTracker />} />

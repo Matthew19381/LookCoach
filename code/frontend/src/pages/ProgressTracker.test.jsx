@@ -6,10 +6,11 @@ import { BrowserRouter } from 'react-router-dom'
 vi.mock('../api/client', () => ({
   getTimeline: vi.fn(),
   comparePhotos: vi.fn(),
+  getStateTimeline: vi.fn(() => Promise.resolve({ sessions: [], areas: [] })),
 }))
 
 import ProgressTracker from './ProgressTracker'
-import { getTimeline, comparePhotos } from '../api/client'
+import { getTimeline, comparePhotos, getStateTimeline } from '../api/client'
 
 const mockPhotos = [
   { id: 1, photo_type: 'front', url: '/uploads/photo1.jpg', uploaded_at: '2026-05-01T10:00:00Z', status: 'done' },
@@ -95,5 +96,20 @@ describe('ProgressTracker', () => {
     renderPage()
     await waitFor(() => expect(screen.getByText('Oś czasu zdjęć')).toBeInTheDocument())
     expect(document.body.textContent).not.toMatch(/score/i)
+  })
+
+  it('shows the state timeline in words (plan 5.1)', async () => {
+    getTimeline.mockResolvedValue(mockPhotos)
+    getStateTimeline.mockResolvedValue({
+      areas: ['Obrzęk twarzy'],
+      sessions: [
+        { photo_id: 1, date: '2026-09-01T10:00:00', labels: { 'Obrzęk twarzy': 'średni' } },
+        { photo_id: 2, date: '2026-10-01T10:00:00', labels: { 'Obrzęk twarzy': 'niski' } },
+      ],
+    })
+    renderPage()
+    expect(await screen.findByText('Jak zmieniał się stan')).toBeInTheDocument()
+    expect(screen.getByText('średni')).toBeInTheDocument()
+    expect(screen.getByText('niski')).toBeInTheDocument()
   })
 })

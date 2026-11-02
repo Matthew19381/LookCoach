@@ -348,17 +348,20 @@ każda zmiana promptu = test na kształt JSON + test na brak liczb ocen.
 
 ## FAZA 5 — Postęp i motywacja (bez scoringu)
 
-- [ ] **5.1 Jakościowa oś czasu** (zastępuje „Look Score”): dla każdej sesji
+- [x] **5.1 Jakościowa oś czasu** (zastępuje „Look Score”): dla każdej sesji
   zdjęć etykiety stanu (obrzęk, skóra, linia włosów, brwi, zarost, postawa)
   i zmiana słowna względem poprzedniej („obrzęk: średni → niski”).
+  [WYKONANE 2026-11-02: `GET /progress/states`, tabela „Jak zmieniał się stan” w Postępie]
 - [ ] **5.2 Porównanie przed/po**: suwak lub obok siebie, automatyczne wyrównanie
   (twarz/sylwetka), różnice w obserwacjach słownych.
 - [ ] **5.3 Correlation Engine (jakościowy)**: „w tygodniach ze snem < 6 h obrzęk
   częściej średni”, „przy sodzie > limitu …” — dane z 3.8; komunikaty tylko
   przy wystarczającej liczbie obserwacji, z zastrzeżeniem „korelacja ≠ przyczyna”.
-- [ ] **5.4 Dashboard „Dziś”** jako strona startowa: 3 akcje na dziś
+- [x] **5.4 Dashboard „Dziś”** jako strona startowa: 3 akcje na dziś
   (rutyna, protokół, ewentualnie zdjęcia kontrolne), stan dyrektyw huba
   (survival/priority), ostatnie dane z innych modułów.
+  [WYKONANE: `GET /api/v1/today`, strona Dziś jako start (zdjęcia pod /photos); dane z modułów
+  z zapisanego snapshotu — bez czekania na hub]
 - [ ] **5.5 Przypomnienia PWA (push)** — rano/wieczór skincare, zdjęcia co 2–4 tyg.;
   respektują `quiet_hours` (3.7) i `survival_mode`.
 - [x] **5.6 Detektor kompulsywnego skanowania** (otwarte E-3 z TASKS): > N analiz
@@ -377,10 +380,11 @@ każda zmiana promptu = test na kształt JSON + test na brak liczb ocen.
 - [ ] **6.1 Cały interfejs po polsku** (15 stron + Layout + komunikaty błędów API
   pokazywane w UI). Teksty w jednym pliku `src/i18n/pl.js`, żeby łatwo poprawiać.
   Kryterium: vitest — brak angielskich etykiet nawigacji.
-- [ ] **6.2 Nawigacja w 4 grupach**: *Analiza* (Zdjęcia, Wyniki, Postęp),
+- [x] **6.2 Nawigacja w 4 grupach**: *Analiza* (Zdjęcia, Wyniki, Postęp),
   *Plan* (Dziś, Rekomendacje, Pielęgnacja, Regularność), *Styl życia*
   (Sen, Stres, Żywienie, Postawa), *Więcej* (Eksperymenty, Wideo, Event Mode,
   Pewność siebie, Połączenia, Prywatność). Menu mobilne (hamburger / dolny pasek).
+  [WYKONANE: boczny panel z grupami + hamburger na telefonie, etykiety po polsku]
 - [ ] **6.3 Stany puste i błędy**: każda strona bez danych mówi, co zrobić dalej
   (np. „Zrób zdjęcia z przodu, żeby zobaczyć analizę skóry”).
 - [ ] **6.4 Dostępność**: kontrast, etykiety `aria`, obsługa klawiaturą.

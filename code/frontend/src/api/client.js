@@ -231,3 +231,10 @@ export const getStylePreviewOptions = () =>
 
 export const generateStylePreview = (kind, option) =>
   api.post(`/api/v1/style/preview?user_id=${getUserId()}`, { kind, option });
+
+// 'Dziś' (plan 5.4) and state timeline (plan 5.1)
+export const getToday = () =>
+  api.get(`/api/v1/today?user_id=${getUserId()}`);
+
+export const getStateTimeline = () =>
+  api.get(`/api/v1/progress/states?user_id=${getUserId()}`);

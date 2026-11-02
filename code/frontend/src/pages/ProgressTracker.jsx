@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { getTimeline, comparePhotos } from '../api/client'
+import { getTimeline, comparePhotos, getStateTimeline } from '../api/client'
 
 // LC-9: postęp pokazujemy słowami (stan przed → po) z prawdziwych analiz.
 // Do 2026-11-02 była tu linia „Look Score” rosnąca o 5 pkt na każde zdjęcie,
@@ -16,12 +16,14 @@ export default function ProgressTracker() {
   const [compareResult, setCompareResult] = useState(null)
   const [compareError, setCompareError] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [states, setStates] = useState(null)
 
   useEffect(() => {
     getTimeline().then((data) => {
       setPhotos(data)
       setLoading(false)
     }).catch(() => setLoading(false))
+    getStateTimeline().then(setStates).catch(() => setStates(null))
   }, [])
 
   const handleCompare = async () => {
@@ -50,6 +52,28 @@ export default function ProgressTracker() {
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold text-gray-900">Postęp</h1>
+
+      {states?.sessions?.length > 0 && (
+        <div className="bg-white border rounded-lg p-6 overflow-x-auto">
+          <h3 className="text-lg font-semibold mb-4">Jak zmieniał się stan</h3>
+          <table className="text-sm min-w-full">
+            <thead>
+              <tr className="text-left text-gray-500 border-b">
+                <th className="py-2 pr-4">Obszar</th>
+                {states.sessions.map((s) => <th key={s.photo_id} className="py-2 pr-4 whitespace-nowrap">{formatDate(s.date)}</th>)}
+              </tr>
+            </thead>
+            <tbody>
+              {states.areas.map((area) => (
+                <tr key={area} className="border-b">
+                  <td className="py-2 pr-4 text-gray-700">{area}</td>
+                  {states.sessions.map((s) => <td key={s.photo_id} className="py-2 pr-4">{s.labels[area] ?? '—'}</td>)}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       <div className="bg-white border rounded-lg p-6">
         <h3 className="text-lg font-semibold mb-4">Porównaj zdjęcia</h3>
