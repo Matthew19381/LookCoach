@@ -79,6 +79,7 @@ describe('ProgressTracker', () => {
     await pickAndCompare()
 
     await waitFor(() => expect(screen.getByAltText('Przed')).toBeInTheDocument())
+    expect(screen.getByLabelText('Suwak przed/po')).toHaveValue('50') // plan 5.2
     expect(screen.getByText('Obrzęk twarzy')).toBeInTheDocument()
     expect(screen.getByText('średni')).toBeInTheDocument()
     expect(document.body.textContent).not.toMatch(/score/i)

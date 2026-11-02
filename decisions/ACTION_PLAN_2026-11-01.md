@@ -325,8 +325,9 @@ każda zmiana promptu = test na kształt JSON + test na brak liczb ocen.
   [WYKONANE 2026-11-02: `photo_storage.quality_check` (bez wykrywania twarzy — brak OpenCV); słaba
   jakość → 422 przed wywołaniem AI, „Analizuj mimo to” = `force=true`. PRZY OKAZJI: UI nigdy nie
   uruchamiał analizy (analyzePhoto nie był nigdzie wołany) — teraz startuje po wysłaniu zdjęcia]
-- [ ] **4.10 Nakładka-szablon w aparacie** (PWA, `getUserMedia`): sylwetka/owal
+- [x] **4.10 Nakładka-szablon w aparacie** (PWA, `getUserMedia`): sylwetka/owal
   do ustawienia kadru + przypomnienie o tym samym świetle i odległości.
+  [WYKONANE 2026-11-02: `components/CameraCapture.jsx` — owal / sylwetka / koło, zdjęcie idzie tą samą ścieżką uploadu]
 - [ ] **4.11 Wybór modelu AI zgodny z dokumentacją**: domyślnie `AI_SERVICE=gemini`
   (dziś `openrouter`), lub zaktualizować CLAUDE.md — decyzja przy realizacji;
   klucz cache zależny od modelu i wersji promptu (dziś `prompt[:50]`).
@@ -352,8 +353,10 @@ każda zmiana promptu = test na kształt JSON + test na brak liczb ocen.
   zdjęć etykiety stanu (obrzęk, skóra, linia włosów, brwi, zarost, postawa)
   i zmiana słowna względem poprzedniej („obrzęk: średni → niski”).
   [WYKONANE 2026-11-02: `GET /progress/states`, tabela „Jak zmieniał się stan” w Postępie]
-- [ ] **5.2 Porównanie przed/po**: suwak lub obok siebie, automatyczne wyrównanie
+- [x] **5.2 Porównanie przed/po**: suwak lub obok siebie, automatyczne wyrównanie
   (twarz/sylwetka), różnice w obserwacjach słownych.
+  [WYKONANE: suwak przed/po + różnice słowne; automatyczne wyrównanie pominięte — szablon w aparacie (4.10)
+  daje porównywalny kadr bez obróbki]
 - [x] **5.3 Correlation Engine (jakościowy)**: „w tygodniach ze snem < 6 h obrzęk
   częściej średni”, „przy sodzie > limitu …” — dane z 3.8; komunikaty tylko
   przy wystarczającej liczbie obserwacji, z zastrzeżeniem „korelacja ≠ przyczyna”.

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Camera, Upload, CheckCircle, Loader2 } from 'lucide-react'
 import { uploadPhoto, analyzePhoto } from '../api/client'
+import CameraCapture from '../components/CameraCapture'
 
 // D1 (2026-11-02): co jest analizowane z którego ujęcia
 const PHOTO_GUIDE = {
@@ -16,6 +17,7 @@ export default function PhotoUpload() {
   // per view: {state: 'analyzing'|'done'|'quality'|'failed', problems?, message?}
   const [analysis, setAnalysis] = useState({ front: null, side: null, back: null })
   const [wellbeing, setWellbeing] = useState(null)
+  const [camera, setCamera] = useState(null) // photo type being taken with the guide overlay
 
   // Until 2026-11-02 nothing in the UI ever called the analysis endpoint:
   // photos stayed "pending" and the results page was always empty.
@@ -125,6 +127,11 @@ export default function PhotoUpload() {
                 status={analysis[type]}
                 onForce={() => runAnalysis(uploaded[type].id, type, true)}
               />
+              <button type="button" onClick={() => setCamera(type)}
+                className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md border border-blue-600 text-blue-700 hover:bg-blue-50">
+                <Camera size={16} className="mr-2" />
+                Aparat z szablonem
+              </button>
               <label className="cursor-pointer inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
                 <Upload size={16} className="mr-2" />
                 Wybierz plik
@@ -139,6 +146,14 @@ export default function PhotoUpload() {
           </div>
         ))}
       </div>
+
+      {camera && (
+        <CameraCapture
+          type={camera}
+          onClose={() => setCamera(null)}
+          onCapture={(file) => { const t = camera; setCamera(null); handleUpload(file, t) }}
+        />
+      )}
 
       {anyAnalyzed && (
         <div className="flex justify-center">

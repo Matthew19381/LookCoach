@@ -15,6 +15,7 @@ export default function ProgressTracker() {
   const [afterId, setAfterId] = useState('')
   const [compareResult, setCompareResult] = useState(null)
   const [compareError, setCompareError] = useState(null)
+  const [split, setSplit] = useState(50) // plan 5.2: before/after slider position (%)
   const [loading, setLoading] = useState(true)
   const [states, setStates] = useState(null)
   const [correlations, setCorrelations] = useState(null)
@@ -137,16 +138,17 @@ export default function ProgressTracker() {
                 Zdjęcia są z różnych ujęć — porównanie stanu ma sens tylko dla tego samego ujęcia.
               </p>
             )}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="font-medium">Przed ({formatDate(compareResult.before.uploaded_at)}):</p>
-                <img src={compareResult.before.url} alt="Przed" className="mt-2 rounded-lg border" />
-              </div>
-              <div>
-                <p className="font-medium">Po ({formatDate(compareResult.after.uploaded_at)}):</p>
-                <img src={compareResult.after.url} alt="Po" className="mt-2 rounded-lg border" />
-              </div>
+            <p className="text-sm text-gray-600">
+              Przed ({formatDate(compareResult.before.uploaded_at)}) ↔ po ({formatDate(compareResult.after.uploaded_at)})
+            </p>
+            <div className="relative max-w-md select-none">
+              <img src={compareResult.before.url} alt="Przed" className="w-full rounded-lg border" />
+              <img src={compareResult.after.url} alt="Po" className="absolute inset-0 w-full h-full object-cover rounded-lg"
+                style={{ clipPath: `inset(0 0 0 ${split}%)` }} />
+              <div className="absolute inset-y-0 w-0.5 bg-white shadow" style={{ left: `${split}%` }} aria-hidden="true" />
             </div>
+            <input type="range" min="0" max="100" value={split} onChange={(e) => setSplit(Number(e.target.value))}
+              aria-label="Suwak przed/po" className="w-full max-w-md" />
 
             {changes.length > 0 ? (
               <table className="w-full text-sm">

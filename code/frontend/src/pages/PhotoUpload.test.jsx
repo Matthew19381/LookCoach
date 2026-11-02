@@ -185,4 +185,18 @@ describe('PhotoUpload', () => {
     expect(analyzePhoto).toHaveBeenLastCalledWith(10, true)
     expect(await screen.findByText('Analiza gotowa')).toBeInTheDocument()
   })
+
+  it('camera with a guide overlay falls back gracefully without camera access (plan 4.10)', async () => {
+    const user = userEvent.setup()
+    render(
+      <BrowserRouter>
+        <PhotoUpload />
+      </BrowserRouter>
+    )
+    await user.click(screen.getAllByText('Aparat z szablonem')[0])
+    expect(screen.getByRole('dialog', { name: 'Aparat' })).toHaveTextContent('Twarz w owalu')
+    expect(await screen.findByText(/nie daje dostępu do aparatu/)).toBeInTheDocument()
+    await user.click(screen.getByText('Zamknij'))
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
 })
