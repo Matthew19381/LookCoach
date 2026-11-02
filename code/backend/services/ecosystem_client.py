@@ -83,7 +83,7 @@ def _affect(events: list[dict]) -> dict | None:
     snaps = [e["affect"] for e in events if isinstance(e.get("affect"), dict)]
     if not snaps:
         return None
-    out = {"samples": len(snaps)}
+    out: dict[str, int | str] = {"samples": len(snaps)}
     for key, label in (("stress", "stress"), ("energy", "energy"), ("mood", "mood")):
         vals = [s[key] for s in snaps if isinstance(s.get(key), (int, float))]
         if vals:

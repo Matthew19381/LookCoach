@@ -53,8 +53,11 @@ def collect(db: Session, user_id: int) -> dict:
         data[table.name] = [{k: _jsonable(v) for k, v in row.items()} for row in rows]
     analyses = Base.metadata.tables["analyses"]
     ids = _photo_ids(db, user_id)
-    rows = db.execute(select(analyses).where(analyses.c.photo_id.in_(ids))).mappings() if ids else []
-    data["analyses"] = [{k: _jsonable(v) for k, v in row.items()} for row in rows]
+    data["analyses"] = (
+        [{k: _jsonable(v) for k, v in row.items()}
+         for row in db.execute(select(analyses).where(analyses.c.photo_id.in_(ids))).mappings()]
+        if ids else []
+    )
     return data
 
 

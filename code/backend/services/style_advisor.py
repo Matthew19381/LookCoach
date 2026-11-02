@@ -91,7 +91,7 @@ def hair_advice(face: dict, hair: dict, goals: dict) -> dict:
             "Dopasowanie fryzury do kształtu twarzy to konwencja fryzjerska bez badań — traktuj jako punkt wyjścia.",
             HYPOTHESIS,
         ))
-    tip = HAIR_TYPE_TIPS.get(hair.get("hair_type"))
+    tip = HAIR_TYPE_TIPS.get(str(hair.get("hair_type")))
     if tip:
         notes.append(_item(tip))
     if thinning:
@@ -143,7 +143,7 @@ def beard_advice(face: dict, health: dict) -> list[dict]:
     if not beard or not beard.get("present"):
         return []
     out = []
-    shape_tip = BEARD_BY_SHAPE.get(face.get("face_shape"))
+    shape_tip = BEARD_BY_SHAPE.get(str(face.get("face_shape")))
     if shape_tip:
         out.append(_item(shape_tip, HYPOTHESIS))
     if beard.get("neckline") == "undefined":
@@ -192,7 +192,7 @@ FRAMES = {
 def glasses_advice(face: dict) -> list[dict]:
     if not face.get("glasses"):
         return []
-    tip = FRAMES.get(face.get("face_shape"))
+    tip = FRAMES.get(str(face.get("face_shape")))
     return [_item(tip, HYPOTHESIS)] if tip else []
 
 
@@ -218,7 +218,7 @@ UNDERTONE_COLORS = {
 
 
 def color_advice(face: dict) -> list[dict]:
-    tip = UNDERTONE_COLORS.get(face.get("skin_undertone"))
+    tip = UNDERTONE_COLORS.get(str(face.get("skin_undertone")))
     if not tip:
         return []
     return [_item(f"{tip} Dobór kolorów do „typu urody” nie ma potwierdzenia w badaniach — sprawdź, co Tobie pasuje.", HYPOTHESIS)]

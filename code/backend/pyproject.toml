@@ -36,3 +36,28 @@ select = [
 quote-style = "single"
 indent-style = "space"
 skip-magic-trailing-comma = false
+[tool.mypy]
+# Plan 7.1 - run from code/: python -m mypy --config-file backend/pyproject.toml
+# Checked step by step - modules written/rewritten in plan 2026-11-01 first.
+python_version = "3.12"
+ignore_missing_imports = true
+follow_imports = "silent"
+check_untyped_defs = true
+files = [
+    "backend/paths.py",
+    "backend/security.py",
+    "backend/services/outbox.py",
+    "backend/services/goal_router.py",
+    "backend/services/ecosystem_dispatch.py",
+    "backend/services/ecosystem_client.py",
+    "backend/services/state_labels.py",
+    "backend/services/lifestyle_status.py",
+    "backend/services/photo_storage.py",
+    "backend/services/wellbeing_guard.py",
+    "backend/services/correlations.py",
+    "backend/services/style_advisor.py",
+    "backend/services/style_preview.py",
+    "backend/services/barcode_lookup.py",
+    "backend/services/assistant.py",
+    "backend/services/data_privacy.py",
+]

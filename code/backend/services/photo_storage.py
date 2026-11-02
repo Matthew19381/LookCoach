@@ -19,7 +19,7 @@ MAX_UPLOAD_BYTES = 15 * 1024 * 1024
 MAX_PIXELS = 40_000_000  # ~ 7300 x 5500; above that it is not a phone photo
 
 # Pillow format -> (stored extension, save kwargs)
-ALLOWED = {
+ALLOWED: dict[str, tuple[str, dict]] = {
     "JPEG": ("jpg", {"quality": 92, "optimize": True}),
     "PNG": ("png", {"optimize": True}),
     "WEBP": ("webp", {"quality": 92}),

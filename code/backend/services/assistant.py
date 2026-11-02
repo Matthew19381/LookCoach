@@ -101,7 +101,7 @@ def _parse(raw: str) -> tuple[str, list[dict]]:
 
 
 def _clean_actions(actions: list) -> list[dict]:
-    out = []
+    out: list[dict] = []
     for a in actions:
         if len(out) == 2:
             break

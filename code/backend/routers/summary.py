@@ -12,7 +12,7 @@ from ..models.consistency import AdherenceLog, ProtocolTypeEnum
 from ..models.directive_state import DirectiveState
 from ..models.photo import Photo
 from ..models.recommendation import Recommendation
-from ..models.integration_event import IntegrationEvent
+from ..models.outbox import OutboxEvent
 
 router = APIRouter()
 
@@ -132,10 +132,16 @@ async def get_summary(
         except (ValueError, TypeError):
             focus_area = None
 
-    events = (
-        db.query(IntegrationEvent)
-        .filter(IntegrationEvent.user_id == user_id)
-        .order_by(IntegrationEvent.received_at.desc())
+    # Hub contract 1.1: `events` are the module's OWN events in format 1.2. Until
+    # 2026-11-02 this echoed events received FROM other modules, in the old shape -
+    # the hub skipped them as invalid.
+    day_start = f"{target_date}T00:00:00"
+    day_end = f"{target_date}T23:59:59.999999Z"
+    own = (
+        db.query(OutboxEvent)
+        .filter(OutboxEvent.user_id == numeric_user_id, OutboxEvent.status != "failed")
+        .filter(OutboxEvent.timestamp >= day_start, OutboxEvent.timestamp <= day_end)
+        .order_by(OutboxEvent.id.desc())
         .limit(20)
         .all()
     )
@@ -152,11 +158,13 @@ async def get_summary(
         },
         "events": [
             {
-                "source_module": e.source_module,
                 "event_type": e.event_type,
+                "module": "lookcoach",
+                "user_id": user_id,
                 "timestamp": e.timestamp,
-                "payload": json.loads(e.payload) if e.payload else {},
+                "data": json.loads(e.data),
             }
-            for e in events
+            for e in reversed(own)
         ],
+        "wellbeing_contribution": None,  # contract: null until the Affect Engine gives an honest basis
     }

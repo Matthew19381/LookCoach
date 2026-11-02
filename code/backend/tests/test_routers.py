@@ -668,7 +668,7 @@ class TestSummaryRouter:
         response = client.get("/api/v1/summary?user_id=test123")
         assert response.status_code == 200, response.text
         body = response.json()
-        assert set(body.keys()) == {"module", "user_id", "date", "summary", "events"}
+        assert set(body.keys()) == {"module", "user_id", "date", "summary", "events", "wellbeing_contribution"}
         assert body["module"] == "lookcoach"
         assert body["user_id"] == "test123"
         assert isinstance(body["summary"], dict)
@@ -759,7 +759,7 @@ class TestIntegrationRouter:
         )
         assert response.status_code == 422
 
-    def test_summary_exposes_stored_events(self, monkeypatch):
+    def test_summary_does_not_echo_received_events(self, monkeypatch):
         monkeypatch.setenv("MODULE_KEY", "correct-secret")
         client.post(
             "/api/v1/integrations/event",
@@ -774,7 +774,8 @@ class TestIntegrationRouter:
         )
         summary = client.get("/api/v1/summary?user_id=summary-user").json()
         types = [e["event_type"] for e in summary["events"]]
-        assert "lesson_completed" in types
+        # Contract 1.1: only LookCoach's own events - never echo what other modules sent
+        assert "lesson_completed" not in types
 
 
 # ========== EXPERIMENTS PERSISTENCE (FAZA 4) ==========

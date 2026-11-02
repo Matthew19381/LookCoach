@@ -50,8 +50,9 @@ def assess(db: Session, user_id: int, now: datetime | None = None) -> dict:
         .filter(Photo.user_id == user_id, Photo.uploaded_at >= now - timedelta(days=7))
         .all()
     )
-    day = [p for p in week if p.uploaded_at >= now - timedelta(hours=24)]
-    days_with_photos = len({p.uploaded_at.date() for p in week})
+    week = [p for p in week if p.uploaded_at is not None]
+    day = [p for p in week if p.uploaded_at and p.uploaded_at >= now - timedelta(hours=24)]
+    days_with_photos = len({p.uploaded_at.date() for p in week if p.uploaded_at})
     per_view_24h: dict[str, int] = {}
     for p in day:
         per_view_24h[p.photo_type] = per_view_24h.get(p.photo_type, 0) + 1

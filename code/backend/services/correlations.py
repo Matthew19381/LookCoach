@@ -39,7 +39,7 @@ def _front_sessions(db: Session, user_id: int) -> list[tuple[datetime, dict]]:
     for photo in photos:
         analysis = db.query(Analysis).filter(Analysis.photo_id == photo.id).first()
         face = analysis.get_face_data() if analysis else {}
-        if face:
+        if face and photo.uploaded_at is not None:
             out.append((photo.uploaded_at, face))
     return out
 

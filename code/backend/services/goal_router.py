@@ -61,7 +61,8 @@ def training_needs(body: dict | None) -> dict | None:
         if mapped:
             reasons.append(f"{m.get('muscle')} ({m.get('priority')})")
 
-    posture = body.get("posture") if isinstance(body.get("posture"), dict) else {}
+    raw_posture = body.get("posture")
+    posture: dict = raw_posture if isinstance(raw_posture, dict) else {}
     if posture.get("shoulder_position") == "forward" or posture.get("head_position") == "forward":
         # Rounded shoulders / forward head: upper-back accessories (face pulls etc.)
         if "rear_delts" not in groups:

@@ -408,8 +408,12 @@ każda zmiana promptu = test na kształt JSON + test na brak liczb ocen.
 
 ## FAZA 7 — Jakość techniczna (ciągła)
 
-- [ ] **7.1 Type hints w routerach i serwisach** + `mypy` w CI (stopniowo).
-- [ ] **7.2 `.pre-commit-config.yaml`** (ruff, ruff-format, trailing whitespace).
+- [x] **7.1 Type hints w routerach i serwisach** + `mypy` w CI (stopniowo).
+  [ROZPOCZĘTE 2026-11-02: mypy w CI na 16 modułach z tego planu; nowe modele w stylu `Mapped`. Reszta
+  starych modeli (`Column`) do przepisania przy okazji zmian]
+- [x] **7.2 `.pre-commit-config.yaml`** (ruff, ruff-format, trailing whitespace).
+  [WYKONANE: ruff, eslint, bramka dowodów, whitespace, wykrywanie kluczy prywatnych; bez ruff-format
+  — przeformatowałby całe repo, osobna decyzja]
 - [x] **7.3 `logging` zamiast `print`** w `main.py`, `gemini_vision.py`, `local_llm.py`.
 - [x] **7.4 Wersja API spójna** (`main.py` mówi `0.2.0`, TASKS `v0.3.0`).
 - [x] **7.5 `datetime.utcnow()` → `datetime.now(UTC)`** (ostrzeżenia w testach).
@@ -429,7 +433,9 @@ każda zmiana promptu = test na kształt JSON + test na brak liczb ocen.
   `ingredient_usage`, `outbox_events` powstają przez `create_all` w `init_db()` i nie mają
   migracji. Decyzja: dogenerować migrację „catch-up” i przejść na `alembic upgrade head`
   przy starcie (jak hub), albo oficjalnie zostać przy `create_all` i poprawić CLAUDE.md.
-- [ ] **7.6 Testy kontraktowe z hubem**: fixture z przykładami z
+- [x] **7.6 Testy kontraktowe z hubem** [WYKONANE 2026-11-02: `tests/test_hub_contract.py` — schemat ModuleEvent
+  huba; ZNALEZIONE: `/summary` oddawał hubowi cudze eventy w starym formacie (hub je odrzucał) — teraz własne
+  eventy LookCoach + `wellbeing_contribution: null`]: fixture z przykładami z
   `INTEGRACJA-MODULOW.md`, sprawdzanie zgodności wysyłanych payloadów.
 
 ---

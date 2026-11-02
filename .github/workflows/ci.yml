@@ -20,11 +20,14 @@ jobs:
             code/backend/requirements.txt
             code/requirements-dev.txt
       - name: Zależności
-        run: pip install -r requirements.txt pytest==8.3.3 pytest-asyncio==0.24.0 ruff
+        run: pip install -r requirements.txt pytest==8.3.3 pytest-asyncio==0.24.0 ruff mypy
       - name: Ruff
         run: ruff check .
       - name: Testy
         run: python -m pytest tests/ -q
+      - name: mypy (moduły z planu 2026-11-01)
+        working-directory: code
+        run: python -m mypy --config-file backend/pyproject.toml
       - name: Brama rzetelności dowodów (LC-1)
         working-directory: code
         run: python -m backend.scripts.verify_evidence_db
