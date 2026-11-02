@@ -361,9 +361,12 @@ każda zmiana promptu = test na kształt JSON + test na brak liczb ocen.
   (survival/priority), ostatnie dane z innych modułów.
 - [ ] **5.5 Przypomnienia PWA (push)** — rano/wieczór skincare, zdjęcia co 2–4 tyg.;
   respektują `quiet_hours` (3.7) i `survival_mode`.
-- [ ] **5.6 Detektor kompulsywnego skanowania** (otwarte E-3 z TASKS): > N analiz
+- [x] **5.6 Detektor kompulsywnego skanowania** (otwarte E-3 z TASKS): > N analiz
   w tygodniu lub wielokrotne zdjęcia tego samego dnia → miękki komunikat, limit,
   `state_observation` do Mentalności (H-6).
+  [WYKONANE 2026-11-02: `services/wellbeing_guard.py` — uwaga od 4 dni/tydz.; niepokój przy 3× to samo
+  ujęcie/24 h, 9 zdjęć/24 h lub 6 dniach/tydz. → analiza wymaga potwierdzenia, sygnał
+  `photo_checking_pattern` do huba max raz/tydz. Mentalność musi go jeszcze odbierać (H-6)]
 - [ ] **5.7 Skaner kosmetyków — kod kreskowy** (Open Beauty Facts) + ostrzeżenia
   z Health Safety (ciąża, alergie) obok istniejącego skanu składu.
 

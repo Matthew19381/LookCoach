@@ -12,6 +12,7 @@ from ..services import outbox
 from ..services.attractiveness_levers import AttractivenessLevers
 from ..services.ecosystem_dispatch import dispatch_needs, observe_session
 from ..services.photo_storage import quality_check
+from ..services.wellbeing_guard import assess
 from ..services.state_labels import state_labels
 
 router = APIRouter()
@@ -47,6 +48,12 @@ async def analyze_photo(
     photo = db.query(Photo).filter(Photo.id == photo_id).first()
     if not photo:
         raise HTTPException(404, "Photo not found")
+
+    # Plan 5.6: very frequent checking -> pause, the user has to confirm (force)
+    if not force:
+        wellbeing = assess(db, photo.user_id)
+        if wellbeing["level"] == "concern":
+            raise HTTPException(429, {"message": wellbeing["message"], "wellbeing": wellbeing})
 
     # Plan 4.9: an unusable photo is not analysed (and does not cost an AI call)
     # unless the user explicitly insists (force=true).

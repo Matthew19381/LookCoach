@@ -164,4 +164,25 @@ describe('PhotoUpload', () => {
     await user.upload(screen.getAllByLabelText('Choose File')[2], new File(['x'], 'c.jpg', { type: 'image/jpeg' }))
     expect(await screen.findByText(/AI jest teraz niedostępna/)).toBeInTheDocument()
   })
+
+  it('frequent checking: gentle note and a paused analysis the user can confirm', async () => {
+    uploadPhoto.mockResolvedValue({
+      id: 10, url: 'd.jpg', quality: { ok: true, problems: [] },
+      wellbeing: { level: 'concern', message: 'Robisz ostatnio bardzo dużo zdjęć.' },
+    })
+    const err = new Error('429')
+    err.response = { status: 429, data: { detail: { message: 'Robisz ostatnio bardzo dużo zdjęć.' } } }
+    analyzePhoto.mockRejectedValueOnce(err).mockResolvedValueOnce({ message: 'Analysis complete' })
+    const user = userEvent.setup()
+    render(
+      <BrowserRouter>
+        <PhotoUpload />
+      </BrowserRouter>
+    )
+    await user.upload(screen.getAllByLabelText('Choose File')[0], new File(['x'], 'd.jpg', { type: 'image/jpeg' }))
+    expect(await screen.findByRole('note')).toHaveTextContent('bardzo dużo zdjęć')
+    await user.click(await screen.findByText('Rozumiem, analizuj'))
+    expect(analyzePhoto).toHaveBeenLastCalledWith(10, true)
+    expect(await screen.findByText('Analiza gotowa')).toBeInTheDocument()
+  })
 })

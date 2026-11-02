@@ -160,7 +160,7 @@ class TestAnalysisRouter:
         tmp.close()
         db = TestSessionLocal()
         photo = Photo(
-            user_id=1,
+            user_id=9603,
             photo_type="front",
             file_path=tmp.name,
             uploaded_at=datetime.utcnow(),
@@ -188,7 +188,7 @@ class TestAnalysisRouter:
         body = response.json()
         assert body["message"] == "Analysis complete"
         assert isinstance(body["analysis_id"], int)
-        latest = client.get("/api/v1/analysis/latest?user_id=1").json()
+        latest = client.get("/api/v1/analysis/latest?user_id=9603").json()
         assert latest["skin"]["skin_type"] == "dry"
         assert latest["hair"]["hairline_status"] == "stable"
 
@@ -259,7 +259,7 @@ class TestAnalysisRouter:
 
         db = TestSessionLocal()
         photo = Photo(
-            user_id=1,
+            user_id=9604,
             photo_type="front",
             file_path="Z:/nonexistent/path/photo.jpg",
             uploaded_at=datetime.utcnow(),

@@ -7,6 +7,7 @@ from ..database import get_db
 from ..models.photo import Photo
 from ..paths import UPLOAD_DIR, photo_path, photo_url
 from ..services.gemini_vision import forget_image
+from ..services.wellbeing_guard import assess, signal_hub_if_needed
 from ..services.photo_storage import MAX_UPLOAD_BYTES, InvalidPhoto, quality_check, sanitize_image
 
 router = APIRouter()
@@ -43,6 +44,8 @@ async def upload_photo(
     db.add(photo)
     db.commit()
     db.refresh(photo)
+    wellbeing = assess(db, user_id)
+    signal_hub_if_needed(db, user_id, wellbeing)
 
     return {
         "id": photo.id,
@@ -51,6 +54,8 @@ async def upload_photo(
         "status": photo.analysis_status,
         # Plan 4.9: tell the user right away if the photo is unusable
         "quality": quality_check(clean),
+        # Plan 5.6: gentle note when photos are taken very often
+        "wellbeing": wellbeing,
     }
 
 

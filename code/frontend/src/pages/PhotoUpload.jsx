@@ -15,6 +15,7 @@ export default function PhotoUpload() {
   const [error, setError] = useState('')
   // per view: {state: 'analyzing'|'done'|'quality'|'failed', problems?, message?}
   const [analysis, setAnalysis] = useState({ front: null, side: null, back: null })
+  const [wellbeing, setWellbeing] = useState(null)
 
   // Until 2026-11-02 nothing in the UI ever called the analysis endpoint:
   // photos stayed "pending" and the results page was always empty.
@@ -27,6 +28,9 @@ export default function PhotoUpload() {
       const detail = e.response?.data?.detail
       if (e.response?.status === 422 && detail?.problems) {
         setAnalysis((prev) => ({ ...prev, [type]: { state: 'quality', problems: detail.problems } }))
+      } else if (e.response?.status === 429 && detail?.message) {
+        // Plan 5.6: very frequent checking - pause, the user decides
+        setAnalysis((prev) => ({ ...prev, [type]: { state: 'paused', problems: [detail.message] } }))
       } else {
         const message = typeof detail === 'string' ? detail : 'Analiza nie powiodła się.'
         setAnalysis((prev) => ({ ...prev, [type]: { state: 'failed', message } }))
@@ -41,6 +45,7 @@ export default function PhotoUpload() {
     try {
       const result = await uploadPhoto(file, type)
       setUploaded((prev) => ({ ...prev, [type]: result }))
+      if (result.wellbeing?.message) setWellbeing(result.wellbeing)
       if (result.quality && !result.quality.ok) {
         setAnalysis((prev) => ({ ...prev, [type]: { state: 'quality', problems: result.quality.problems } }))
       } else {
@@ -77,6 +82,13 @@ export default function PhotoUpload() {
           Upload front, side, and back photos for AI analysis
         </p>
       </div>
+
+      {wellbeing && (
+        <div role="note" className={`rounded-md p-4 border ${wellbeing.level === 'concern'
+          ? 'bg-purple-50 border-purple-200 text-purple-900' : 'bg-blue-50 border-blue-200 text-blue-900'}`}>
+          {wellbeing.message}
+        </div>
+      )}
 
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-md p-4 text-red-800">
@@ -153,7 +165,9 @@ function AnalysisStatus({ status, onForce }) {
   return (
     <div className="text-left text-sm bg-amber-50 border border-amber-200 rounded p-2 space-y-1">
       {status.problems.map((p) => <p key={p} className="text-amber-900">{p}</p>)}
-      <button onClick={onForce} className="text-amber-800 underline">Analizuj mimo to</button>
+      <button onClick={onForce} className="text-amber-800 underline">
+        {status.state === 'paused' ? 'Rozumiem, analizuj' : 'Analizuj mimo to'}
+      </button>
     </div>
   )
 }
