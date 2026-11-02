@@ -3,12 +3,18 @@ import { Outlet, NavLink, useLocation } from 'react-router-dom'
 import PageErrorBoundary from './PageErrorBoundary'
 import {
   Camera, Heart, Droplets, LineChart, Moon, Play, Calendar, Brain, FlaskConical, Dumbbell, Move, Apple,
-  Bed, Activity, Shield, Link2, User, Scissors, Sun, Menu, X, ListChecks,
+  Bed, Activity, Shield, Link2, User, Scissors, Sun, Menu, X, ListChecks, MessageCircle,
 } from 'lucide-react'
 
 // Plan 6.2: nawigacja w grupach, po polsku, z menu na telefonie (wcześniej 15+ pozycji w jednym rzędzie).
 export const NAV_GROUPS = [
-  { title: null, items: [{ to: '/', label: 'Dziś', icon: Sun }] },
+  {
+    title: null,
+    items: [
+      { to: '/', label: 'Dziś', icon: Sun },
+      { to: '/assistant', label: 'Asystent', icon: MessageCircle },
+    ],
+  },
   {
     title: 'Analiza',
     items: [

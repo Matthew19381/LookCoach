@@ -51,6 +51,20 @@ class OpenRouterService:
             print(f"OpenRouter call failed: {e}")
             return ""
 
+    def chat(self, messages: list[dict], model: str = None, temperature: float = 0.4) -> str:
+        """Multi-turn chat (assistant, plan 8.2). Raises on any failure - the caller decides."""
+        if not self.api_key:
+            raise RuntimeError("OpenRouter: no API key")
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json",
+            "X-Title": "LookCoach",
+        }
+        payload = {"model": model or self.model, "messages": messages, "temperature": temperature, "stream": False}
+        response = _post(self.api_url, headers, payload, 60)
+        response.raise_for_status()
+        return response.json()["choices"][0]["message"]["content"]
+
     def generate_json(self, prompt: str, model: str = None) -> dict:
         """Generate JSON response. Appends 'Respond ONLY with valid JSON' to prompt."""
         json_prompt = f"{prompt}\n\nRespond ONLY with valid JSON. No markdown fences."

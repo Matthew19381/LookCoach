@@ -33,6 +33,7 @@ from .routers import (
     ecosystem,
     style,
     today,
+    assistant,
 )
 
 # Database
@@ -125,6 +126,7 @@ app.include_router(data.router, prefix="/api/v1/data", tags=["privacy"])
 app.include_router(ecosystem.router, prefix="/api/v1/ecosystem", tags=["ecosystem"])
 app.include_router(style.router, prefix="/api/v1/style", tags=["style"])
 app.include_router(today.router, prefix="/api/v1/today", tags=["today"])
+app.include_router(assistant.router, prefix="/api/v1/assistant", tags=["assistant"])
 
 
 if __name__ == "__main__":

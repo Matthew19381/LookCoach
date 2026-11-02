@@ -12,6 +12,7 @@ from .skincare_product import IngredientUsage as IngredientUsage, SkincareProduc
 from .outbox import OutboxEvent as OutboxEvent
 from .ecosystem_snapshot import EcosystemSnapshot as EcosystemSnapshot
 from .style_preview import StylePreviewLog as StylePreviewLog
+from .assistant_message import AssistantMessage as AssistantMessage
 from .consistency import (
     AdherenceLog as AdherenceLog,
     ProtocolAdherence as ProtocolAdherence,
@@ -35,4 +36,5 @@ __all__ = [
     "OutboxEvent",
     "EcosystemSnapshot",
     "StylePreviewLog",
+    "AssistantMessage",
 ]

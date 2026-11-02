@@ -22,7 +22,7 @@ describe('Layout', () => {
   it('every page is reachable exactly once', () => {
     const paths = NAV_GROUPS.flatMap((g) => g.items.map((i) => i.to))
     expect(new Set(paths).size).toBe(paths.length)
-    expect(paths.length).toBe(20)
+    expect(paths.length).toBe(21)
   })
 
   it('mobile menu toggles', async () => {

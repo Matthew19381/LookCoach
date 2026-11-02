@@ -410,20 +410,26 @@ każda zmiana promptu = test na kształt JSON + test na brak liczb ocen.
 
 ## FAZA 8 — Asystent AI w LookCoach (D10)
 
-- [ ] **8.1 Kontekst asystenta** (`services/assistant_context.py`): zwięzłe podsumowanie
+> [WYKONANE 2026-11-02 — NIEPRZETESTOWANE Z PRAWDZIWYM MODELEM: testy używają atrapy modelu]
+> `services/assistant_context.py`, `services/assistant.py`, `POST /api/v1/assistant/chat`, strona
+> Asystent. Odpowiedź z liczbową oceną wyglądu jest podmieniana (filtr LC-9); sygnały cierpienia z
+> powodu wyglądu → łagodna odpowiedź + sygnał do Mentalności (raz/tydz.); akcje tylko z białej listy
+> i po potwierdzeniu. Historia rozmów objęta eksportem/usunięciem danych.
+
+- [x] **8.1 Kontekst asystenta** (`services/assistant_context.py`): zwięzłe podsumowanie
   dla modelu — ostatnia analiza (`analysis_store`), zmiany słowne (`state_labels`),
   rutyny i regularność, aktywne eksperymenty, flagi zdrowia (LC-8), dyrektywy huba,
   dane z innych modułów (3.8). Bez zdjęć — tylko opisy.
-- [ ] **8.2 Endpoint czatu** `POST /api/v1/assistant/chat` (historia w tabeli
+- [x] **8.2 Endpoint czatu** `POST /api/v1/assistant/chat` (historia w tabeli
   `assistant_messages`), przez istniejący łańcuch OpenRouter → Gemini → Ollama.
-- [ ] **8.3 Zasady w prompcie systemowym**: zero ocen atrakcyjności (LC-9), tylko
+- [x] **8.3 Zasady w prompcie systemowym**: zero ocen atrakcyjności (LC-9), tylko
   rekomendacje z `EVIDENCE_DB` z poziomem dowodów lub jawne „hipoteza/porada
   stylistyczna” (LC-1), przeciwwskazania (LC-8), brak planów treningowych/diet — kieruje
   do ForgeBody/Diety (LC-4), sygnały dysmorfii → miękka odpowiedź + Mentalność (5.6).
-- [ ] **8.4 Narzędzia asystenta** (function calling): „dodaj do rutyny”, „zacznij
+- [x] **8.4 Narzędzia asystenta** (function calling): „dodaj do rutyny”, „zacznij
   eksperyment”, „wyślij priorytet do ForgeBody/Diety” — zawsze z potwierdzeniem w UI.
-- [ ] **8.5 UI**: panel czatu (po polsku), przykładowe pytania, widoczne źródła odpowiedzi.
-- [ ] **8.6 Testy**: zgodność odpowiedzi z zasadami (fałszywy model w testach, zero
+- [x] **8.5 UI**: panel czatu (po polsku), przykładowe pytania, widoczne źródła odpowiedzi.
+- [x] **8.6 Testy**: zgodność odpowiedzi z zasadami (fałszywy model w testach, zero
   prawdziwych wywołań API — jak w `conftest.py`).
 
 ---

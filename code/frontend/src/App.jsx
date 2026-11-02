@@ -20,6 +20,7 @@ import Connections from './pages/Connections'
 import Profile from './pages/Profile'
 import Style from './pages/Style'
 import Today from './pages/Today'
+import Assistant from './pages/Assistant'
 
 function App() {
   return (
@@ -45,6 +46,7 @@ function App() {
         <Route path="connections" element={<Connections />} />
         <Route path="profile" element={<Profile />} />
         <Route path="style" element={<Style />} />
+        <Route path="assistant" element={<Assistant />} />
       </Route>
     </Routes>
   )

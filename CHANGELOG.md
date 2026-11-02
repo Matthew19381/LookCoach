@@ -2,6 +2,24 @@
 
 ---
 
+## [Unreleased] — 2026-11-02 (Fazy 4, 5, 6.2, 8)
+### Dodane
+- **Asystent AI** (strona Asystent): rozmowa na podstawie Twoich analiz, rutyn, profilu i danych z innych
+  modułów; bez liczbowych ocen wyglądu (odpowiedź z oceną jest podmieniana), rekomendacje z poziomem dowodów,
+  przeciwwskazania respektowane, akcje (wyślij potrzeby, eksperyment, otwórz stronę) tylko po potwierdzeniu.
+- **Styl**: 3 propozycje fryzur z tekstem „powiedz fryzjerowi” (dopasowane do czasu na układanie), brwi,
+  zarost, okolica oczu, oprawki, ubiór, kolorystyka (HIPOTEZA); opcjonalny płatny podgląd fryzury/zarostu
+  na własnym zdjęciu (limit 5/dobę, obraz niezapisywany).
+- **Dziś** jako strona startowa; **Profil** (cele + flagi zdrowotne — wcześniej nieustawialne z UI);
+  oś czasu stanu słowami w Postępie; nawigacja w grupach po polsku z menu na telefon.
+- **Kontrola jakości zdjęcia** (ostrość, ekspozycja, rozdzielczość) przed analizą.
+- **Detektor częstego sprawdzania wyglądu**: łagodne komunikaty, pauza analizy, sygnał do Mentalności.
+### Naprawione
+- UI nigdy nie uruchamiał analizy zdjęć — teraz startuje po wysłaniu.
+- Fallback bez AI zwracał zmyślone obserwacje („obrzęk: średni”) — teraz brak AI = czytelny błąd, nic nie jest zapisywane.
+- Skóra i linia włosów analizowane ze zdjęcia z przodu (wcześniej z tyłu); tył = czubek głowy.
+- Profil zapisywał się pod innym id użytkownika, gdy użytkownik nie istniał.
+
 ## [Unreleased] — 2026-11-02 (Faza 3 — wymiana danych z ekosystemem)
 ### Dodane
 - **Kolejka do huba** (`outbox_events`): każdy event jest najpierw zapisywany, potem wysyłany z ponawianiem

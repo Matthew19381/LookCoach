@@ -238,3 +238,13 @@ export const getToday = () =>
 
 export const getStateTimeline = () =>
   api.get(`/api/v1/progress/states?user_id=${getUserId()}`);
+
+// Assistant (plan 8)
+export const assistantChat = (message) =>
+  api.post(`/api/v1/assistant/chat?user_id=${getUserId()}`, { message });
+
+export const getAssistantHistory = () =>
+  api.get(`/api/v1/assistant/history?user_id=${getUserId()}`);
+
+export const clearAssistantHistory = () =>
+  api.delete(`/api/v1/assistant/history?user_id=${getUserId()}`);
