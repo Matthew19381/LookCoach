@@ -1,3 +1,5 @@
+import asyncio
+import os
 from pathlib import Path
 from contextlib import asynccontextmanager
 from dotenv import load_dotenv
@@ -33,11 +35,22 @@ from .routers import (
 # Database
 from .database import init_db
 from .paths import UPLOAD_DIR
+from .services import outbox
 
 # Environment variables - load .env from project root
 PROJECT_ROOT = Path(__file__).parent.parent.parent
 load_dotenv(dotenv_path=PROJECT_ROOT / ".env")
 
+
+
+OUTBOX_INTERVAL_S = int(os.getenv("LOOKCOACH_OUTBOX_INTERVAL", "60"))
+
+
+async def _outbox_worker() -> None:
+    """Plan 3.1: retry queued hub events (hub restarted, network back, key fixed)."""
+    while True:
+        await asyncio.sleep(OUTBOX_INTERVAL_S)
+        await outbox.deliver_in_new_session()
 
 
 @asynccontextmanager
@@ -46,8 +59,11 @@ async def lifespan(app: FastAPI):
     print("Starting LookCoach API...")
     init_db()
     print("Database initialized.")
+    worker = asyncio.create_task(_outbox_worker()) if OUTBOX_INTERVAL_S > 0 else None
     yield
     # Shutdown
+    if worker:
+        worker.cancel()
     print("Shutting down LookCoach API...")
 
 

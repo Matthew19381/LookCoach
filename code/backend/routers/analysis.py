@@ -1,6 +1,6 @@
 import json
 import logging
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from sqlalchemy.orm import Session
 from ..database import get_db
 from ..models.photo import Photo
@@ -8,7 +8,10 @@ from ..models.analysis import Analysis
 from ..paths import photo_path
 from ..services.gemini_vision import GeminiVisionService
 from ..services.analysis_store import has_any, load_latest_analysis
+from ..services import outbox
 from ..services.attractiveness_levers import AttractivenessLevers
+from ..services.ecosystem_dispatch import dispatch_needs, observe_session
+from ..services.state_labels import state_labels
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -28,7 +31,7 @@ async def get_latest_analysis(user_id: int = 1, db: Session = Depends(get_db)):
 
 
 @router.post("/analyze/{photo_id}")
-async def analyze_photo(photo_id: int, db: Session = Depends(get_db)):
+async def analyze_photo(photo_id: int, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     photo = db.query(Photo).filter(Photo.id == photo_id).first()
     if not photo:
         raise HTTPException(404, "Photo not found")
@@ -64,6 +67,15 @@ async def analyze_photo(photo_id: int, db: Session = Depends(get_db)):
         db.add(analysis)
         photo.analysis_status = "done"
         db.commit()
+
+        # Plan 3.3-3.6: share the new state with the hub / ForgeBody / Dieta.
+        # Never fails the analysis itself - the outbox retries delivery later.
+        try:
+            observe_session(db, photo.user_id, photo.photo_type, state_labels(analysis))
+            dispatch_needs(db, photo.user_id)
+            background_tasks.add_task(outbox.deliver_in_new_session, db.get_bind())
+        except Exception:
+            logger.exception("Queueing ecosystem events after analysis %s failed", analysis.id)
 
         return {"message": "Analysis complete", "analysis_id": analysis.id}
     except Exception:

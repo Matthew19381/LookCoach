@@ -4,6 +4,17 @@ from typing import Optional
 from datetime import datetime
 
 
+VALID_EVENT_TYPES = (
+    "protocol_done",
+    "protocol_skipped",
+    "state_observation",
+    "aesthetic_priority_directive",
+    "nutrition_needs_directive",
+    # Plan 3.3: the hub forwards it to data["target_module"] (System-Glowny H-1)
+    "module_directive",
+)
+
+
 class IntegrationPublisher:
     """
     Outgoing publisher for LookCoach events to System-Główny hub.
@@ -57,13 +68,7 @@ class IntegrationPublisher:
             ConfigurationError: If MODULE_KEY is invalid (401 from hub)
             PublishError: On network/timeout errors
         """
-        valid_event_types = (
-            "protocol_done", 
-            "protocol_skipped", 
-            "state_observation",
-            "aesthetic_priority_directive",
-            "nutrition_needs_directive",
-        )
+        valid_event_types = VALID_EVENT_TYPES
         if event_type not in valid_event_types:
             raise ValueError(
                 f"Invalid event_type: {event_type}. "
@@ -105,7 +110,8 @@ class IntegrationPublisher:
                 )
             elif response.status_code >= 400:
                 raise PublishError(
-                    f"Hub returned {response.status_code}: {response.text}"
+                    f"Hub returned {response.status_code}: {response.text}",
+                    status_code=response.status_code,
                 )
             
             return response.json()
@@ -117,8 +123,13 @@ class ConfigurationError(Exception):
 
 
 class PublishError(Exception):
-    """Raised when publishing fails due to network or hub errors."""
-    pass
+    """Raised when publishing fails due to network or hub errors.
+
+    `status_code` is set when the hub answered (None = network/timeout)."""
+
+    def __init__(self, message: str, status_code: int | None = None):
+        super().__init__(message)
+        self.status_code = status_code
 
 
 # Convenience functions for common event types

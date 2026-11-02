@@ -169,33 +169,36 @@
 
 ### 3A. Po stronie LookCoach
 
-- [ ] **3.1 Kolejka wychodząca + retry + idempotencja** (wzorzec
+- [x] **3.1 Kolejka wychodząca + retry + idempotencja** (wzorzec
   `LinguaAI/backend/services/sync_service.py`): tabela `outbox_events`, wysyłka
   w tle, `client_event_id`, ponawianie z backoffem. Kontrakt huba wymaga, żeby
   błąd sieci nie blokował UX i nie gubił eventów.
   Kryterium: test — hub niedostępny → event czeka → hub wraca → event wysłany raz.
-- [ ] **3.2 Mapa „analiza → potrzeby treningowe”** (`services/goal_router.py`):
+  [WYKONANE 2026-11-02: `models/outbox.py`, `services/outbox.py`, worker co 60 s w `main.lifespan`]
+- [x] **3.2 Mapa „analiza → potrzeby treningowe”** (`services/goal_router.py`):
   z `body.missing_muscles`, `body.asymmetries`, `posture_notes` oraz celów profilu
   wylicz `muscle_groups` w nazwach z mapy ForgeBody (`side_delts`, `upper_chest`,
   `rear_delts`, `lats_width`, …) + `duration_weeks` + `reason` + `evidence_id`.
   Kryterium: testy jednostkowe mapowania (np. „forward head posture” → `rear_delts`
   + korekta postawy jako akcesoria, nie własny plan).
-- [ ] **3.3 Wysyłka `aesthetic_priority` po zakończonej analizie ciała**
+- [x] **3.3 Wysyłka `aesthetic_priority` po zakończonej analizie ciała**
   (i przy zmianie celów) — w formacie uzgodnionym w H-1:
   `{"directive":"aesthetic_priority","target_module":"forge-body","payload":{"muscle_groups":[…],"duration_weeks":4,"reason":"…"}}`.
   Bez duplikatów: wysyłka tylko gdy zestaw się zmienił.
   Kryterium: test integracyjny z mockiem huba; event widoczny w hubie.
-- [ ] **3.4 Mapa „analiza → potrzeby żywieniowe”** — tylko pozycje z dowodami:
+- [x] **3.4 Mapa „analiza → potrzeby żywieniowe”** — tylko pozycje z dowodami:
   - obrzęk twarzy (`swelling medium/high`) → limit sodu (`sodium_limit_mg`) + nawodnienie;
   - trądzik (`problems: acne`) → dieta o niskim ładunku glikemicznym
-    (RCT: Smith 2007, PMID 17616769 — zweryfikować przed wpisaniem);
+    (RCT: Smith 2007, PMID 17616769 — ZWERYFIKOWANE na PubMed 2026-11-02, wpis `nutrition_005`;
+    zastrzeżenie: efekt częściowo przez spadek masy ciała);
     nabiał → tylko jako `[HIPOTEZA]` (badania obserwacyjne);
   - przerzedzenie włosów → **nie** suplementy na ślepo; sugestia badań
     (ferrytyna, wit. D) jako `[HIPOTEZA]` + disclaimer.
   Kryterium: każda pozycja ma `evidence_id` lub flagę hipotezy; test.
-- [ ] **3.5 Wysyłka `nutrition_needs` do Diety** (format z H-2), z Health Safety
+  [WYKONANE: `services/goal_router.py`; włosy/badania krwi — odłożone do 4.x jako hipoteza]
+- [x] **3.5 Wysyłka `nutrition_needs` do Diety** (format z H-2), z Health Safety
   (choroba nerek → brak zaleceń dot. białka/wody).
-- [ ] **3.6 `state_observation` po analizie** — jakościowe obserwacje
+- [x] **3.6 `state_observation` po analizie** — jakościowe obserwacje
   (obrzęk, stan skóry, linia włosów) do huba, bez liczb, dla korelacji w hubie
   i dla Mentalności.
 - [ ] **3.7 Konsumpcja dyrektywy `priority`** — jeśli hub ustawi priorytet
@@ -353,6 +356,11 @@ każda zmiana promptu = test na kształt JSON + test na brak liczb ocen.
 - [ ] **7.3 `logging` zamiast `print`** w `main.py`, `gemini_vision.py`, `local_llm.py`.
 - [ ] **7.4 Wersja API spójna** (`main.py` mówi `0.2.0`, TASKS `v0.3.0`).
 - [ ] **7.5 `datetime.utcnow()` → `datetime.now(UTC)`** (ostrzeżenia w testach).
+- [ ] **7.8 Alembic rozjechany z modelami**: tabele `adherence_logs`, `protocol_adherence`,
+  `consistency_metrics`, `directive_states`, `skin_reactions`, `skincare_products`,
+  `ingredient_usage`, `outbox_events` powstają przez `create_all` w `init_db()` i nie mają
+  migracji. Decyzja: dogenerować migrację „catch-up” i przejść na `alembic upgrade head`
+  przy starcie (jak hub), albo oficjalnie zostać przy `create_all` i poprawić CLAUDE.md.
 - [ ] **7.6 Testy kontraktowe z hubem**: fixture z przykładami z
   `INTEGRACJA-MODULOW.md`, sprawdzanie zgodności wysyłanych payloadów.
 
