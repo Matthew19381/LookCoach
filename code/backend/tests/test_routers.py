@@ -416,6 +416,37 @@ class TestProfileRouter:
         })
         assert response.status_code == 200
 
+    def test_goals_and_health_roundtrip_for_the_given_user(self):
+        body = {
+            "goals": {"focus": ["skin", "hair"], "minutes_per_day": 15, "styling_minutes": 5},
+            "health": {"pregnancy": True},
+            "mode": "improvement",
+        }
+        data = client.put("/api/v1/profile/?user_id=9501", json=body).json()
+        assert data["goals"]["focus"] == ["skin", "hair"]
+        assert data["health"]["pregnancy"] is True and data["health"]["kidney_disease"] is False
+        again = client.get("/api/v1/profile/?user_id=9501").json()
+        assert again["mode"] == "improvement"
+        from backend.models.user import User
+        db = TestSessionLocal()
+        assert db.get(User, 9501) is not None  # not "the next free id"
+        db.close()
+
+    def test_invalid_goal_and_minutes_rejected(self):
+        assert client.put("/api/v1/profile/?user_id=9502", json={"goals": {"focus": ["abs"]}}).status_code == 422
+        assert client.put("/api/v1/profile/?user_id=9502", json={"goals": {"minutes_per_day": -5}}).status_code == 422
+
+    def test_pregnancy_flag_blocks_retinol(self):
+        """LC-8 end to end: the flag set via the profile removes retinol (skincare_002)."""
+        client.put("/api/v1/profile/?user_id=9503", json={"health": {"pregnancy": True}, "goals": {"focus": ["skin"]}})
+        ids = {r["id"] for r in client.get("/api/v1/recommendations/?user_id=9503&limit=50").json()}
+        assert "skincare_001" in ids and "skincare_002" not in ids
+
+    def test_goal_focus_moves_category_up(self):
+        client.put("/api/v1/profile/?user_id=9504", json={"goals": {"focus": ["hair"]}})
+        recs = client.get("/api/v1/recommendations/?user_id=9504&limit=50").json()
+        assert recs[0]["category"] == "hair"
+
 
 # ========== SKINCARE ROUTER ==========
 class TestSkincareRouter:

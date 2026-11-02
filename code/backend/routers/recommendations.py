@@ -32,6 +32,8 @@ async def get_recommendations(limit: int = 10, user_id: int = 1, db: Session = D
         db.query(UserProfile).filter(UserProfile.user_id == user_id).first()
     )
     user_profile = {"health": profile_row.get_health() if profile_row else {}}
+    if profile_row:
+        user_analysis["goal_focus"] = profile_row.get_goals().get("focus", [])
     user_mode = profile_row.mode if profile_row else "free"
 
     recs = EvidenceEngine.get_recommendations(user_analysis, user_profile)

@@ -17,6 +17,7 @@ import SleepOptimizer from './pages/SleepOptimizer'
 import StressManagement from './pages/StressManagement'
 import Privacy from './pages/Privacy'
 import Connections from './pages/Connections'
+import Profile from './pages/Profile'
 
 function App() {
   return (
@@ -39,6 +40,7 @@ function App() {
         <Route path="stress" element={<StressManagement />} />
         <Route path="privacy" element={<Privacy />} />
         <Route path="connections" element={<Connections />} />
+        <Route path="profile" element={<Profile />} />
       </Route>
     </Routes>
   )

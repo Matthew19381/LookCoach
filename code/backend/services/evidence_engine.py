@@ -53,6 +53,15 @@ EVIDENCE_DB = [
 class EvidenceEngine:
     PRIORITY_RANK = {"high": 0, "medium": 1, "low": 2}
     DEFAULT_CATEGORIES = ["sleep", "nutrition", "stress"]
+    # Profile goals.focus (plan 4.12) -> EVIDENCE_DB categories
+    GOAL_CATEGORIES = {
+        "skin": ("skincare",),
+        "hair": ("hair",),
+        "face": ("beauty_technique",),
+        "body": ("training",),
+        "posture": ("posture",),
+        "style": (),
+    }
     # AttractivenessLevers.primary_lever -> EVIDENCE_DB category
     LEVER_CATEGORY = {
         "skin_texture": "skincare",
@@ -88,10 +97,15 @@ class EvidenceEngine:
             if category in known:
                 priorities.append((1, category))
 
+        # The user's own goals (plan 4.12) - right after the hub priority
+        for area in user_analysis.get("goal_focus", []):
+            for category in EvidenceEngine.GOAL_CATEGORIES.get(area, ()):
+                priorities.append((-1, category))
+
         # Hub directive `priority` (e.g. "skincare") outranks everything (plan 3.7)
         hub_priority = user_analysis.get("hub_priority")
         if hub_priority in known:
-            priorities.append((-1, hub_priority))
+            priorities.append((-2, hub_priority))
 
         # Always include basics at default priority
         for cat in EvidenceEngine.DEFAULT_CATEGORIES:

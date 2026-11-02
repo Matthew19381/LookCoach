@@ -329,9 +329,12 @@ każda zmiana promptu = test na kształt JSON + test na brak liczb ocen.
   propozycjach z 4.2/4.3; model generowania obrazu przez OpenRouter/Gemini; wynik tylko
   w pamięci/na żądanie (nie zapisywany jako „po”), ostrzeżenie LC-9 („to wizualizacja, nie
   cel do porównywania”), informacja o koszcie przed wygenerowaniem, limit dzienny.
-- [ ] **4.12 Profil celów**: formularz celów (co chcę poprawić: skóra/włosy/
+- [x] **4.12 Profil celów**: formularz celów (co chcę poprawić: skóra/włosy/
   sylwetka/styl, termin, ile czasu dziennie). Cele trafiają do rekomendacji,
   do `goal_router` (3.2/3.4) i do huba (`priority`).
+  [WYKONANE 2026-11-02: strona Profil (cele, czas, ograniczenia, tryb + flagi zdrowotne LC-8 — wcześniej
+  nie dało się ich ustawić z UI); cele → kolejność rekomendacji. PUT tworzył `User()` z innym id — naprawione.
+  Wysyłka celu jako `priority` do huba — nie robię: `priority` to dyrektywa huba DO modułów]
 
 ---
 

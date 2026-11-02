@@ -1,6 +1,6 @@
 import { Outlet, NavLink } from 'react-router-dom'
 import PageErrorBoundary from './PageErrorBoundary'
-import { Camera, Heart, Droplets, LineChart, Moon, Play, Calendar, Brain, FlaskConical, Dumbbell, Move, Apple, Bed, Activity, Shield, Link2 } from 'lucide-react'
+import { Camera, Heart, Droplets, LineChart, Moon, Play, Calendar, Brain, FlaskConical, Dumbbell, Move, Apple, Bed, Activity, Shield, Link2, User } from 'lucide-react'
 
 const navItems = [
   { to: '/', label: 'Upload', icon: Camera },
@@ -18,6 +18,7 @@ const navItems = [
   { to: '/nutrition', label: 'Nutrition', icon: Apple },
   { to: '/sleep', label: 'Sleep', icon: Bed },
   { to: '/stress', label: 'Stress', icon: Activity },
+  { to: '/profile', label: 'Profil', icon: User },
   { to: '/connections', label: 'Połączenia', icon: Link2 },
   { to: '/privacy', label: 'Prywatność', icon: Shield },
 ]
