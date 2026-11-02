@@ -17,7 +17,7 @@ class AttractivenessLevers:
                 return {
                     "primary_lever": "facial_swelling",
                     "secondary_levers": ["sleep", "nutrition", "stress"],
-                    "reason": "Facial swelling detected",
+                    "reason": "Wykryto obrzęk twarzy",
                 }
 
             skin_quality = face_data.get("skin_quality", {})
@@ -25,7 +25,7 @@ class AttractivenessLevers:
                 return {
                     "primary_lever": "skin_texture",
                     "secondary_levers": ["skincare", "hydration", "nutrition"],
-                    "reason": "Skin needs attention",
+                    "reason": "Skóra wymaga uwagi",
                 }
 
         if body_data:
@@ -42,7 +42,7 @@ class AttractivenessLevers:
                 return {
                     "primary_lever": "body_proportion",
                     "secondary_levers": ["training", "nutrition"],
-                    "reason": "Body development areas detected",
+                    "reason": "Wykryto partie do rozwinięcia",
                 }
 
         if skin_data:
@@ -55,7 +55,7 @@ class AttractivenessLevers:
                 return {
                     "primary_lever": "skin_texture",
                     "secondary_levers": ["skincare", "nutrition", "hydration"],
-                    "reason": "Multiple skin problems detected",
+                    "reason": "Wykryto kilka problemów ze skórą",
                 }
 
         if hair_data:
@@ -65,7 +65,7 @@ class AttractivenessLevers:
                 return {
                     "primary_lever": "hair_thinning",
                     "secondary_levers": ["hair", "nutrition", "stress"],
-                    "reason": "Hair thinning or recession detected",
+                    "reason": "Wykryto przerzedzenie lub cofanie się linii włosów",
                 }
 
         # Fall back to explicit focus_areas if the AI provided any with high priority
@@ -75,11 +75,11 @@ class AttractivenessLevers:
                     return {
                         "primary_lever": area.get("area", "general"),
                         "secondary_levers": ["sleep", "nutrition", "skincare"],
-                        "reason": area.get("reason", "High priority focus area from analysis"),
+                        "reason": area.get("reason", "Obszar o wysokim priorytecie z analizy"),
                     }
 
         return {
             "primary_lever": "general",
             "secondary_levers": ["sleep", "nutrition", "training", "skincare"],
-            "reason": "No specific issues detected - focus on overall improvement",
+            "reason": "Brak konkretnych problemów — skup się na ogólnych nawykach",
         }

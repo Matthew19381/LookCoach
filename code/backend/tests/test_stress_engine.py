@@ -52,7 +52,7 @@ class TestStressEngine:
         effects = StressEngine.STRESS_EFFECTS
         if "cortisol_spike" in effects:
             effect = effects["cortisol_spike"]
-            assert "acne" in effect["looks_impact"].lower() or "skin" in effect["looks_impact"].lower()
+            assert "trądzik" in effect["looks_impact"].lower() or "skór" in effect["looks_impact"].lower()
 
     def test_technique_box_breathing(self):
         techniques = StressEngine.RELAXATION_TECHNIQUES

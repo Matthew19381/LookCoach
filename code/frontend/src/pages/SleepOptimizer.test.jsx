@@ -12,8 +12,8 @@ vi.mock('../api/client', () => ({
 }))
 
 const mockFactors = {
-  duration: { name: 'Sleep Duration', looks_impact: 'Skin repair', optimal: '7-9 hours', poor: '<6' },
-  quality: { name: 'Sleep Quality', looks_impact: 'Skin glow', optimal: 'Głęboki', poor: 'Fragmented' },
+  duration: { name: 'Długość snu', looks_impact: 'Skin repair', optimal: '7-9 hours', poor: '<6' },
+  quality: { name: 'Jakość snu', looks_impact: 'Skin glow', optimal: 'Głęboki', poor: 'Fragmented' },
 }
 
 describe('SleepOptimizer', () => {
@@ -40,8 +40,8 @@ describe('SleepOptimizer', () => {
       </BrowserRouter>
     )
     await waitFor(() => {
-      expect(screen.getByText('Sleep Duration')).toBeInTheDocument()
-      expect(screen.getByText('Sleep Quality')).toBeInTheDocument()
+      expect(screen.getByText('Długość snu')).toBeInTheDocument()
+      expect(screen.getByText('Jakość snu')).toBeInTheDocument()
     })
   })
 

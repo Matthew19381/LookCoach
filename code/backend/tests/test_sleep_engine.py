@@ -83,12 +83,12 @@ class TestSleepEngine:
         factors = SleepEngine.SLEEP_FACTORS
         if "pillow_height" in factors:
             factor = factors["pillow_height"]
-            assert "10-12cm" in factor["optimal"] or "medium" in factor["optimal"].lower()
+            assert "10–12 cm" in factor["optimal"]
 
 
 def test_bedtime_is_compared_as_time_not_text():
     """22:30 is before midnight, 01:00 after (string compare got both wrong)."""
     early = SleepEngine.analyze_sleep({"hours": 8, "quality": "deep", "bedtime": "22:30", "back_sleeping": True})
     late = SleepEngine.analyze_sleep({"hours": 8, "quality": "deep", "bedtime": "01:00", "back_sleeping": True})
-    assert "Late bedtime (after midnight)" not in early["issues"]
-    assert "Late bedtime (after midnight)" in late["issues"]
+    assert "Późne zasypianie (po północy)" not in early["issues"]
+    assert "Późne zasypianie (po północy)" in late["issues"]

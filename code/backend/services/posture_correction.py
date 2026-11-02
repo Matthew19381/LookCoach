@@ -4,51 +4,51 @@ class PostureCorrectionEngine:
 
     POSTURE_ISSUES = {
         "forward_head": {
-            "name": "Forward Head Posture",
-            "description": "Head protrudes forward, creating neck strain",
-            "looks_impact": "Shortens neck appearance, weakens jawline definition",
+            "name": "Wysunięta głowa",
+            "description": "Głowa wysunięta do przodu, napięta szyja",
+            "looks_impact": "Optycznie skraca szyję, zaciera zarys żuchwy",
             "severity_signs": ["chin_forward", "neck_strain", "rounded_shoulders"],
         },
         "rounded_shoulders": {
-            "name": "Rounded Shoulders",
-            "description": "Shoulders roll forward, collapsing chest",
-            "looks_impact": "Reduces V-taper, makes chest look smaller",
+            "name": "Zaokrąglone barki",
+            "description": "Barki uciekają do przodu, klatka się zapada",
+            "looks_impact": "Zmniejsza efekt sylwetki V, klatka wygląda na mniejszą",
             "severity_signs": ["shoulders_forward", "chest_collapsed", "upper_back_tight"],
         },
         "anterior_pelvic_tilt": {
-            "name": "Anterior Pelvic Tilt",
-            "description": "Pelvis tilts forward, increasing lower back arch",
-            "looks_impact": "Weakens glute appearance, shortens legs visually",
+            "name": "Przodopochylenie miednicy",
+            "description": "Miednica pochylona do przodu, pogłębiona lordoza",
+            "looks_impact": "Osłabia zarys pośladków, optycznie skraca nogi",
             "severity_signs": ["lower_back_arch", "glutes_weak", "hamstrings_tight"],
         },
         "swayback": {
-            "name": "Swayback",
-            "description": "Upper body leans backward to compensate",
-            "looks_impact": "Disrupts clean silhouette, reduces height appearance",
+            "name": "Plecy wklęsłe (swayback)",
+            "description": "Tułów odchyla się do tyłu w kompensacji",
+            "looks_impact": "Zaburza linię sylwetki, optycznie obniża wzrost",
             "severity_signs": ["torso_backward", "hips_forward", "knees_locked"],
         },
     }
 
     CORRECTIONS = {
         "forward_head": [
-            {"exercise": "Chin Tucks", "sets": "3x10", "focus": "Deep neck flexors"},
-            {"exercise": "Wall Slides", "sets": "3x12", "focus": "Shoulder alignment"},
-            {"exercise": "Face Pulls", "sets": "3x15", "focus": "Rear delts + upper back"},
+            {"exercise": "Cofanie brody (chin tuck)", "sets": "3x10", "focus": "Głębokie zginacze szyi"},
+            {"exercise": "Wall slides (ślizgi przy ścianie)", "sets": "3x12", "focus": "Ustawienie barków"},
+            {"exercise": "Face pull (przyciąganie liny do twarzy)", "sets": "3x15", "focus": "Tylne aktony barków + górna część pleców"},
         ],
         "rounded_shoulders": [
-            {"exercise": "Face Pulls", "sets": "4x12", "focus": "Rear delt activation"},
-            {"exercise": "Lat Pulldowns", "sets": "3x10", "focus": "Lats + shoulder depression"},
-            {"exercise": "Chest Openers", "sets": "3x15", "focus": "Pectoral stretch"},
+            {"exercise": "Face pull (przyciąganie liny do twarzy)", "sets": "4x12", "focus": "Aktywacja tylnych aktonów barków"},
+            {"exercise": "Ściąganie drążka", "sets": "3x10", "focus": "Najszersze grzbietu + obniżenie barków"},
+            {"exercise": "Otwieranie klatki", "sets": "3x15", "focus": "Rozciąganie piersiowych"},
         ],
         "anterior_pelvic_tilt": [
-            {"exercise": "Glute Bridges", "sets": "3x15", "focus": "Glute activation"},
-            {"exercise": "Deadlifts", "sets": "3x8", "focus": "Posterior chain"},
-            {"exercise": "Hip Flexor Stretch", "sets": "2x30s", "focus": "Hip mobility"},
+            {"exercise": "Mostki biodrowe", "sets": "3x15", "focus": "Aktywacja pośladków"},
+            {"exercise": "Martwy ciąg", "sets": "3x8", "focus": "Taśma tylna"},
+            {"exercise": "Rozciąganie zginaczy bioder", "sets": "2x30s", "focus": "Mobilność bioder"},
         ],
         "swayback": [
-            {"exercise": "Plank", "sets": "3x30s", "focus": "Core stability"},
-            {"exercise": "Deadlifts", "sets": "3x8", "focus": "Posterior chain"},
-            {"exercise": "Wall Stand", "sets": "3x60s", "focus": "Spinal alignment"},
+            {"exercise": "Deska (plank)", "sets": "3x30s", "focus": "Stabilizacja tułowia"},
+            {"exercise": "Martwy ciąg", "sets": "3x8", "focus": "Taśma tylna"},
+            {"exercise": "Stanie przy ścianie", "sets": "3x60s", "focus": "Ustawienie kręgosłupa"},
         ],
     }
 
@@ -91,7 +91,7 @@ class PostureCorrectionEngine:
     def get_correction_plan(issue_id: str) -> dict:
         """Get correction exercises for an issue."""
         if issue_id not in PostureCorrectionEngine.CORRECTIONS:
-            return {"error": "Issue not found"}
+            return {"error": "Nie znaleziono problemu"}
         return {
             "issue": issue_id,
             "info": PostureCorrectionEngine.POSTURE_ISSUES.get(issue_id, {}),
@@ -112,9 +112,9 @@ class PostureCorrectionEngine:
             "issues": issues,
             "correction_plan": plan,
             "daily_habits": [
-                "Check posture every 30 min with phone reminder",
-                "Sleep with proper pillow height (not too high)",
-                "Stretch chest + hip flexors daily",
-                "Stay active - avoid sitting >1hr at a time",
+                "Co 30 min sprawdź postawę (przypomnienie w telefonie)",
+                "Śpij na poduszce właściwej wysokości (nie za wysokiej)",
+                "Codziennie rozciągaj klatkę i zginacze bioder",
+                "Ruszaj się — nie siedź dłużej niż godzinę bez przerwy",
             ],
         }

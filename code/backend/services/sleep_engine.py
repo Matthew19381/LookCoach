@@ -21,61 +21,61 @@ class SleepEngine:
 
     SLEEP_FACTORS = {
         "duration": {
-            "name": "Sleep Duration",
-            "looks_impact": "Skin repair, dark circles, puffiness",
+            "name": "Długość snu",
+            "looks_impact": "Regeneracja skóry, cienie, opuchlizna",
             "optimal": "7-9 hours",
             "poor": "<6 hours",
         },
         "quality": {
-            "name": "Sleep Quality",
-            "looks_impact": "Skin glow, eye brightness, mood",
-            "optimal": "Deep, uninterrupted",
-            "poor": "Fragmented, light sleep",
+            "name": "Jakość snu",
+            "looks_impact": "Świeża skóra, jasne oczy, nastrój",
+            "optimal": "Głęboki, nieprzerywany",
+            "poor": "Przerywany, płytki sen",
         },
         "timing": {
-            "name": "Sleep Timing",
-            "looks_impact": "Circadian rhythm, hormone production",
+            "name": "Pora snu",
+            "looks_impact": "Rytm dobowy, wydzielanie hormonów",
             "optimal": "10PM-6AM",
-            "poor": "After midnight",
+            "poor": "Po północy",
         },
         "pillow_height": {
-            "name": "Pillow Height",
-            "looks_impact": "Neck posture, jawline definition",
-            "optimal": "Medium height (10-12cm)",
-            "poor": "Too high (chin tuck) or too low (neck strain)",
+            "name": "Wysokość poduszki",
+            "looks_impact": "Postawa szyi, zarys żuchwy",
+            "optimal": "Średnia wysokość (10–12 cm)",
+            "poor": "Za wysoka (broda przy klatce) lub za niska (napięta szyja)",
         },
     }
 
     PRE_EVENT_TIPS = {
         "party": [
-            "Sleep 8+ hours 2 nights before",
-            "Avoid alcohol 24h before",
-            "Sleep on back with medium pillow",
-            "No screens 1h before bed",
+            "Śpij 8+ h przez 2 noce przed",
+            "Bez alkoholu 24 h przed",
+            "Śpij na plecach na średniej poduszce",
+            "Bez ekranów godzinę przed snem",
         ],
         "photoshoot": [
-            "Sleep 9 hours night before",
-            "Cool room (18-20°C)",
-            "Silk pillowcase to reduce friction",
-            "Elevate head slightly (reduces morning puffiness)",
+            "Śpij 9 h noc przed",
+            "Chłodny pokój (18–20°C)",
+            "Jedwabna poszewka — mniej tarcia",
+            "Lekko unieś głowę (mniej porannej opuchlizny)",
         ],
         "date": [
-            "Sleep 8 hours 2 nights before",
-            "Hydrate well before bed",
-            "Avoid salty foods day before",
-            "Morning facial massage after wake",
+            "Śpij 8 h przez 2 noce przed",
+            "Nawodnij się przed snem",
+            "Dzień wcześniej unikaj słonych potraw",
+            "Rano po przebudzeniu masaż twarzy",
         ],
         "wedding": [
-            "Sleep 9 hours for 3 nights before",
-            "Consistent sleep schedule 1 week before",
-            "No alcohol 48h before",
-            "Back sleeping with proper pillow support",
+            "Śpij 9 h przez 3 noce przed",
+            "Stałe pory snu przez tydzień przed",
+            "Bez alkoholu 48 h przed",
+            "Spanie na plecach z odpowiednią poduszką",
         ],
         "general": [
             "7-9 hours nightly",
-            "Consistent sleep/wake times",
-            "Cool, dark, quiet room",
-            "No caffeine after 2PM",
+            "Stałe pory zasypiania i wstawania",
+            "Chłodny, ciemny, cichy pokój",
+            "Bez kofeiny po 14:00",
         ],
     }
 
@@ -98,23 +98,23 @@ class SleepEngine:
 
         # Issues
         if duration < 7:
-            result["issues"].append("Insufficient sleep (<7h)")
+            result["issues"].append("Za krótki sen (<7 h)")
         if quality in ["poor", "light"]:
-            result["issues"].append("Poor sleep quality")
+            result["issues"].append("Słaba jakość snu")
         if bedtime is not None and bedtime > 24 * 60:
-            result["issues"].append("Late bedtime (after midnight)")
+            result["issues"].append("Późne zasypianie (po północy)")
         if not sleep_data.get("back_sleeping"):
-            result["issues"].append("Not sleeping on back")
+            result["issues"].append("Sen nie na plecach")
 
         # Recommendations
         if duration < 7:
-            result["recommendations"].append("Increase sleep to 7-9 hours")
+            result["recommendations"].append("Wydłuż sen do 7–9 godzin")
         if quality in ["poor", "light"]:
-            result["recommendations"].append("Improve sleep quality - dark room, no screens 1h before")
+            result["recommendations"].append("Popraw jakość snu — ciemny pokój, bez ekranów godzinę przed")
         if bedtime is not None and bedtime > 23 * 60:
-            result["recommendations"].append("Move bedtime earlier (10-11PM)")
+            result["recommendations"].append("Przesuń zasypianie wcześniej (22–23)")
         if not sleep_data.get("back_sleeping"):
-            result["recommendations"].append("Try back sleeping for posture + puffiness reduction")
+            result["recommendations"].append("Spróbuj spać na plecach — postawa i mniej opuchlizny")
 
         result.update(status_from_issues(len(result["issues"])))
         return result

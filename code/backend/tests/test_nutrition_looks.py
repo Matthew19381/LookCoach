@@ -28,12 +28,12 @@ class TestNutritionLooksEngine:
     def test_factor_water(self):
         factors = NutritionLooksEngine.FACTORS
         if "water_intake" in factors:
-            assert "3L" in factors["water_intake"]["recommendation"]
+            assert "3 l" in factors["water_intake"]["recommendation"]
 
     def test_factor_sodium(self):
         factors = NutritionLooksEngine.FACTORS
         if "sodium" in factors:
-            assert "<" in factors["sodium"]["recommendation"]
+            assert "1500 mg" in factors["sodium"]["recommendation"]
 
     def test_recommendations_not_empty(self):
         recs = NutritionLooksEngine.get_recommendations()

@@ -6,42 +6,42 @@ class StressEngine:
 
     STRESS_EFFECTS = {
         "cortisol_spike": {
-            "name": "Cortisol Spike",
-            "looks_impact": "Acne, skin thinning, hair loss",
+            "name": "Skok kortyzolu",
+            "looks_impact": "Trądzik, ścieńczenie skóry, wypadanie włosów",
             "signs": ["acne flare", "oily skin", "hair shedding"],
         },
         "stress_skin": {
-            "name": "Stress Skin",
-            "looks_impact": "Dullness, breakouts, slow healing",
+            "name": "Skóra a stres",
+            "looks_impact": "Szarość, wypryski, wolne gojenie",
             "signs": ["dull complexion", "slow wound healing", "dark circles"],
         },
         "tension_face": {
-            "name": "Facial Tension",
-            "looks_impact": "Frown lines, jaw tension, tired look",
+            "name": "Napięcie twarzy",
+            "looks_impact": "Zmarszczki mimiczne, napięta żuchwa, zmęczony wygląd",
             "signs": ["frown lines", "clenched jaw", "crow's feet"],
         },
     }
 
     RELAXATION_TECHNIQUES = {
         "box_breathing": {
-            "name": "Box Breathing",
+            "name": "Oddech pudełkowy",
             "duration": "5 min",
-            "looks_benefit": "Reduces cortisol, prevents stress acne",
+            "looks_benefit": "Obniża kortyzol, zapobiega trądzikowi ze stresu",
         },
         "progressive_relaxation": {
-            "name": "Progressive Muscle Relaxation",
+            "name": "Progresywna relaksacja mięśni",
             "duration": "10 min",
-            "looks_benefit": "Releases facial tension, softens features",
+            "looks_benefit": "Rozluźnia twarz, łagodzi rysy",
         },
         "meditation": {
-            "name": "Mindfulness Meditation",
+            "name": "Medytacja uważności",
             "duration": "15 min",
-            "looks_benefit": "Lowers cortisol, improves skin glow",
+            "looks_benefit": "Obniża kortyzol, skóra wygląda świeżej",
         },
         "face_massage": {
-            "name": "Stress Face Massage",
+            "name": "Masaż twarzy na stres",
             "duration": "5 min",
-            "looks_benefit": "Releases jaw tension, reduces puffiness",
+            "looks_benefit": "Rozluźnia żuchwę, zmniejsza opuchliznę",
         },
     }
 
@@ -75,12 +75,12 @@ class StressEngine:
 
         # Recommendations
         if level in ["medium", "high"]:
-            result["recommendations"].append("Practice box breathing 3x/day")
+            result["recommendations"].append("Oddech pudełkowy 3 razy dziennie")
             result["recommendations"].append("10 min progressive muscle relaxation before bed")
         if "jaw tension" in physical_signs:
-            result["recommendations"].append("Face massage + warm compress for jaw")
+            result["recommendations"].append("Masaż twarzy i ciepły okład na żuchwę")
         if "acne" in physical_signs:
-            result["recommendations"].append("Lower cortisol: sleep 8h, no sugar, meditation")
+            result["recommendations"].append("Obniż kortyzol: sen 8 h, mniej cukru, medytacja")
 
         return result
 

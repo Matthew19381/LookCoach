@@ -27,7 +27,7 @@ describe('PostureCorrection', () => {
   it('loads and displays posture issues', async () => {
     getPostureIssues.mockResolvedValue([
       { id: 'forward_head', name: 'Forward Head', description: 'Head too forward', looks_impact: 'Medium' },
-      { id: 'rounded_shoulders', name: 'Rounded Shoulders', description: 'Shoulders rounded', looks_impact: 'High' },
+      { id: 'rounded_shoulders', name: 'Zaokrąglone barki', description: 'Shoulders rounded', looks_impact: 'High' },
     ]);
     render(<PostureCorrection />);
     expect(await screen.findByText(/Forward Head/i)).toBeInTheDocument();
