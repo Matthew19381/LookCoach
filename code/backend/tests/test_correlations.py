@@ -5,7 +5,7 @@ import backend.models  # noqa: F401
 from backend.models.analysis import Analysis
 from backend.models.consistency import AdherenceLog, ProtocolTypeEnum
 from backend.models.photo import Photo
-from backend.services.correlations import find, stress_from_events
+from backend.services.correlations import find, sodium_from_events, stress_from_events
 
 NOW = datetime.now()
 
@@ -76,3 +76,18 @@ def test_stress_from_hub_events():
     ]
     result = stress_from_events(events)
     assert list(result.values()) == [3.0]
+
+
+def test_sodium_vs_swelling_from_dieta_events(db_session):
+    for days, swelling in ((40, "high"), (30, "medium"), (20, "low"), (10, "low")):
+        _session(db_session, days, swelling=swelling)
+    events = []
+    for days, mg in ((40, 1600), (30, 1500), (20, 500), (10, 400)):
+        day = (NOW - timedelta(days=days + 1)).date().isoformat()
+        events += [{"module": "dieta", "event_type": "meal_logged", "data": {"date": day, "sodium_mg": mg}}] * 2
+    events.append({"module": "forge-body", "event_type": "meal_logged", "data": {"date": day, "sodium_mg": 9999}})
+    sodium = sodium_from_events(events)
+    assert max(sodium.values()) == 3200
+    (insight,) = find(db_session, 1, sodium_by_day=sodium)["insights"]
+    assert insight["area"] == "Obrzęk a sód"
+    assert "w 2 z 2 sesji" in insight["text"] and "w 0 z 2" in insight["text"]

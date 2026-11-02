@@ -255,9 +255,11 @@
 - [ ] **H-3b (ForgeBody)**: `aesthetic_priority` tylko DOKŁADA grupy do `focus_muscles`
   (nigdy nie zdejmuje) i ignoruje `duration_weeks`. Potrzebne: zapamiętanie, które grupy dodał
   LookCoach (nowa kolumna/tabela + migracja), zastępowanie zestawu i wygasanie po N tyg.
-- [ ] **H-2b (Dieta)**: liczenie sodu w dzienniku posiłków i uwzględnianie `nutrition_needs`
+- [~] **H-2b (Dieta)**: liczenie sodu w dzienniku posiłków i uwzględnianie `nutrition_needs`
   (limit sodu, niski ładunek glikemiczny) przy układaniu planu; dziś potrzeby są tylko zapisane
   i widoczne w `GET /directives/{user_id}`.
+  [CZĘŚCIOWO 2026-11-02: `meal_logged` niesie `sodium_mg` (Dieta, gałąź `claude/lookcoach-integracja`);
+  LookCoach koreluje sód z obrzękiem. Zostało: dzienna suma w dzienniku Diety i plan posiłków z limitem]
 - [x] **H-4 (System-Glowny)**: `broadcast_directive` wysyła `X-Module-Key`
   (moduły mogą wtedy wymagać klucza na `/directives`).
 - [x] **H-5 (System-Glowny)**: odczyt eventów innych modułów kluczem modułu

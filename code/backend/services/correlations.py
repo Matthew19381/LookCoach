@@ -67,7 +67,12 @@ def _compare(groups: dict[str, list[bool]]) -> tuple[int, int, int, int] | None:
     return sum(a), len(a), sum(b), len(b)
 
 
-def find(db: Session, user_id: int, stress_by_day: dict[date, float] | None = None) -> dict:
+SODIUM_WINDOW = 2
+HIGH_SODIUM_MG = 2300
+
+
+def find(db: Session, user_id: int, stress_by_day: dict[date, float] | None = None,
+         sodium_by_day: dict[date, float] | None = None) -> dict:
     sessions = _front_sessions(db, user_id)
     insights = []
 
@@ -113,6 +118,27 @@ def find(db: Session, user_id: int, stress_by_day: dict[date, float] | None = No
                 "sessions": cmp[1] + cmp[3],
             })
 
+    # 3. sodium (Dieta meal_logged) -> facial swelling
+    if sodium_by_day:
+        groups = {"yes": [], "no": []}
+        for when, face in sessions:
+            days = [when.date() - timedelta(days=d) for d in range(1, SODIUM_WINDOW + 1)]
+            values = [sodium_by_day[d] for d in days if d in sodium_by_day]
+            level = (face.get("swelling") or {}).get("level")
+            if not values or not level:
+                continue
+            groups["yes" if max(values) >= HIGH_SODIUM_MG else "no"].append(level not in LOW_SWELLING)
+        cmp = _compare(groups)
+        if cmp and cmp[0] / cmp[1] != cmp[2] / cmp[3]:
+            insights.append({
+                "area": "Obrzęk a sód",
+                "text": (
+                    f"Po dniach z dużą ilością sodu (≥{HIGH_SODIUM_MG} mg wg Diety) obrzęk był średni lub wysoki "
+                    f"w {cmp[0]} z {cmp[1]} sesji, po pozostałych — w {cmp[2]} z {cmp[3]}."
+                ),
+                "sessions": cmp[1] + cmp[3],
+            })
+
     return {
         "insights": insights,
         "caveat": CAVEAT if insights else None,
@@ -133,3 +159,19 @@ def stress_from_events(events: list[dict]) -> dict[date, float]:
         day = datetime.fromisoformat(str(ts).replace("Z", "+00:00")).date()
         per_day.setdefault(day, []).append(float(stress))
     return {d: sum(v) / len(v) for d, v in per_day.items()}
+
+
+def sodium_from_events(events: list[dict]) -> dict[date, float]:
+    """Dieta meal_logged events -> total sodium (mg) per day."""
+    per_day: dict[date, float] = {}
+    for e in events:
+        if e.get("module") != "dieta" or e.get("event_type") != "meal_logged":
+            continue
+        data = e.get("data") or {}
+        sodium = data.get("sodium_mg")
+        raw_day = data.get("date") or e.get("timestamp")
+        if not isinstance(sodium, (int, float)) or not raw_day:
+            continue
+        day = datetime.fromisoformat(str(raw_day).replace("Z", "+00:00")).date()
+        per_day[day] = per_day.get(day, 0.0) + float(sodium)
+    return per_day

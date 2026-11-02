@@ -5,7 +5,7 @@ from ..database import get_db
 from ..models.photo import Photo
 from ..models.analysis import Analysis
 from ..paths import photo_url
-from ..services.correlations import find, stress_from_events
+from ..services.correlations import find, sodium_from_events, stress_from_events
 from ..services.ecosystem_client import fetch_recent_events
 from ..services.state_labels import compare_labels, state_labels
 
@@ -104,8 +104,8 @@ def state_timeline(user_id: int = 1, limit: int = 8, db: Session = Depends(get_d
 async def correlations(user_id: int = 1, db: Session = Depends(get_db)):
     """Plan 5.3: what goes together in your data (counts + caveat, no scores)."""
     try:
-        stress = stress_from_events(await fetch_recent_events(user_id))
-        stress_source = "hub"
+        events = await fetch_recent_events(user_id)
+        stress, sodium, source = stress_from_events(events), sodium_from_events(events), "hub"
     except Exception:  # hub down / no key: local correlations still work
-        stress, stress_source = None, "unavailable"
-    return {**find(db, user_id, stress), "stress_source": stress_source}
+        stress, sodium, source = None, None, "unavailable"
+    return {**find(db, user_id, stress, sodium), "stress_source": source}
