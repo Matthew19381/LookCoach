@@ -5,6 +5,8 @@ from ..database import get_db
 from ..models.photo import Photo
 from ..models.analysis import Analysis
 from ..paths import photo_url
+from ..services.correlations import find, stress_from_events
+from ..services.ecosystem_client import fetch_recent_events
 from ..services.state_labels import compare_labels, state_labels
 
 router = APIRouter()
@@ -96,3 +98,14 @@ def state_timeline(user_id: int = 1, limit: int = 8, db: Session = Depends(get_d
             if area not in areas:
                 areas.append(area)
     return {"sessions": sessions, "areas": areas}
+
+
+@router.get("/correlations")
+async def correlations(user_id: int = 1, db: Session = Depends(get_db)):
+    """Plan 5.3: what goes together in your data (counts + caveat, no scores)."""
+    try:
+        stress = stress_from_events(await fetch_recent_events(user_id))
+        stress_source = "hub"
+    except Exception:  # hub down / no key: local correlations still work
+        stress, stress_source = None, "unavailable"
+    return {**find(db, user_id, stress), "stress_source": stress_source}

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { getTimeline, comparePhotos, getStateTimeline } from '../api/client'
+import { getTimeline, comparePhotos, getStateTimeline, getCorrelations } from '../api/client'
 
 // LC-9: postęp pokazujemy słowami (stan przed → po) z prawdziwych analiz.
 // Do 2026-11-02 była tu linia „Look Score” rosnąca o 5 pkt na każde zdjęcie,
@@ -17,6 +17,7 @@ export default function ProgressTracker() {
   const [compareError, setCompareError] = useState(null)
   const [loading, setLoading] = useState(true)
   const [states, setStates] = useState(null)
+  const [correlations, setCorrelations] = useState(null)
 
   useEffect(() => {
     getTimeline().then((data) => {
@@ -24,6 +25,7 @@ export default function ProgressTracker() {
       setLoading(false)
     }).catch(() => setLoading(false))
     getStateTimeline().then(setStates).catch(() => setStates(null))
+    getCorrelations().then(setCorrelations).catch(() => setCorrelations(null))
   }, [])
 
   const handleCompare = async () => {
@@ -72,6 +74,27 @@ export default function ProgressTracker() {
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {correlations && (
+        <div className="bg-white border rounded-lg p-6">
+          <h3 className="text-lg font-semibold mb-2">Co idzie w parze</h3>
+          {correlations.insights.length === 0 ? (
+            <p className="text-sm text-gray-600">
+              Za mało sesji zdjęć, żeby coś powiedzieć ({correlations.front_sessions} zdjęć z przodu). Wnioski pojawią się,
+              gdy będzie po co najmniej {correlations.needed_per_group} sesje w porównywanych grupach.
+            </p>
+          ) : (
+            <>
+              <ul className="space-y-2 text-sm">
+                {correlations.insights.map((i) => (
+                  <li key={i.area}><strong>{i.area}:</strong> {i.text}</li>
+                ))}
+              </ul>
+              <p className="text-xs text-gray-500 mt-3">{correlations.caveat}</p>
+            </>
+          )}
         </div>
       )}
 

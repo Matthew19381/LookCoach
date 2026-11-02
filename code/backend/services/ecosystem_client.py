@@ -145,3 +145,18 @@ def cached_overview(db: Session, user_id: int) -> dict | None:
         return None
     return {"source": "cache", "fetched_at": row.fetched_at.isoformat() if row.fetched_at else None,
             **json.loads(row.data)}
+
+
+async def fetch_recent_events(user_id: int, days: int = 180,
+                              transport: httpx.AsyncBaseTransport | None = None) -> list[dict]:
+    """All of the user's hub events in the window (for correlations, plan 5.3)."""
+    key = os.getenv("MODULE_KEY")
+    since = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
+    async with httpx.AsyncClient(timeout=3.0, transport=transport) as client:
+        resp = await client.get(
+            f"{_hub_url()}/api/v1/integrations/events",
+            params={"user_id": str(user_id), "since": since, "limit": 1000},
+            headers={"X-Module-Key": key} if key else {},
+        )
+        resp.raise_for_status()
+        return resp.json()

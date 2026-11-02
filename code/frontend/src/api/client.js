@@ -248,3 +248,6 @@ export const getAssistantHistory = () =>
 
 export const clearAssistantHistory = () =>
   api.delete(`/api/v1/assistant/history?user_id=${getUserId()}`);
+
+export const getCorrelations = () =>
+  api.get(`/api/v1/progress/correlations?user_id=${getUserId()}`);

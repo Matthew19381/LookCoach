@@ -354,9 +354,12 @@ każda zmiana promptu = test na kształt JSON + test na brak liczb ocen.
   [WYKONANE 2026-11-02: `GET /progress/states`, tabela „Jak zmieniał się stan” w Postępie]
 - [ ] **5.2 Porównanie przed/po**: suwak lub obok siebie, automatyczne wyrównanie
   (twarz/sylwetka), różnice w obserwacjach słownych.
-- [ ] **5.3 Correlation Engine (jakościowy)**: „w tygodniach ze snem < 6 h obrzęk
+- [x] **5.3 Correlation Engine (jakościowy)**: „w tygodniach ze snem < 6 h obrzęk
   częściej średni”, „przy sodzie > limitu …” — dane z 3.8; komunikaty tylko
   przy wystarczającej liczbie obserwacji, z zastrzeżeniem „korelacja ≠ przyczyna”.
+  [WYKONANE 2026-11-02: `services/correlations.py` — pielęgnacja (14 dni) ↔ stan skóry, stres z huba
+  (3 dni) ↔ obrzęk; min. 2 sesje w każdej grupie; liczby jako „X z Y sesji”, nie oceny. Sen/sód — gdy
+  moduły zaczną je publikować (Mentalność, H-2b)]
 - [x] **5.4 Dashboard „Dziś”** jako strona startowa: 3 akcje na dziś
   (rutyna, protokół, ewentualnie zdjęcia kontrolne), stan dyrektyw huba
   (survival/priority), ostatnie dane z innych modułów.

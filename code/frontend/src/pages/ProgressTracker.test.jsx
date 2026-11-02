@@ -7,10 +7,11 @@ vi.mock('../api/client', () => ({
   getTimeline: vi.fn(),
   comparePhotos: vi.fn(),
   getStateTimeline: vi.fn(() => Promise.resolve({ sessions: [], areas: [] })),
+  getCorrelations: vi.fn(() => Promise.resolve({ insights: [], caveat: null, front_sessions: 1, needed_per_group: 2 })),
 }))
 
 import ProgressTracker from './ProgressTracker'
-import { getTimeline, comparePhotos, getStateTimeline } from '../api/client'
+import { getTimeline, comparePhotos, getStateTimeline, getCorrelations } from '../api/client'
 
 const mockPhotos = [
   { id: 1, photo_type: 'front', url: '/uploads/photo1.jpg', uploaded_at: '2026-05-01T10:00:00Z', status: 'done' },
@@ -111,5 +112,16 @@ describe('ProgressTracker', () => {
     expect(await screen.findByText('Jak zmieniał się stan')).toBeInTheDocument()
     expect(screen.getByText('średni')).toBeInTheDocument()
     expect(screen.getByText('niski')).toBeInTheDocument()
+  })
+
+  it('shows correlations with the caveat (plan 5.3)', async () => {
+    getTimeline.mockResolvedValue(mockPhotos)
+    getCorrelations.mockResolvedValue({
+      insights: [{ area: 'Skóra a regularna pielęgnacja', text: 'skóra była „dobra” w 2 z 2 sesji', sessions: 4 }],
+      caveat: 'To zbieżność w Twoich danych, nie dowód przyczyny', front_sessions: 4, needed_per_group: 2,
+    })
+    renderPage()
+    expect(await screen.findByText(/w 2 z 2 sesji/)).toBeInTheDocument()
+    expect(screen.getByText(/nie dowód przyczyny/)).toBeInTheDocument()
   })
 })
