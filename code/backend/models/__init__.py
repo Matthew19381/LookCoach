@@ -11,6 +11,7 @@ from .skin_reaction import SkinReaction as SkinReaction
 from .skincare_product import IngredientUsage as IngredientUsage, SkincareProduct as SkincareProduct
 from .outbox import OutboxEvent as OutboxEvent
 from .ecosystem_snapshot import EcosystemSnapshot as EcosystemSnapshot
+from .style_preview import StylePreviewLog as StylePreviewLog
 from .consistency import (
     AdherenceLog as AdherenceLog,
     ProtocolAdherence as ProtocolAdherence,
@@ -33,4 +34,5 @@ __all__ = [
     "ConsistencyMetrics",
     "OutboxEvent",
     "EcosystemSnapshot",
+    "StylePreviewLog",
 ]

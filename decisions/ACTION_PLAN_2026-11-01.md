@@ -330,10 +330,13 @@ każda zmiana promptu = test na kształt JSON + test na brak liczb ocen.
 - [ ] **4.11 Wybór modelu AI zgodny z dokumentacją**: domyślnie `AI_SERVICE=gemini`
   (dziś `openrouter`), lub zaktualizować CLAUDE.md — decyzja przy realizacji;
   klucz cache zależny od modelu i wersji promptu (dziś `prompt[:50]`).
-- [ ] **4.13 Podgląd fryzury/zarostu na własnym zdjęciu (D8)** — opcjonalny przycisk przy
+- [x] **4.13 Podgląd fryzury/zarostu na własnym zdjęciu (D8)** — opcjonalny przycisk przy
   propozycjach z 4.2/4.3; model generowania obrazu przez OpenRouter/Gemini; wynik tylko
   w pamięci/na żądanie (nie zapisywany jako „po”), ostrzeżenie LC-9 („to wizualizacja, nie
   cel do porównywania”), informacja o koszcie przed wygenerowaniem, limit dzienny.
+  [WYKONANE 2026-11-02 — NIEPRZETESTOWANE NA ŻYWO: model `STYLE_PREVIEW_MODEL` (domyślnie
+  `google/gemini-2.5-flash-image` przez OpenRouter) trzeba sprawdzić z prawdziwym kluczem; tylko
+  zaproponowane opcje, prompt zabrania upiększania, limit 5/dobę, obraz niezapisywany]
 - [x] **4.12 Profil celów**: formularz celów (co chcę poprawić: skóra/włosy/
   sylwetka/styl, termin, ile czasu dziennie). Cele trafiają do rekomendacji,
   do `goal_router` (3.2/3.4) i do huba (`priority`).

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Scissors } from 'lucide-react'
-import { getStyleAdvice } from '../api/client'
+import { getStyleAdvice, getStylePreviewOptions, generateStylePreview } from '../api/client'
 
 // Plan 4.1-4.8: porady z jakościowej analizy zdjęć. Każda ma jawny poziom:
 // porada stylistyczna / hipoteza / wpis z bazy dowodów. Bez ocen wyglądu (LC-9).
@@ -39,12 +39,70 @@ function Items({ title, items }) {
   )
 }
 
+// Plan 4.13 (D8): opcjonalny, płatny podgląd na własnym zdjęciu
+function usePreview({ beardOptions }) {
+  const [pending, setPending] = useState(null) // {kind, option} awaiting cost confirmation
+  const [busy, setBusy] = useState(false)
+  const [result, setResult] = useState(null)
+  const [error, setError] = useState(null)
+
+  const run = async () => {
+    setBusy(true)
+    setError(null)
+    try {
+      setResult(await generateStylePreview(pending.kind, pending.option))
+    } catch (e) {
+      setError(e.response?.data?.detail || 'Nie udało się wygenerować podglądu.')
+    } finally {
+      setBusy(false)
+      setPending(null)
+    }
+  }
+
+  return { ask: (kind, option) => { setResult(null); setPending({ kind, option }) }, view: (
+    <>
+      {pending && (
+        <div role="dialog" className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-sm space-y-2">
+          <p>Podgląd „{pending.option}” to <strong>płatne wywołanie API</strong> generowania obrazu (limit kilku
+            dziennie). Wynik nie jest zapisywany.</p>
+          <div className="flex gap-2">
+            <button onClick={run} disabled={busy} className="px-3 py-1 bg-blue-600 text-white rounded disabled:opacity-50">
+              {busy ? 'Generuję…' : 'Generuj'}
+            </button>
+            <button onClick={() => setPending(null)} className="px-3 py-1 border rounded">Anuluj</button>
+          </div>
+        </div>
+      )}
+      {error && <p className="text-red-700 text-sm">{error}</p>}
+      {result && (
+        <div className="bg-white border rounded-lg p-4 space-y-2">
+          <img src={result.image} alt="Podgląd" className="max-h-96 rounded" />
+          <p className="text-xs text-gray-600">{result.warning}</p>
+          <p className="text-xs text-gray-500">Pozostało dziś: {result.remaining_today}</p>
+        </div>
+      )}
+      {beardOptions?.length > 0 && (
+        <div className="text-sm">
+          <span className="text-gray-600">Podgląd zarostu: </span>
+          {beardOptions.map((o) => (
+            <button key={o} onClick={() => { setResult(null); setPending({ kind: 'beard', option: o }) }}
+              className="underline text-blue-700 mr-3">{o}</button>
+          ))}
+        </div>
+      )}
+    </>
+  ) }
+}
+
 export default function Style() {
   const [advice, setAdvice] = useState(null)
   const [error, setError] = useState(null)
+  const [beardOptions, setBeardOptions] = useState([])
+  const preview = usePreview({ beardOptions })
 
   useEffect(() => {
     getStyleAdvice().then(setAdvice).catch(() => setError('Nie udało się wczytać porad.'))
+    getStylePreviewOptions().then((o) => setBeardOptions(o.beard || [])).catch(() => {})
   }, [])
 
   if (!advice) return <div className="text-center py-20">{error || 'Ładowanie...'}</div>
@@ -71,9 +129,13 @@ export default function Style() {
                 <p className="font-medium">{p.name}</p>
                 <p className="text-gray-700"><span className="text-gray-500">Powiedz fryzjerowi:</span> {p.tell_barber}</p>
                 <p className="text-xs text-gray-500">układanie ok. {p.styling_minutes} min</p>
+                <button onClick={() => preview.ask('hair', p.name)} className="text-xs underline text-blue-700">
+                  Podgląd na moim zdjęciu
+                </button>
               </div>
             ))}
           </div>
+          {preview.view}
           <ul className="space-y-2">
             {advice.hair.notes.map((n) => (
               <li key={n.text} className="text-sm"><p>{n.text}</p><Level level={n.level} evidenceId={n.evidence_id} /></li>

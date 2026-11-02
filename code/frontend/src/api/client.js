@@ -225,3 +225,9 @@ export const deleteAllData = (confirm) =>
 // Style advice (plan 4.1-4.8)
 export const getStyleAdvice = () =>
   api.get(`/api/v1/style?user_id=${getUserId()}`);
+
+export const getStylePreviewOptions = () =>
+  api.get(`/api/v1/style/preview/options?user_id=${getUserId()}`);
+
+export const generateStylePreview = (kind, option) =>
+  api.post(`/api/v1/style/preview?user_id=${getUserId()}`, { kind, option });
