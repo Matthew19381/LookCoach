@@ -15,7 +15,8 @@ export default function PhotoUpload() {
       const result = await uploadPhoto(file, type)
       setUploaded((prev) => ({ ...prev, [type]: result }))
     } catch (e) {
-      setError(`Upload failed: ${e.message}`)
+      // Backend explains why (format, size) in Polish - show that, not axios' generic text.
+      setError(`Nie udało się wysłać zdjęcia: ${e.response?.data?.detail || e.message}`)
     } finally {
       setUploading((prev) => ({ ...prev, [type]: false }))
     }
@@ -79,7 +80,7 @@ export default function PhotoUpload() {
                 Choose File
                 <input
                   type="file"
-                  accept="image/*"
+                  accept="image/jpeg,image/png,image/webp"
                   className="hidden"
                   onChange={(e) => handleFileSelect(e, type)}
                 />

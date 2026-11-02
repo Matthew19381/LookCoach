@@ -1,7 +1,7 @@
 # CLAUDE.md — LookCoach
 
 Instrukcje dla asystenta AI pracującego w tym repo. Opisuje **stan faktyczny**
-(aktualizacja 2026-11-02, po Fazach 0–1 z `decisions/ACTION_PLAN_2026-11-01.md`), nie plany.
+(aktualizacja 2026-11-02, po Fazach 0–2 z `decisions/ACTION_PLAN_2026-11-01.md`), nie plany.
 Bieżący plan z checkboxami: `decisions/ACTION_PLAN_2026-11-01.md`.
 
 ## Uruchamianie
@@ -23,10 +23,10 @@ docker compose up --build   # z katalogu code/
 
 ```bash
 # Backend — uruchamiać Z code/backend (stare importy top-level wymagają cwd w sys.path)
-cd code/backend && python -m pytest tests/        # obecnie 348 testów
+cd code/backend && python -m pytest tests/        # obecnie 367 testów
 
 # Frontend
-cd code/frontend && npm test -- --run             # obecnie 97 testów (vitest)
+cd code/frontend && npm test -- --run             # obecnie 101 testów (vitest)
 
 # Brama rzetelności dowodów — Z katalogu code/
 python -m backend.scripts.verify_evidence_db      # failuje gdy wpis rct/meta nie ma źródła
@@ -53,13 +53,16 @@ Router → Service → SQLAlchemy Session (get_db dependency)
 - **Zdjęcia i cache AI**: `code/backend/uploads/` i `code/backend/.cache/` — kotwiczone w
   `backend/paths.py` (nie od CWD; nadpisanie: `LOOKCOACH_UPLOAD_DIR`, `LOOKCOACH_CACHE_DIR`).
   Ścieżkę pliku zdjęcia rozwiązuj przez `paths.photo_path()`, URL przez `paths.photo_url()`.
+- **Upload zdjęć**: tylko przez `services/photo_storage.sanitize_image()` (format, limit, usunięcie EXIF).
+- **Autoryzacja modułów**: `backend/security.py` — `require_module_key` (eventy),
+  `require_module_key_or_local` (dyrektywy; hub jeszcze nie wysyła klucza).
 - **Ostatnia analiza użytkownika**: zawsze przez `services/analysis_store.load_latest_analysis()`
   — nie twórz atrap analizy w routerach ani we frontendzie.
 - **Migracje**: `code/backend/migrations/versions/` (baseline `d976f9108a12`,
   `ebfa423f2a35` health JSON). Nowy model → zaimportuj w `models/__init__.py`
   oraz w `init_db()` w `database.py`; zmianę schematu rób migracją, nie create_all.
 
-### Routery (20, wszystkie pod `/api/v1/`)
+### Routery (21, wszystkie pod `/api/v1/`)
 
 | Router | Prefiks | Odpowiedzialność |
 |---|---|---|
@@ -83,6 +86,7 @@ Router → Service → SQLAlchemy Session (get_db dependency)
 | consistency | `/api/v1/consistency` | Consistency Tracker (LC-7), publikuje `protocol_done/skipped` |
 | directives | `/api/v1/directives` | dyrektywy huba (survival_mode, priority, quiet_hours) |
 | feedback_loop | `/api/v1/feedback-loop` | Smart Feedback Loop (redukcja/przekomponowanie planu) |
+| data | `/api/v1/data` | prywatność: eksport ZIP, trwałe usunięcie (`confirm=USUN-WSZYSTKO`) |
 
 Nowy router: zdefiniuj w `routers/`, zaimportuj w `main.py`,
 `app.include_router(router, prefix="/api/v1/<name>", tags=[...])`.
@@ -116,6 +120,7 @@ Kontrakt po stronie LookCoach (hub: port 8000):
 - `POST /api/v1/integrations/event` — przyjmuje eventy od huba; wymaga nagłówka
   `X-Module-Key` zgodnego z env `MODULE_KEY` (brak/zły klucz → **401**, także gdy header
   nieobecny). Eventy są persystowane w tabeli `integration_events`.
+- `POST /api/v1/directives` — dyrektywy huba; klucz opcjonalny tylko z localhost, zły klucz → 401.
 
 Pełna architektura docelowa: sekcja "Architektura docelowa" w `decisions/ACTION_PLAN_2026-08-09_wykonane_2026-08-23.md` (archiwum);
 audyt naukowy: `NEURO_PLAN.md` §4.

@@ -71,6 +71,17 @@ def _save_to_cache(key: str, data: dict):
     Path(key).write_text(json.dumps(data, ensure_ascii=False, indent=2))
 
 
+def forget_image(image_bytes: bytes) -> int:
+    """Remove every cached analysis of this image (called when a photo is deleted)."""
+    removed = 0
+    for prompt in (FACE_PROMPT, BODY_PROMPT, SKIN_PROMPT, HAIR_PROMPT, LABEL_PROMPT):
+        path = Path(_cache_key(image_bytes, prompt[:50]))
+        if path.exists():
+            path.unlink()
+            removed += 1
+    return removed
+
+
 LABEL_PROMPT = """To zdjęcie etykiety kosmetyku. Przepisz DOKŁADNIE listę składników (INCI) w kolejności z etykiety,
 oddzielając przecinkami, oraz nazwę produktu, jeśli jest widoczna. Nie dodawaj składników, których nie widać.
 Zwróć JSON: {"product_name": "...", "ingredients_text": "Aqua, Glycerin, ..."}.

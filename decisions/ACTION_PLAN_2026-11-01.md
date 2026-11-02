@@ -13,6 +13,12 @@
 >   z modułów-źródeł i wysyła swoje potrzeby do ForgeBody / Diety.
 > - D4. Język interfejsu: **polski**.
 > - D5. Najpierw plan (ten plik), potem realizacja wg kolejności faz.
+> - D6 (2026-11-02). Zmiany w hubie, ForgeBody i Diecie wolno robić — na gałęziach `claude/...`,
+>   bez merge do master (merge decyduje właściciel).
+> - D7. Bez HEIC (tylko JPEG/PNG/WEBP; przeglądarka konwertuje zdjęcia z iPhone'a).
+> - D8. Podgląd fryzury/zarostu na własnym zdjęciu (generowanie obrazu) — **tak, jako opcja**.
+> - D9. Kolorystyka ubrań — **tak, jako `[HIPOTEZA]`**.
+> - D10. „Do projektu zostanie dodane AI” = **asystent AI wewnątrz LookCoach** (Faza 8).
 >
 > Zasady, które obowiązują w każdym punkcie: **LC-9** (zero liczbowych ocen
 > atrakcyjności), **LC-1** (rct/meta muszą mieć PMID/DOI, reszta oznaczona
@@ -119,23 +125,30 @@
 
 ## FAZA 2 — Bezpieczeństwo i prywatność zdjęć (D2: jeden użytkownik, ale dane wrażliwe)
 
-- [ ] **2.1 Walidacja uploadu**: dozwolone tylko JPEG/PNG/WEBP/HEIC (sprawdzane
+- [x] **2.1 Walidacja uploadu**: dozwolone tylko JPEG/PNG/WEBP/HEIC (sprawdzane
   przez Pillow, nie po nazwie), limit rozmiaru (np. 15 MB), nazwa pliku generowana
   przez serwer z rozszerzeniem wg faktycznego formatu, usunięcie EXIF (GPS).
   Pliki: `routers/photos.py`.
   Kryterium: testy — `.html` odrzucony, 20 MB odrzucony, EXIF GPS usunięty.
-- [ ] **2.2 Nasłuch tylko lokalny / w sieci Dockera** (`--host 127.0.0.1` w dev,
-  dokumentacja w `docs/DEPLOYMENT.md`).
-- [ ] **2.3 Wspólna weryfikacja `X-Module-Key`** (`hmac.compare_digest`) jako
+  [WYKONANE 2026-11-02: `services/photo_storage.py`; HEIC pominięty (D7); orientacja z EXIF
+  zachowana przed usunięciem metadanych]
+- [x] **2.2 Nasłuch tylko lokalny / w sieci Dockera** (`--host 127.0.0.1` w dev,
+  dokumentacja w `docs/DEPLOYMENT.md`). [WYKONANE: Docker `127.0.0.1:8010`, Ollama też;
+  frontend w LAN świadomie (telefon) — opisane]
+- [x] **2.3 Wspólna weryfikacja `X-Module-Key`** (`hmac.compare_digest`) jako
   dependency; podpiąć też pod `POST /api/v1/directives` (dziś bez autoryzacji).
   **Uwaga:** hub w `broadcast_directive` nie wysyła nagłówka — wymaga zmiany
   po stronie huba (H-4). Do tego czasu: akceptuj bez klucza tylko z `127.0.0.1`.
-- [ ] **2.4 Kaskadowe usuwanie**: `DELETE /photos/{id}` usuwa też `analyses`
+  [WYKONANE: `backend/security.py`; zły klucz odrzucany także z localhost]
+- [x] **2.4 Kaskadowe usuwanie**: `DELETE /photos/{id}` usuwa też `analyses`
   i wpis z `.cache`. Migracja Alembic (`ondelete="CASCADE"`).
   Kryterium: test — po usunięciu brak osieroconych wierszy.
-- [ ] **2.5 Eksport i trwałe usunięcie wszystkich danych** (`GET /api/v1/data/export`
+  [WYKONANE: kaskada ORM (SQLite nie egzekwuje FK) + sprzątanie sierot przy starcie
+  (`init_db` nie uruchamia Alembica, więc migracja danych by się nie wykonała)]
+- [x] **2.5 Eksport i trwałe usunięcie wszystkich danych** (`GET /api/v1/data/export`
   → ZIP, `DELETE /api/v1/data` z potwierdzeniem). UI: Ustawienia → Prywatność.
-- [ ] **2.6 Obsługa błędu analizy bez wycieku wyjątku** (`analysis.py` zwraca
+  [WYKONANE: `services/data_privacy.py` (generycznie po tabelach z `user_id`), strona Prywatność]
+- [x] **2.6 Obsługa błędu analizy bez wycieku wyjątku** (`analysis.py` zwraca
   `str(e)` do klienta) → log + komunikat ogólny.
 
 ---
@@ -275,7 +288,7 @@ każda zmiana promptu = test na kształt JSON + test na brak liczb ocen.
 - [ ] **4.7 Okulary i oprawki** (jeśli nosi): propozycje kształtu oprawek do kształtu
   twarzy — porada stylistyczna.
 - [ ] **4.8 Dopasowanie ubioru do sylwetki** (fit, długości, kroje) — porada
-  stylistyczna; kolorystyka („typ urody”) tylko jako `[HIPOTEZA]` i opcjonalnie.
+  stylistyczna; kolorystyka („typ urody”) jako osobna sekcja oznaczona `[HIPOTEZA]` (D9).
 - [ ] **4.9 Kontrola jakości zdjęcia przed analizą** (lokalnie, Pillow): ostrość
   (wariancja Laplasjanu), ekspozycja (histogram), rozdzielczość, wykrycie twarzy
   dla „przód”. Zła jakość → komunikat „zrób ponownie: …”, analiza nie startuje.
@@ -285,6 +298,10 @@ każda zmiana promptu = test na kształt JSON + test na brak liczb ocen.
 - [ ] **4.11 Wybór modelu AI zgodny z dokumentacją**: domyślnie `AI_SERVICE=gemini`
   (dziś `openrouter`), lub zaktualizować CLAUDE.md — decyzja przy realizacji;
   klucz cache zależny od modelu i wersji promptu (dziś `prompt[:50]`).
+- [ ] **4.13 Podgląd fryzury/zarostu na własnym zdjęciu (D8)** — opcjonalny przycisk przy
+  propozycjach z 4.2/4.3; model generowania obrazu przez OpenRouter/Gemini; wynik tylko
+  w pamięci/na żądanie (nie zapisywany jako „po”), ostrzeżenie LC-9 („to wizualizacja, nie
+  cel do porównywania”), informacja o koszcie przed wygenerowaniem, limit dzienny.
 - [ ] **4.12 Profil celów**: formularz celów (co chcę poprawić: skóra/włosy/
   sylwetka/styl, termin, ile czasu dziennie). Cele trafiają do rekomendacji,
   do `goal_router` (3.2/3.4) i do huba (`priority`).
@@ -341,6 +358,26 @@ każda zmiana promptu = test na kształt JSON + test na brak liczb ocen.
 
 ---
 
+## FAZA 8 — Asystent AI w LookCoach (D10)
+
+- [ ] **8.1 Kontekst asystenta** (`services/assistant_context.py`): zwięzłe podsumowanie
+  dla modelu — ostatnia analiza (`analysis_store`), zmiany słowne (`state_labels`),
+  rutyny i regularność, aktywne eksperymenty, flagi zdrowia (LC-8), dyrektywy huba,
+  dane z innych modułów (3.8). Bez zdjęć — tylko opisy.
+- [ ] **8.2 Endpoint czatu** `POST /api/v1/assistant/chat` (historia w tabeli
+  `assistant_messages`), przez istniejący łańcuch OpenRouter → Gemini → Ollama.
+- [ ] **8.3 Zasady w prompcie systemowym**: zero ocen atrakcyjności (LC-9), tylko
+  rekomendacje z `EVIDENCE_DB` z poziomem dowodów lub jawne „hipoteza/porada
+  stylistyczna” (LC-1), przeciwwskazania (LC-8), brak planów treningowych/diet — kieruje
+  do ForgeBody/Diety (LC-4), sygnały dysmorfii → miękka odpowiedź + Mentalność (5.6).
+- [ ] **8.4 Narzędzia asystenta** (function calling): „dodaj do rutyny”, „zacznij
+  eksperyment”, „wyślij priorytet do ForgeBody/Diety” — zawsze z potwierdzeniem w UI.
+- [ ] **8.5 UI**: panel czatu (po polsku), przykładowe pytania, widoczne źródła odpowiedzi.
+- [ ] **8.6 Testy**: zgodność odpowiedzi z zasadami (fałszywy model w testach, zero
+  prawdziwych wywołań API — jak w `conftest.py`).
+
+---
+
 ## Kolejność realizacji (proponowana)
 
 1. Faza 0 → Faza 1 → Faza 2 (fundament, ~1–2 sesje).
@@ -348,11 +385,11 @@ każda zmiana promptu = test na kształt JSON + test na brak liczb ocen.
 3. Faza 4.0, 4.9, 4.12, potem 4.1–4.4.
 4. Faza 3.4–3.8 (Dieta, Mentalność) gdy H-2/H-5 gotowe.
 5. Faza 5 i 6, Faza 7 na bieżąco.
+6. Faza 8 (asystent AI) po Fazie 3 — korzysta z pełnego kontekstu danych.
 
 ## Otwarte pytania (do decyzji właściciela, nie AI)
 
-- [ ] Q1. Czy podgląd fryzury/zarostu na własnym zdjęciu (generowanie obrazu) jest
-  w planach? Koszt API + ryzyko LC-9 (porównywanie się z „ulepszoną” wersją).
-- [ ] Q2. Kolorystyka ubrań („typ urody”) — w ogóle, czy pominąć (słabe dowody)?
+- [x] Q1. Podgląd fryzury/zarostu na zdjęciu → tak, jako opcja (D8, pkt 4.13).
+- [x] Q2. Kolorystyka ubrań → tak, jako `[HIPOTEZA]` (D9, pkt 4.8).
 - [ ] Q3. Czy LookCoach może czytać pomiary z ForgeBody bezpośrednio (własne API ForgeBody),
   czy wyłącznie przez hub (H-5)? Rekomendacja: przez hub.

@@ -1,11 +1,11 @@
 import json
-import os
 
-from fastapi import APIRouter, Depends, Header, HTTPException
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from ..database import get_db
+from ..security import require_module_key
 from ..models.integration_event import IntegrationEvent as IntegrationEventModel
 
 router = APIRouter()
@@ -19,20 +19,13 @@ class IntegrationEvent(BaseModel):
     payload: dict = {}
 
 
-def _verify_module_key(x_module_key: str | None) -> None:
-    expected_key = os.getenv("MODULE_KEY")
-    if not expected_key or not x_module_key or x_module_key != expected_key:
-        raise HTTPException(status_code=401, detail="Invalid X-Module-Key")
-
-
 @router.post("/event")
 async def receive_event(
     event: IntegrationEvent,
-    x_module_key: str | None = Header(None),
     db: Session = Depends(get_db),
+    _auth: None = Depends(require_module_key),
 ):
     """Receive an event from another System-Główny module (auth via X-Module-Key)."""
-    _verify_module_key(x_module_key)
     record = IntegrationEventModel(
         source_module=event.source_module,
         event_type=event.event_type,

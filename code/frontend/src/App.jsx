@@ -15,6 +15,7 @@ import PostureCorrection from './pages/PostureCorrection'
 import NutritionLooks from './pages/NutritionLooks'
 import SleepOptimizer from './pages/SleepOptimizer'
 import StressManagement from './pages/StressManagement'
+import Privacy from './pages/Privacy'
 
 function App() {
   return (
@@ -35,6 +36,7 @@ function App() {
         <Route path="nutrition" element={<NutritionLooks />} />
         <Route path="sleep" element={<SleepOptimizer />} />
         <Route path="stress" element={<StressManagement />} />
+        <Route path="privacy" element={<Privacy />} />
       </Route>
     </Routes>
   )

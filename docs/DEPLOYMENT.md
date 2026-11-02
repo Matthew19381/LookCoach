@@ -2,15 +2,27 @@
 
 ## 🔥 Rozwiązania konfliktów multi-project
 
-### 1. Porty hosta — każdy projekt ma własne zestawienie
+### 1. Porty hosta — rejestr: `System-Glowny/CLAUDE.md` (jedyne źródło prawdy)
 
-| Projekt | API port | Frontend port | Ollama port |
-|---------|----------|---------------|-------------|
-| ForgeBody | 8000 | 5174 | 11435 |
-| LinguaAI | 8000 | 5173 | 11436 |
-| **LookCoach** | **8010** | **5175** | **11437** |
+| Moduł | API | Frontend (dev) |
+|---|---|---|
+| System-Główny (hub) | 8000 | 5173 |
+| ForgeBody | 8002 | 5182 |
+| Dieta | 8009 | 5189 |
+| **LookCoach** | **8010** | **5175** (Ollama w Dockerze: 11437) |
 
-**Uwaga:** Porty API (8000) można dzielić tylko jeśli nie uruchamia się równolegle. Dla pełnej izolacji każdy projekt ma unikalny port API.
+### 1a. Dostęp sieciowy (2026-11-02, plan 2.2)
+
+Zdjęcia ciała to dane wrażliwe, a API nie ma logowania (system jednoosobowy, decyzja D2):
+
+- **Backend słucha tylko na `127.0.0.1`**: `uvicorn` domyślnie (nie dodawaj `--host 0.0.0.0`
+  poza kontenerem), w Dockerze port publikowany jako `127.0.0.1:8010:8010`. Hub działa na tym
+  samym komputerze, więc łączy się bez zmian.
+- **Telefon w LAN** łączy się z frontendem (Vite `host: true`, port 5175), który proxuje `/api`
+  i `/uploads` do backendu. To świadomy wyjątek: każdy w Twojej sieci domowej, kto zna adres,
+  zobaczy aplikację. Nie wystawiaj portu 5175 do internetu (bez przekierowań na routerze).
+- Upload przyjmuje tylko JPEG/PNG/WEBP do 15 MB; plik jest przekodowywany, co usuwa EXIF
+  (w tym lokalizację GPS) — `services/photo_storage.py`.
 
 ### 2. Wolumeny Docker — izolacja per Docker Compose project
 

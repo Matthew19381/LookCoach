@@ -2,6 +2,21 @@
 
 ---
 
+## [Unreleased] — 2026-11-02 (Faza 2 — bezpieczeństwo i prywatność zdjęć)
+### Dodane
+- Strona **Prywatność**: pobranie wszystkich danych (ZIP: JSON + zdjęcia) i trwałe usunięcie
+  (fraza `USUN-WSZYSTKO`). API: `GET /api/v1/data/export`, `DELETE /api/v1/data`.
+### Naprawione
+- Upload przyjmował dowolny plik pod rozszerzeniem z nazwy (np. `.html` serwowany z `/uploads`).
+  Teraz tylko prawdziwe JPEG/PNG/WEBP do 15 MB, nazwa nadawana przez serwer, zdjęcie
+  przekodowane bez metadanych (EXIF/GPS), z zachowaną orientacją.
+- Usunięcie zdjęcia zostawiało analizę i cache AI — teraz znika wszystko; stare osierocone
+  analizy są sprzątane przy starcie.
+- `POST /directives` bez autoryzacji — teraz klucz `X-Module-Key` albo połączenie z localhost;
+  porównanie kluczy w stałym czasie.
+- Błąd analizy zwracał treść wyjątku (ścieżki) — teraz ogólny komunikat, szczegóły w logu.
+- Docker: backend i Ollama publikowane tylko na `127.0.0.1`.
+
 ## [Unreleased] — 2026-11-02 (plan działania 2026-11-01, Fazy 0–1)
 ### Usunięte (zmyślone dane i oceny — LC-1/LC-9)
 - Wykres „Look Score” w Postępie: linia `50 + i*5` rosła o 5 pkt na każde zdjęcie niezależnie od analizy.

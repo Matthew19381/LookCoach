@@ -1,4 +1,5 @@
 import json
+import logging
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from ..database import get_db
@@ -10,6 +11,7 @@ from ..services.analysis_store import has_any, load_latest_analysis
 from ..services.attractiveness_levers import AttractivenessLevers
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 VISION_SERVICE = GeminiVisionService()
 
@@ -64,7 +66,11 @@ async def analyze_photo(photo_id: int, db: Session = Depends(get_db)):
         db.commit()
 
         return {"message": "Analysis complete", "analysis_id": analysis.id}
-    except Exception as e:
+    except Exception:
+        # Details go to the log, not to the client (they can contain paths or
+        # provider responses - plan 2.6).
+        logger.exception("Analysis of photo %s failed", photo_id)
+        db.rollback()
         photo.analysis_status = "failed"
         db.commit()
-        raise HTTPException(500, f"Analysis failed: {str(e)}")
+        raise HTTPException(500, "Analiza nie powiodła się. Spróbuj ponownie za chwilę.")

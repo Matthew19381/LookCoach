@@ -27,6 +27,7 @@ from .routers import (
     consistency,
     directives,
     feedback_loop,
+    data,
 )
 
 # Database
@@ -101,6 +102,7 @@ app.include_router(stress.router, prefix="/api/v1/stress", tags=["stress"])
 app.include_router(consistency.router, prefix="/api/v1/consistency", tags=["consistency"])
 app.include_router(directives.router, prefix="/api/v1/directives", tags=["directives"])
 app.include_router(feedback_loop.router, prefix="/api/v1/feedback-loop", tags=["feedback-loop"])
+app.include_router(data.router, prefix="/api/v1/data", tags=["privacy"])
 
 
 if __name__ == "__main__":

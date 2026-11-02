@@ -97,7 +97,21 @@ describe('PhotoUpload', () => {
     await user.upload(fileInputs[0], file)
 
     await waitFor(() => {
-      expect(screen.getByText(/Upload failed/)).toBeInTheDocument()
+      expect(screen.getByText(/Nie udało się wysłać zdjęcia: Network error/)).toBeInTheDocument()
     })
+  })
+
+  it('shows the backend reason when the photo is rejected', async () => {
+    const err = new Error('Request failed with status code 400')
+    err.response = { data: { detail: 'Zdjęcie jest za duże (limit 15 MB).' } }
+    uploadPhoto.mockRejectedValue(err)
+    const user = userEvent.setup()
+    render(
+      <BrowserRouter>
+        <PhotoUpload />
+      </BrowserRouter>
+    )
+    await user.upload(screen.getAllByLabelText('Choose File')[0], new File(['x'], 'a.jpg', { type: 'image/jpeg' }))
+    expect(await screen.findByText(/limit 15 MB/)).toBeInTheDocument()
   })
 })

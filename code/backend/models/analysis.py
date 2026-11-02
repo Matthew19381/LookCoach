@@ -1,6 +1,6 @@
 import json
 from sqlalchemy import Column, Integer, ForeignKey, DateTime, Text
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import backref, relationship
 from sqlalchemy.sql import func
 from .base import Base
 
@@ -17,7 +17,9 @@ class Analysis(Base):
     attractiveness_lever = Column(Text)  # JSON: primary_lever, secondary_levers
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
-    photo = relationship("Photo", backref="analysis")
+    # Deleting a photo deletes its analyses (ORM cascade - SQLite does not
+    # enforce the FK). Orphans from before 2026-11-02: database.remove_orphaned_analyses.
+    photo = relationship("Photo", backref=backref("analysis", cascade="all, delete-orphan"))
 
     def get_face_data(self):
         return json.loads(self.face_data) if self.face_data else {}

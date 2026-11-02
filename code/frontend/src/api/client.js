@@ -217,3 +217,9 @@ export const getMinimumEffectiveProtocol = (protocol_type, difficulty = "full") 
   api.get(`/api/v1/consistency/minimum-effective/${protocol_type}?${q({ difficulty })}`);
 export const recalculateMetrics = (days = 28) => api.post(`/api/v1/consistency/recalculate?${q({ days })}`);
 export const getPatternAlert = () => api.get(`/api/v1/consistency/pattern-alert?${q({})}`);
+
+// Privacy (plan 2.5)
+export const dataExportUrl = () => `${api.defaults.baseURL}/api/v1/data/export?user_id=${getUserId()}`;
+
+export const deleteAllData = (confirm) =>
+  api.delete(`/api/v1/data?user_id=${getUserId()}&confirm=${encodeURIComponent(confirm)}`);

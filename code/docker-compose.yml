@@ -9,7 +9,9 @@ services:
       dockerfile: backend/Dockerfile
     container_name: lookcoach-backend
     ports:
-      - "8010:8010"
+      # 127.0.0.1 only: body photos must not be reachable from the LAN directly (plan 2.2).
+      # The hub runs on the same machine; the phone goes through the frontend proxy.
+      - "127.0.0.1:8010:8010"
     volumes:
       - ./backend:/app/backend
       - uploads:/app/backend/uploads
@@ -46,7 +48,7 @@ services:
     image: ollama/ollama:latest
     container_name: lookcoach-ollama
     ports:
-      - "11437:11434"
+      - "127.0.0.1:11437:11434"
     volumes:
       - ollama-data:/usr/share/ollama
     networks:

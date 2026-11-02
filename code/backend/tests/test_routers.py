@@ -104,6 +104,31 @@ client = TestClient(test_app)
 
 # ========== PHOTOS ROUTER ==========
 class TestPhotosRouter:
+    def test_upload_rejects_html_with_image_name(self):
+        response = client.post(
+            "/api/v1/photos/upload",
+            files={"file": ("selfie.jpg", b"<html><script>x</script></html>", "image/jpeg")},
+            data={"photo_type": "front", "user_id": "1"},
+        )
+        assert response.status_code == 400
+
+    def test_upload_stores_clean_image_under_server_name(self):
+        import io
+        from PIL import Image
+        from backend.paths import photo_path
+
+        buf = io.BytesIO()
+        Image.new("RGB", (16, 16)).save(buf, format="JPEG")
+        response = client.post(
+            "/api/v1/photos/upload",
+            files={"file": ("../../evil.html", buf.getvalue(), "text/html")},
+            data={"photo_type": "front", "user_id": "1"},
+        )
+        assert response.status_code == 200
+        url = response.json()["url"]
+        assert url.endswith(".jpg") and "evil" not in url
+        assert photo_path(url).exists()
+
     def test_upload_photo_no_file(self):
         response = client.post("/api/v1/photos/upload")
         assert response.status_code == 422
@@ -197,6 +222,9 @@ class TestAnalysisRouter:
 
         response = client.post(f"/api/v1/analysis/analyze/{photo_id}")
         assert response.status_code == 500
+        # Plan 2.6: no exception text / paths leak to the client
+        detail = response.json()["detail"]
+        assert "nonexistent" not in detail and "Errno" not in detail
 
 
 # ========== RECOMMENDATIONS ROUTER ==========

@@ -37,3 +37,18 @@ def init_db():
     from .models.base import Base
 
     Base.metadata.create_all(bind=engine)
+    remove_orphaned_analyses()
+
+
+def remove_orphaned_analyses() -> int:
+    """Delete analyses whose photo is gone (idempotent, runs at startup).
+
+    Until 2026-11-02 deleting a photo left its analysis behind; SQLite does not
+    enforce foreign keys by default, so the rows stayed forever."""
+    from sqlalchemy import text
+
+    with engine.begin() as conn:
+        result = conn.execute(text(
+            "DELETE FROM analyses WHERE photo_id NOT IN (SELECT id FROM photos)"
+        ))
+        return result.rowcount or 0
