@@ -12,7 +12,6 @@ export default function NutritionLooks() {
   const [message, setMessage] = useState(null);
 
   const loadData = useCallback(async () => {
-    setLoading(true);
     try {
       const [f, r, n] = await Promise.all([
         getNutritionFactors(),
@@ -30,7 +29,8 @@ export default function NutritionLooks() {
   }, []);
 
   useEffect(() => {
-    loadData();
+    // loader sets state only after await; .then keeps it out of the effect body (react-hooks lint)
+    Promise.resolve().then(loadData)
   }, [loadData]);
 
   const handleSend = async (force) => {

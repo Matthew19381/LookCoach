@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Dumbbell } from 'lucide-react'
 import { getEcosystemNeeds, sendEcosystemNeeds } from '../api/client'
-import NeedsCard, { MUSCLE_PL } from '../components/NeedsCard'
+import NeedsCard from '../components/NeedsCard'
+import { MUSCLE_PL } from '../components/muscles'
 
 // LC-4: LookCoach nie układa planów treningowych. Z analizy zdjęć wynika, które partie
 // mięśni warto podciągnąć — ten priorytet trafia do ForgeBody (przez hub), który

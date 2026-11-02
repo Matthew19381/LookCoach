@@ -1,6 +1,9 @@
+import logging
 import os
 from .local_llm import LocalLLMService
 from .openrouter import OpenRouterService
+
+logger = logging.getLogger(__name__)
 
 AI_SERVICE = os.getenv("AI_SERVICE", "openrouter").lower()  # gemini, openrouter, ollama
 
@@ -42,19 +45,19 @@ Provide a mini-lesson (2-3 paragraphs) teaching the user about this recommendati
             try:
                 return self._get_openrouter().generate_text(prompt)
             except Exception as e:
-                print(f"OpenRouter failed: {e}")
+                logger.warning(f"OpenRouter failed: {e}")
 
         elif AI_SERVICE == "gemini":
             try:
                 return self._get_llm().generate_text(prompt, use_openrouter=True)
             except Exception as e:
-                print(f"Gemini/LocalLLM failed: {e}")
+                logger.warning(f"Gemini/LocalLLM failed: {e}")
 
         # Fallback chain: selected -> OpenRouter -> Ollama
         try:
             return self._get_llm().generate_text(prompt, use_openrouter=True)
         except Exception as e:
-            print(f"Fallback chain failed: {e}")
+            logger.warning(f"Fallback chain failed: {e}")
 
         # Final hardcoded fallback
         name = recommendation.get("name", "this recommendation")

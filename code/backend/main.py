@@ -1,3 +1,4 @@
+import logging
 import asyncio
 import os
 from pathlib import Path
@@ -41,6 +42,8 @@ from .database import init_db
 from .paths import UPLOAD_DIR
 from .services import outbox
 
+logger = logging.getLogger(__name__)
+
 # Environment variables - load .env from project root
 PROJECT_ROOT = Path(__file__).parent.parent.parent
 load_dotenv(dotenv_path=PROJECT_ROOT / ".env")
@@ -60,21 +63,21 @@ async def _outbox_worker() -> None:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
-    print("Starting LookCoach API...")
+    logger.info("Starting LookCoach API...")
     init_db()
-    print("Database initialized.")
+    logger.info("Database initialized.")
     worker = asyncio.create_task(_outbox_worker()) if OUTBOX_INTERVAL_S > 0 else None
     yield
     # Shutdown
     if worker:
         worker.cancel()
-    print("Shutting down LookCoach API...")
+    logger.info("Shutting down LookCoach API...")
 
 
 app = FastAPI(
     title="LookCoach API",
     description="AI-powered Looks Optimizer",
-    version="0.2.0",
+    version="0.4.0",
     lifespan=lifespan,
 )
 

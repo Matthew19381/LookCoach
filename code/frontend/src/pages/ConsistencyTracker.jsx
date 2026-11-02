@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { 
   logAdherence, 
   getAdherenceHistory, 
@@ -6,10 +6,20 @@ import {
   getRecommendedDifficulty, 
   getAllProtocolsStatus,
   getConsistencySummary,
-  getMinimumEffectiveProtocol,
   recalculateMetrics,
   getPatternAlert
 } from '../api/client'
+
+// Must match ProtocolType in backend services/consistency_tracker.py. Until 2026-11-02 the page
+// offered skincare/exercise/supplements, which the API rejects (400) - logging skincare never worked.
+const PROTOCOL_PL = {
+  skincare_morning: 'Pielęgnacja rano',
+  skincare_evening: 'Pielęgnacja wieczorem',
+  training: 'Trening',
+  sleep: 'Sen',
+  nutrition: 'Żywienie',
+  stress: 'Stres',
+}
 
 export default function ConsistencyTracker() {
   const [protocols, setProtocols] = useState([])
@@ -25,23 +35,9 @@ export default function ConsistencyTracker() {
   const [difficultyLevel, setDifficultyLevel] = useState('full')
   const [notes, setNotes] = useState('')
 
-  // Available protocol types - should match backend
-  const protocolTypes = [
-    'skincare',
-    'nutrition', 
-    'exercise',
-    'sleep',
-    'supplements'
-  ]
-
-  useEffect(() => {
-    loadAllData()
-  }, [])
-
-  const loadAllData = async () => {
+  const loadAllData = useCallback(async () => {
     try {
-      setLoading(true)
-      
+
       // Load all protocols status
       const statusResponse = await getAllProtocolsStatus()
       // API returns {protocols: {protocol_type: {...}}} - turn it into the list the page renders
@@ -61,7 +57,12 @@ export default function ConsistencyTracker() {
       console.error('Failed to load data:', error)
       setLoading(false)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    // loader sets state only after await; .then keeps it out of the effect body (react-hooks lint)
+    Promise.resolve().then(loadAllData)
+  }, [loadAllData])
 
   const handleLogAdherence = async () => {
     if (!selectedProtocol) return
@@ -184,10 +185,8 @@ export default function ConsistencyTracker() {
               className="w-full border rounded-md px-3 py-2"
             >
               <option value="">Wybierz protokół...</option>
-              {protocolTypes.map((protocol) => (
-                <option key={protocol} value={protocol}>
-                  {protocol.charAt(0).toUpperCase() + protocol.slice(1)}
-                </option>
+              {Object.entries(PROTOCOL_PL).map(([protocol, label]) => (
+                <option key={protocol} value={protocol}>{label}</option>
               ))}
             </select>
           </div>

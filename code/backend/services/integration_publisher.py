@@ -1,7 +1,7 @@
 import os
 import httpx
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 VALID_EVENT_TYPES = (
@@ -82,7 +82,7 @@ class IntegrationPublisher:
             "module": "lookcoach",
             "event_type": event_type,
             "user_id": str(user_id),
-            "timestamp": timestamp or datetime.utcnow().isoformat() + "Z",
+            "timestamp": timestamp or datetime.now(timezone.utc).replace(tzinfo=None).isoformat() + "Z",
             "data": payload,
         }
         

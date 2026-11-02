@@ -398,12 +398,15 @@ każda zmiana promptu = test na kształt JSON + test na brak liczb ocen.
 
 - [ ] **7.1 Type hints w routerach i serwisach** + `mypy` w CI (stopniowo).
 - [ ] **7.2 `.pre-commit-config.yaml`** (ruff, ruff-format, trailing whitespace).
-- [ ] **7.3 `logging` zamiast `print`** w `main.py`, `gemini_vision.py`, `local_llm.py`.
-- [ ] **7.4 Wersja API spójna** (`main.py` mówi `0.2.0`, TASKS `v0.3.0`).
-- [ ] **7.5 `datetime.utcnow()` → `datetime.now(UTC)`** (ostrzeżenia w testach).
-- [ ] **7.9 ESLint w CI + naprawa 6 istniejących błędów** (setState synchronicznie w efektach:
+- [x] **7.3 `logging` zamiast `print`** w `main.py`, `gemini_vision.py`, `local_llm.py`.
+- [x] **7.4 Wersja API spójna** (`main.py` mówi `0.2.0`, TASKS `v0.3.0`).
+- [x] **7.5 `datetime.utcnow()` → `datetime.now(UTC)`** (ostrzeżenia w testach).
+- [x] **7.9 ESLint w CI + naprawa 6 istniejących błędów** (setState synchronicznie w efektach:
   AnalysisResults, Experiments, NutritionLooks, SleepOptimizer, StressManagement; użycie zmiennej
   przed deklaracją w ConsistencyTracker) i nieużywanych importów.
+  [WYKONANE 2026-11-02: `npm run lint` (`--max-warnings 0`) w CI. PRZY OKAZJI: strona Regularność
+  oferowała protokoły skincare/exercise/supplements, które API odrzuca (400) — zapis pielęgnacji z UI
+  nigdy nie działał; teraz lista = ProtocolType z backendu]
 - [ ] **7.10 Tłumaczenie treści z backendu** (FACTORS, EXERCISES, wskazówki snu/stresu, nazwy
   rekomendacji w EVIDENCE_DB) — dziś po angielsku w polskim interfejsie.
 - [ ] **7.8 Alembic rozjechany z modelami**: tabele `adherence_logs`, `protocol_adherence`,

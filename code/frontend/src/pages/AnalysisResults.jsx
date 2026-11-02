@@ -7,21 +7,22 @@ export default function AnalysisResults() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
+  // No synchronous setState here: it runs inside the mount effect (react-hooks lint).
   const fetchAnalysis = useCallback(async () => {
-    setLoading(true)
-    setError('')
     try {
       const data = await getAnalysis()
       setAnalysis(data)
+      setError('')
     } catch (e) {
-      setError(`Failed to load analysis: ${e.message}`)
+      setError(`Nie udało się wczytać analizy: ${e.message}`)
     } finally {
       setLoading(false)
     }
   }, [])
 
   useEffect(() => {
-    fetchAnalysis()
+    // loader sets state only after await; .then keeps it out of the effect body (react-hooks lint)
+    Promise.resolve().then(fetchAnalysis)
   }, [fetchAnalysis])
 
   if (loading) {
@@ -60,7 +61,7 @@ export default function AnalysisResults() {
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold text-gray-900">Wyniki analizy</h1>
         <button
-          onClick={fetchAnalysis}
+          onClick={() => { setLoading(true); fetchAnalysis() }}
           className="inline-flex items-center px-3 py-2 border border-gray-300 rounded-md text-sm hover:bg-gray-50"
         >
           <RefreshCw size={16} className="mr-2" />

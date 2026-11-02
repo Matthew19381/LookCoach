@@ -1,5 +1,8 @@
+import logging
 import os
 import httpx
+
+logger = logging.getLogger(__name__)
 
 OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3")
@@ -34,14 +37,14 @@ class LocalLLMService:
             response.raise_for_status()
             return response.json().get("response", "")
         except Exception as e:
-            print(f"Ollama call failed: {e}")
+            logger.warning(f"Ollama call failed: {e}")
 
         # Try OpenRouter as fallback
         if use_openrouter:
             try:
                 return self._get_openrouter().generate_text(prompt, model)
             except Exception as e:
-                print(f"OpenRouter fallback failed: {e}")
+                logger.warning(f"OpenRouter fallback failed: {e}")
 
         # Final hardcoded fallback
         return ""

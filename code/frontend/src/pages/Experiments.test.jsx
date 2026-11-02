@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, waitFor, within } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { BrowserRouter } from 'react-router-dom'
 
@@ -15,7 +15,7 @@ vi.mock('../api/client', () => ({
 }))
 
 import Experiments from './Experiments'
-import { getExperimentTemplates, startExperiment, getActiveExperiments } from '../api/client'
+import { getExperimentTemplates, getActiveExperiments } from '../api/client'
 
 const mockTemplates = [
   {

@@ -23,7 +23,6 @@ const mockGetAdherenceRate = api.getAdherenceRate
 const mockGetRecommendedDifficulty = api.getRecommendedDifficulty
 const mockGetAllProtocolsStatus = api.getAllProtocolsStatus
 const mockGetConsistencySummary = api.getConsistencySummary
-const mockGetMinimumEffectiveProtocol = api.getMinimumEffectiveProtocol
 const mockRecalculateMetrics = api.recalculateMetrics
 const mockGetPatternAlert = api.getPatternAlert
 
@@ -112,7 +111,7 @@ describe('ConsistencyTracker', () => {
       expect(screen.getByText('Podsumowanie')).toBeInTheDocument()
     })
     
-    fireEvent.change(screen.getByLabelText('Protokół'), { target: { value: 'skincare' } })
+    fireEvent.change(screen.getByLabelText('Protokół'), { target: { value: 'skincare_morning' } })
     
     fireEvent.change(screen.getByLabelText('Data'), { target: { value: '2026-09-18' } })
     
@@ -126,7 +125,7 @@ describe('ConsistencyTracker', () => {
     
     await waitFor(() => {
       expect(mockLogAdherence).toHaveBeenCalledWith({
-        protocol_type: 'skincare',
+        protocol_type: 'skincare_morning',
         completed: true,
         date: '2026-09-18',
         difficulty_level: 'full',
@@ -158,15 +157,15 @@ describe('ConsistencyTracker', () => {
       expect(screen.getByText('Podsumowanie')).toBeInTheDocument()
     })
     
-    fireEvent.change(screen.getByLabelText('Protokół'), { target: { value: 'skincare' } })
+    fireEvent.change(screen.getByLabelText('Protokół'), { target: { value: 'skincare_morning' } })
     
     // Click to load history
     fireEvent.click(screen.getByText('Pokaż historię i analizę'))
     
     await waitFor(() => {
-      expect(mockGetAdherenceHistory).toHaveBeenCalledWith('skincare')
-      expect(mockGetAdherenceRate).toHaveBeenCalledWith('skincare')
-      expect(mockGetRecommendedDifficulty).toHaveBeenCalledWith('skincare')
+      expect(mockGetAdherenceHistory).toHaveBeenCalledWith('skincare_morning')
+      expect(mockGetAdherenceRate).toHaveBeenCalledWith('skincare_morning')
+      expect(mockGetRecommendedDifficulty).toHaveBeenCalledWith('skincare_morning')
     })
   })
 
@@ -177,7 +176,7 @@ describe('ConsistencyTracker', () => {
       expect(screen.getByText('Podsumowanie')).toBeInTheDocument()
     })
     
-    fireEvent.change(screen.getByLabelText('Protokół'), { target: { value: 'skincare' } })
+    fireEvent.change(screen.getByLabelText('Protokół'), { target: { value: 'skincare_morning' } })
     
     // Click to recalculate
     fireEvent.click(screen.getByText('Przelicz'))
@@ -185,5 +184,12 @@ describe('ConsistencyTracker', () => {
     await waitFor(() => {
       expect(mockRecalculateMetrics).toHaveBeenCalled()
     })
+  })
+
+  it('offers exactly the protocol types the API accepts (skincare/exercise/supplements were rejected with 400)', async () => {
+    render(<ConsistencyTracker />)
+    await waitFor(() => expect(screen.getByText('Podsumowanie')).toBeInTheDocument())
+    const values = [...screen.getByLabelText('Protokół').querySelectorAll('option')].map((o) => o.value).filter(Boolean)
+    expect(values).toEqual(['skincare_morning', 'skincare_evening', 'training', 'sleep', 'nutrition', 'stress'])
   })
 })

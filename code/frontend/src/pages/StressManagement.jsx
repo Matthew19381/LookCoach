@@ -31,7 +31,8 @@ export default function StressManagement() {
   }, []);
 
   useEffect(() => {
-    loadData();
+    // loader sets state only after await; .then keeps it out of the effect body (react-hooks lint)
+    Promise.resolve().then(loadData)
   }, [loadData]);
 
   const handleAnalyze = async () => {

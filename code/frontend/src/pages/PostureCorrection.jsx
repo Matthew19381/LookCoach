@@ -4,7 +4,7 @@ import { getPostureIssues, getCorrectionPlan, getPostureAssessment } from '../ap
 
 export default function PostureCorrection() {
   const [issues, setIssues] = useState([])
-  const [selectedIssue, setSelectedIssue] = useState(null)
+  const [, setSelectedIssue] = useState(null)
   const [correction, setCorrection] = useState(null)
   const [assessment, setAssessment] = useState(null)
   const [loading, setLoading] = useState(true)

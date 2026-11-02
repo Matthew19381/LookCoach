@@ -1,6 +1,9 @@
+import logging
 import os
 import httpx
 import json
+
+logger = logging.getLogger(__name__)
 
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
@@ -13,7 +16,7 @@ FALLBACK_MODEL = "google/gemini-2.5-flash"
 def _post(url: str, headers: dict, payload: dict, timeout: int):
     response = httpx.post(url, headers=headers, json=payload, timeout=timeout)
     if response.status_code == 404 and payload.get("model") != FALLBACK_MODEL:
-        print(f"OpenRouter: model {payload.get('model')} unavailable, retrying with {FALLBACK_MODEL}")
+        logger.warning(f"OpenRouter: model {payload.get('model')} unavailable, retrying with {FALLBACK_MODEL}")
         response = httpx.post(url, headers=headers, json={**payload, "model": FALLBACK_MODEL}, timeout=timeout)
     return response
 
@@ -27,7 +30,7 @@ class OpenRouterService:
 
     def generate_text(self, prompt: str, model: str = None, temperature: float = 0.7) -> str:
         if not self.api_key:
-            print("OpenRouter: No API key provided")
+            logger.warning("OpenRouter: No API key provided")
             return ""
 
         try:
@@ -48,7 +51,7 @@ class OpenRouterService:
             data = response.json()
             return data["choices"][0]["message"]["content"]
         except Exception as e:
-            print(f"OpenRouter call failed: {e}")
+            logger.warning(f"OpenRouter call failed: {e}")
             return ""
 
     def chat(self, messages: list[dict], model: str = None, temperature: float = 0.4) -> str:
@@ -76,13 +79,13 @@ class OpenRouterService:
                 result = result.split("\n", 1)[-1].rsplit("```", 1)[0]
             return json.loads(result)
         except Exception as e:
-            print(f"OpenRouter JSON generation failed: {e}")
+            logger.warning(f"OpenRouter JSON generation failed: {e}")
             return {}
 
     def analyze_image(self, image_bytes: bytes, prompt: str, model: str = None) -> dict:
         """Analyze image using vision-capable models via OpenRouter."""
         if not self.api_key:
-            print("OpenRouter: No API key provided")
+            logger.warning("OpenRouter: No API key provided")
             return {}
 
         try:
@@ -130,5 +133,5 @@ class OpenRouterService:
 
             return json.loads(text)
         except Exception as e:
-            print(f"OpenRouter vision call failed: {e}")
+            logger.warning(f"OpenRouter vision call failed: {e}")
             return {}

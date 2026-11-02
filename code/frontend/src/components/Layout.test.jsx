@@ -2,7 +2,8 @@ import { describe, it, expect } from 'vitest'
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { BrowserRouter } from 'react-router-dom'
-import Layout, { NAV_GROUPS } from './Layout'
+import Layout from './Layout'
+import { NAV_GROUPS } from './navGroups'
 
 const renderLayout = () => render(<BrowserRouter><Layout /></BrowserRouter>)
 

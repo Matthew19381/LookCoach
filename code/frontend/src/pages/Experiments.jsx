@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { FlaskConical, Play, Check, BarChart3, Plus, Calendar } from 'lucide-react'
-import { getExperimentTemplates, startExperiment, getExperiment, logDaily, getResults, getActiveExperiments, finishExperiment } from '../api/client'
+import { getExperimentTemplates, startExperiment, logDaily, getResults, getActiveExperiments, finishExperiment } from '../api/client'
 
 export default function Experiments() {
   const [templates, setTemplates] = useState([])
@@ -16,7 +16,6 @@ export default function Experiments() {
   const [results, setResults] = useState(null)
 
   const loadData = useCallback(async () => {
-    setLoading(true)
     try {
       const [tplRes, activeRes] = await Promise.all([
         getExperimentTemplates(),
@@ -31,7 +30,8 @@ export default function Experiments() {
   }, [])
 
   useEffect(() => {
-    loadData()
+    // loader sets state only after await; .then keeps it out of the effect body (react-hooks lint)
+    Promise.resolve().then(loadData)
   }, [loadData])
 
   const handleStart = async () => {

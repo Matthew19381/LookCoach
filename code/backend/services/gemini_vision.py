@@ -1,3 +1,4 @@
+import logging
 import os
 import json
 import hashlib
@@ -8,6 +9,8 @@ from PIL import Image
 import io
 
 from ..paths import CACHE_DIR
+
+logger = logging.getLogger(__name__)
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
@@ -115,7 +118,7 @@ class GeminiVisionService:
             try:
                 self.client = genai.Client(api_key=GEMINI_API_KEY)
             except Exception as e:
-                print(f"Gemini init failed: {e}")
+                logger.warning(f"Gemini init failed: {e}")
                 self.client = None
 
     def _image_to_bytes(self, image_bytes: bytes) -> bytes:
@@ -148,7 +151,7 @@ class GeminiVisionService:
             _save_to_cache(cache_key, data)
             return data
         except Exception as e:
-            print(f"Gemini call failed: {e}")
+            logger.warning(f"Gemini call failed: {e}")
             return None
 
     def _analyze(self, image_bytes: bytes, prompt: str, fallback) -> dict:
@@ -214,7 +217,7 @@ class GeminiVisionService:
         try:
             return self._get_openrouter().analyze_image(image_bytes, prompt)
         except Exception as e:
-            print(f"OpenRouter vision call failed: {e}")
+            logger.warning(f"OpenRouter vision call failed: {e}")
             return None
 
     def _fallback_face(self, image_bytes: bytes) -> dict:
