@@ -231,14 +231,9 @@ def test_confidence_get_action_plan():
     assert "actions" in result[0]
 
 
-def test_confidence_calculate_attractiveness_impact():
-    result = ConfidencePresenceEngine.calculate_attractiveness_impact(70.0, 70.0)
-    assert "confidence_score" in result
-    assert "presence_score" in result
-    assert "attractiveness_boost_pct" in result
-    assert "perception_change" in result
-    assert result["confidence_score"] == 70.0
-    assert result["presence_score"] == 70.0
+def test_confidence_has_no_attractiveness_percentage():
+    """LC-1/LC-9: the unsourced "+20% attractiveness" calculation is gone."""
+    assert not hasattr(ConfidencePresenceEngine, "calculate_attractiveness_impact")
 
 
 # ========== OPENROUTER SERVICE TESTS ==========

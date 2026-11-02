@@ -52,15 +52,15 @@ class TestAestheticTrainingEngine:
         result = AestheticTrainingEngine.get_exercise_info("invalid_exercise")
         assert result == {} or result is None
 
-    def test_analyze_physique_v_taper_low(self):
-        analysis = {"body": {"v_taper_score": 30, "posture_score": 50}}
+    def test_analyze_physique_uses_missing_muscles_no_scores(self):
+        analysis = {"body": {
+            "missing_muscles": [{"muscle": "delts", "priority": "high"}, {"muscle": "calves", "priority": "low"}],
+            "asymmetries": [{"part": "shoulders", "severity": "moderate"}],
+        }}
         result = AestheticTrainingEngine.analyze_physique(analysis)
-        assert isinstance(result, dict)
-
-    def test_analyze_physique_v_taper_high(self):
-        analysis = {"body": {"v_taper_score": 80, "posture_score": 75}}
-        result = AestheticTrainingEngine.analyze_physique(analysis)
-        assert isinstance(result, dict)
+        assert result["focus"] == [{"muscle": "delts", "priority": "high"}]
+        assert any("shoulders" in r for r in result["recommendations"])
+        assert not any("score" in k for k in result)
 
     def test_analyze_physique_empty(self):
         result = AestheticTrainingEngine.analyze_physique({})

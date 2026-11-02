@@ -156,26 +156,3 @@ class ConfidencePresenceEngine:
                 ],
             },
         ]
-
-    @staticmethod
-    def calculate_attractiveness_impact(confidence_score: float, presence_score: float) -> dict:
-        """Calculate how confidence affects perceived attractiveness."""
-        # Confidence boosts perceived attractiveness by up to 20%
-        base_impact = 0.20
-        confidence_factor = confidence_score / 100
-        presence_factor = presence_score / 100
-
-        attractiveness_boost = (confidence_factor * 0.6 + presence_factor * 0.4) * base_impact * 100
-
-        return {
-            "confidence_score": confidence_score,
-            "presence_score": presence_score,
-            "attractiveness_boost_pct": round(attractiveness_boost, 1),
-            "perception_change": (
-                "Significant boost" if attractiveness_boost > 15
-                else "Moderate boost" if attractiveness_boost > 8
-                else "Mild boost" if attractiveness_boost > 3
-                else "Minimal impact"
-            ),
-            "tip": "Confidence is the #1 most attractive quality - work on it daily!",
-        }

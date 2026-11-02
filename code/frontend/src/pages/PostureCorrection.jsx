@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { StretchVertical, AlertTriangle, CheckCircle } from 'lucide-react'
-import { getPostureIssues, detectPostureIssues, getCorrectionPlan, fullPostureAssessment } from '../api/client'
+import { getPostureIssues, getCorrectionPlan, getPostureAssessment } from '../api/client'
 
 export default function PostureCorrection() {
   const [issues, setIssues] = useState([])
@@ -16,14 +16,11 @@ export default function PostureCorrection() {
     }).catch(() => setLoading(false))
   }, [])
 
-  const handleDetect = async () => {
-    // In real app, this would use actual body analysis
-    const mockAnalysis = { head_position: 'forward', shoulder_position: 'forward' }
+  const handleAssess = async () => {
     try {
-      const result = await detectPostureIssues(mockAnalysis)
-      setAssessment(result)
+      setAssessment(await getPostureAssessment())
     } catch (e) {
-      console.error('Detection failed:', e)
+      console.error('Assessment failed:', e)
     }
   }
 
@@ -34,16 +31,6 @@ export default function PostureCorrection() {
       setCorrection(result)
     } catch (e) {
       console.error('Correction plan failed:', e)
-    }
-  }
-
-  const handleFullAssessment = async () => {
-    const mockAnalysis = { head_position: 'forward', shoulder_position: 'forward' }
-    try {
-      const result = await fullPostureAssessment(mockAnalysis)
-      setAssessment(result)
-    } catch (e) {
-      console.error('Assessment failed:', e)
     }
   }
 
@@ -60,23 +47,23 @@ export default function PostureCorrection() {
 
       <div className="flex gap-2">
         <button
-          onClick={handleDetect}
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-        >
-          Detect Issues
-        </button>
-        <button
-          onClick={handleFullAssessment}
+          onClick={handleAssess}
           className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
         >
-          Full Assessment
+          Oceń postawę z ostatniego zdjęcia z boku
         </button>
       </div>
 
-      {assessment && (
+      {assessment && assessment.has_analysis === false && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-blue-900">
+          {assessment.message}
+        </div>
+      )}
+
+      {assessment?.has_analysis && (
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-          <h3 className="text-lg font-semibold mb-4">Assessment Results</h3>
-          <p className="mb-2">Issues detected: <span className="font-bold">{assessment.issues_detected}</span></p>
+          <h3 className="text-lg font-semibold mb-4">Wynik oceny</h3>
+          <p className="mb-2">Wykryte problemy: <span className="font-bold">{assessment.issues_detected}</span></p>
           {assessment.issues?.map((issue, idx) => (
             <div key={idx} className="bg-white border rounded p-4 mb-2">
               <p className="font-medium">{issue.name}</p>

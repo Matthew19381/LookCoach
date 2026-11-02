@@ -69,24 +69,28 @@
 
 ## FAZA 1 — Usunięcie atrap i naruszeń LC-1 / LC-9 (krytyczne)
 
-- [ ] **1.1 Usuń zmyślony wykres „Look Score”.**
+- [x] **1.1 Usuń zmyślony wykres „Look Score”.**
   `code/frontend/src/pages/ProgressTracker.jsx:46` — `50 + i * 5` rośnie o 5 pkt
   przy każdym zdjęciu niezależnie od analizy.
   Zastąp **jakościową osią czasu** (pkt 4.3). Do tego czasu — sekcja usunięta.
   Kryterium: w UI brak słowa „Score” w kontekście wyglądu; test vitest to pilnuje.
-- [ ] **1.2 Usuń `delta_score` z `/progress/compare`** (zawsze `0.0`).
+- [x] **1.2 Usuń `delta_score` z `/progress/compare`** (zawsze `0.0`).
   Pliki: `routers/progress.py`, `ProgressTracker.jsx`.
   Kryterium: odpowiedź bez pola liczbowego; test.
-- [ ] **1.3 Rekomendacje z prawdziwej analizy.** `routers/recommendations.py:16`
+- [x] **1.3 Rekomendacje z prawdziwej analizy.** `routers/recommendations.py:16`
   używa pustego `user_analysis`. Wydziel funkcję `load_latest_analysis(db, user_id)`
   (logika z `routers/analysis.py:get_latest_analysis`) i użyj jej w rekomendacjach,
   Confidence, Posture, Video Learning, Aesthetic Training.
   Pliki: nowy `services/analysis_store.py`, routery j.w.
   Kryterium: test — analiza z `focus_areas=[skincare high]` zmienia kolejność rekomendacji.
-- [ ] **1.4 Confidence bez atrapy.** `routers/confidence.py:12` `dummy_analysis` →
+  [WYKONANE 2026-11-02: `services/analysis_store.py`; ponadto: dźwignia (lever) wnosi
+  skórę/włosy do rekomendacji, ROI sortuje w obrębie priorytetu, EvidenceEngine nie mutuje
+  już globalnego `EVIDENCE_DB`; strona Postawy i Wideo też miały atrapy — usunięte,
+  nowy `GET /posture/assessment`; analiza sylwetki bez `v_taper_score`]
+- [x] **1.4 Confidence bez atrapy.** `routers/confidence.py:12` `dummy_analysis` →
   dane z 1.3; przy braku analizy komunikat „najpierw zrób zdjęcia”.
   Kryterium: test na brak analizy i na realną analizę.
-- [ ] **1.5 Usuń `/confidence/attractiveness-impact`.** Liczba „do 20%” bez źródła
+- [x] **1.5 Usuń `/confidence/attractiveness-impact`.** Liczba „do 20%” bez źródła
   (LC-1) i procent atrakcyjności (LC-9).
   Pliki: `services/confidence_presence.py:161`, router, `api/client.js`,
   `ConfidencePresence.jsx`, testy.

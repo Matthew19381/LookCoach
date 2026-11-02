@@ -3,25 +3,6 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { BrowserRouter } from 'react-router-dom'
 
-// Mock react-chartjs-2 to avoid canvas issues in jsdom
-vi.mock('react-chartjs-2', () => ({
-  Line: (props) => <div data-testid="chart-line" />,
-}))
-
-// Mock chart.js - ChartJS.register is called on module load, we just need to not error
-vi.mock('chart.js', () => ({
-  Chart: {
-    register: vi.fn(),
-  },
-  LineElement: {},
-  PointElement: {},
-  LinearScale: {},
-  CategoryScale: {},
-  Legend: {},
-  Tooltip: {},
-}))
-
-// Mock the API client
 vi.mock('../api/client', () => ({
   getTimeline: vi.fn(),
   comparePhotos: vi.fn(),
@@ -31,28 +12,35 @@ import ProgressTracker from './ProgressTracker'
 import { getTimeline, comparePhotos } from '../api/client'
 
 const mockPhotos = [
-  {
-    id: 1,
-    photo_type: 'front',
-    url: '/uploads/photo1.jpg',
-    uploaded_at: '2026-05-01T10:00:00Z',
-    status: 'done',
-  },
-  {
-    id: 2,
-    photo_type: 'side',
-    url: '/uploads/photo2.jpg',
-    uploaded_at: '2026-05-03T10:00:00Z',
-    status: 'done',
-  },
-  {
-    id: 3,
-    photo_type: 'back',
-    url: '/uploads/photo3.jpg',
-    uploaded_at: '2026-05-05T10:00:00Z',
-    status: 'done',
-  },
+  { id: 1, photo_type: 'front', url: '/uploads/photo1.jpg', uploaded_at: '2026-05-01T10:00:00Z', status: 'done' },
+  { id: 2, photo_type: 'side', url: '/uploads/photo2.jpg', uploaded_at: '2026-05-03T10:00:00Z', status: 'done' },
+  { id: 3, photo_type: 'back', url: '/uploads/photo3.jpg', uploaded_at: '2026-05-05T10:00:00Z', status: 'done' },
 ]
+
+const compareResponse = {
+  before: { id: 1, url: '/uploads/photo1.jpg', photo_type: 'front', uploaded_at: '2026-05-01T10:00:00Z' },
+  after: { id: 2, url: '/uploads/photo2.jpg', photo_type: 'front', uploaded_at: '2026-05-03T10:00:00Z' },
+  same_type: true,
+  changes: [
+    { area: 'Obrzęk twarzy', before: 'średni', after: 'niski', changed: true },
+    { area: 'Stan skóry twarzy', before: 'dobry', after: 'dobry', changed: false },
+  ],
+}
+
+const renderPage = () =>
+  render(
+    <BrowserRouter>
+      <ProgressTracker />
+    </BrowserRouter>
+  )
+
+const pickAndCompare = async () => {
+  const user = userEvent.setup()
+  await waitFor(() => expect(screen.getByText('Porównaj zdjęcia')).toBeInTheDocument())
+  await user.selectOptions(screen.getByLabelText('Zdjęcie przed'), '1')
+  await user.selectOptions(screen.getByLabelText('Zdjęcie po'), '2')
+  await user.click(screen.getByRole('button', { name: 'Porównaj' }))
+}
 
 describe('ProgressTracker', () => {
   beforeEach(() => {
@@ -61,138 +49,51 @@ describe('ProgressTracker', () => {
 
   it('renders loading state initially', () => {
     getTimeline.mockReturnValue(new Promise(() => {}))
-
-    render(
-      <BrowserRouter>
-        <ProgressTracker />
-      </BrowserRouter>
-    )
-
-    expect(screen.getByText('Loading progress...')).toBeInTheDocument()
+    renderPage()
+    expect(screen.getByText('Ładowanie postępu...')).toBeInTheDocument()
   })
 
   it('renders photo timeline after data loaded', async () => {
     getTimeline.mockResolvedValue(mockPhotos)
-
-    render(
-      <BrowserRouter>
-        <ProgressTracker />
-      </BrowserRouter>
-    )
-
-    await waitFor(() => {
-      expect(screen.getByText('Photo Timeline')).toBeInTheDocument()
-    })
-
-    // Check that photos are rendered
-    expect(screen.getByAltText('front')).toBeInTheDocument()
-    expect(screen.getByAltText('side')).toBeInTheDocument()
-    expect(screen.getByAltText('back')).toBeInTheDocument()
+    renderPage()
+    await waitFor(() => expect(screen.getByText('Oś czasu zdjęć')).toBeInTheDocument())
+    expect(screen.getByAltText('przód')).toBeInTheDocument()
+    expect(screen.getByAltText('bok')).toBeInTheDocument()
+    expect(screen.getByAltText('tył')).toBeInTheDocument()
   })
 
-  it('renders compare section', async () => {
+  it('calls comparePhotos with selected ids', async () => {
     getTimeline.mockResolvedValue(mockPhotos)
-
-    render(
-      <BrowserRouter>
-        <ProgressTracker />
-      </BrowserRouter>
-    )
-
-    await waitFor(() => {
-      expect(screen.getByText('Compare Photos')).toBeInTheDocument()
-    })
-
-    expect(screen.getByText('Select before photo...')).toBeInTheDocument()
-    expect(screen.getByText('Select after photo...')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Compare' })).toBeInTheDocument()
-  })
-
-  it('calls comparePhotos when compare button clicked', async () => {
-    getTimeline.mockResolvedValue(mockPhotos)
-    comparePhotos.mockResolvedValue({
-      before: { url: '/uploads/photo1.jpg' },
-      after: { url: '/uploads/photo2.jpg' },
-      delta_score: 5,
-    })
-
-    const user = userEvent.setup()
-
-    render(
-      <BrowserRouter>
-        <ProgressTracker />
-      </BrowserRouter>
-    )
-
-    await waitFor(() => {
-      expect(screen.getByText('Compare Photos')).toBeInTheDocument()
-    })
-
-    // Select before and after photos
-    const selectBefore = screen.getAllByRole('combobox')[0]
-    const selectAfter = screen.getAllByRole('combobox')[1]
-
-    await user.selectOptions(selectBefore, '1')
-    await user.selectOptions(selectAfter, '2')
-
-    // Click compare
-    const compareButton = screen.getByRole('button', { name: 'Compare' })
-    await user.click(compareButton)
-
+    comparePhotos.mockResolvedValue(compareResponse)
+    renderPage()
+    await pickAndCompare()
     expect(comparePhotos).toHaveBeenCalledWith(1, 2)
   })
 
-  it('displays compare result after successful comparison', async () => {
+  it('shows qualitative changes, never a score (LC-9)', async () => {
     getTimeline.mockResolvedValue(mockPhotos)
-    comparePhotos.mockResolvedValue({
-      before: { url: '/uploads/photo1.jpg' },
-      after: { url: '/uploads/photo2.jpg' },
-      delta_score: 5,
-    })
+    comparePhotos.mockResolvedValue(compareResponse)
+    renderPage()
+    await pickAndCompare()
 
-    const user = userEvent.setup()
-
-    render(
-      <BrowserRouter>
-        <ProgressTracker />
-      </BrowserRouter>
-    )
-
-    await waitFor(() => {
-      expect(screen.getByText('Compare Photos')).toBeInTheDocument()
-    })
-
-    const selectBefore = screen.getAllByRole('combobox')[0]
-    const selectAfter = screen.getAllByRole('combobox')[1]
-
-    await user.selectOptions(selectBefore, '1')
-    await user.selectOptions(selectAfter, '2')
-
-    const compareButton = screen.getByRole('button', { name: 'Compare' })
-    await user.click(compareButton)
-
-    await waitFor(() => {
-      expect(screen.getByAltText('Before')).toBeInTheDocument()
-      expect(screen.getByAltText('After')).toBeInTheDocument()
-    })
-
-    expect(screen.getByText(/Score Change:/)).toBeInTheDocument()
+    await waitFor(() => expect(screen.getByAltText('Przed')).toBeInTheDocument())
+    expect(screen.getByText('Obrzęk twarzy')).toBeInTheDocument()
+    expect(screen.getByText('średni')).toBeInTheDocument()
+    expect(document.body.textContent).not.toMatch(/score/i)
   })
 
-  it('renders chart when photos loaded', async () => {
+  it('warns when comparing different photo types', async () => {
     getTimeline.mockResolvedValue(mockPhotos)
+    comparePhotos.mockResolvedValue({ ...compareResponse, same_type: false })
+    renderPage()
+    await pickAndCompare()
+    await waitFor(() => expect(screen.getByText(/różnych ujęć/)).toBeInTheDocument())
+  })
 
-    render(
-      <BrowserRouter>
-        <ProgressTracker />
-      </BrowserRouter>
-    )
-
-    await waitFor(() => {
-      expect(screen.getByText('Look Score Over Time')).toBeInTheDocument()
-    })
-
-    // Chart component should be rendered (mocked as div with data-testid)
-    expect(screen.getByTestId('chart-line')).toBeInTheDocument()
+  it('has no "Look Score" chart', async () => {
+    getTimeline.mockResolvedValue(mockPhotos)
+    renderPage()
+    await waitFor(() => expect(screen.getByText('Oś czasu zdjęć')).toBeInTheDocument())
+    expect(document.body.textContent).not.toMatch(/score/i)
   })
 })

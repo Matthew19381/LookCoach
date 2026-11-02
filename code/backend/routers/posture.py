@@ -1,5 +1,9 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel
+from sqlalchemy.orm import Session
+
+from ..database import get_db
+from ..services.analysis_store import load_latest_analysis
 from ..services.posture_correction import PostureCorrectionEngine
 
 router = APIRouter()
@@ -35,3 +39,18 @@ async def full_assessment(body: BodyAnalysisRequest):
     """Full posture assessment with correction plan."""
     result = PostureCorrectionEngine.full_assessment(body.analysis)
     return result
+
+
+@router.get("/assessment")
+async def assessment_from_latest(user_id: int = 1, db: Session = Depends(get_db)):
+    """Posture assessment from the user's latest side photo analysis.
+
+    The page used to POST a hard-coded `mockAnalysis` (forward head + shoulders)
+    so everyone got the same two issues (fixed 2026-11-02)."""
+    body = load_latest_analysis(db, user_id)["body"]
+    if not body:
+        return {
+            "has_analysis": False,
+            "message": "Brak analizy zdjęcia z boku — zrób je, żeby ocenić postawę.",
+        }
+    return {"has_analysis": True, **PostureCorrectionEngine.full_assessment(body)}

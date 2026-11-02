@@ -58,6 +58,11 @@ class PostureCorrectionEngine:
         issues = []
         if not body_analysis:
             return issues
+        # Stored vision analyses keep these under "posture" (BODY_PROMPT);
+        # older callers pass them at the top level.
+        nested = body_analysis.get("posture")
+        if isinstance(nested, dict):
+            body_analysis = {**nested, **body_analysis}
 
         # Check for forward head posture
         if body_analysis.get("head_position") == "forward":
@@ -95,7 +100,7 @@ class PostureCorrectionEngine:
 
     @staticmethod
     def full_assessment(body_analysis: dict) -> dict:
-        """Full posture assessment với correction plan."""
+        """Full posture assessment with a correction plan."""
         issues = PostureCorrectionEngine.detect_issues(body_analysis)
         plan = []
         for issue in issues:

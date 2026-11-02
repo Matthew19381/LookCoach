@@ -25,6 +25,11 @@ class TestPostureCorrectionEngine:
         issues = PostureCorrectionEngine.detect_issues(body_analysis)
         assert isinstance(issues, list)
 
+    def test_detect_issues_nested_posture_from_vision(self):
+        body = {"posture": {"head_position": "forward", "shoulder_position": "neutral"}}
+        issues = PostureCorrectionEngine.detect_issues(body)
+        assert [i["issue"] for i in issues] == ["forward_head"]
+
     def test_detect_issues_empty(self):
         issues = PostureCorrectionEngine.detect_issues({})
         assert isinstance(issues, list)

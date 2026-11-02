@@ -6,6 +6,7 @@ from ..models.photo import Photo
 from ..models.analysis import Analysis
 from ..paths import photo_path
 from ..services.gemini_vision import GeminiVisionService
+from ..services.analysis_store import has_any, load_latest_analysis
 from ..services.attractiveness_levers import AttractivenessLevers
 
 router = APIRouter()
@@ -15,55 +16,13 @@ VISION_SERVICE = GeminiVisionService()
 
 @router.get("/latest")
 async def get_latest_analysis(user_id: int = 1, db: Session = Depends(get_db)):
-    photos = (
-        db.query(Photo)
-        .filter(Photo.user_id == user_id, Photo.analysis_status == "done")
-        .all()
-    )
-
-    if not photos:
-        return {
-            "face": None,
-            "body": None,
-            "skin": None,
-            "hair": None,
-            "lever": None,
-            "photos_analyzed": 0,
-        }
-
-    result = {}
-    photo_map = {}
-    for p in photos:
-        # Keep the most recent photo for each type
-        if p.photo_type not in photo_map or p.uploaded_at > photo_map[p.photo_type].uploaded_at:
-            photo_map[p.photo_type] = p
-
-    for ptype in ["front", "side", "back"]:
-        if ptype in photo_map:
-            analysis = (
-                db.query(Analysis)
-                .filter(Analysis.photo_id == photo_map[ptype].id)
-                .first()
-            )
-            if analysis:
-                if ptype == "front":
-                    result["face"] = analysis.get_face_data()
-                elif ptype == "side":
-                    result["body"] = analysis.get_body_data()
-                elif ptype == "back":
-                    result["skin"] = analysis.get_skin_data()
-                    result["hair"] = analysis.get_hair_data()
-
-    lever = AttractivenessLevers.detect_lever(
-        result.get("face") or {}, result.get("body") or {},
-        result.get("skin") or {}, result.get("hair") or {},
-    )
-
-    return {
-        **result,
-        "lever": lever,
-        "photos_analyzed": len(photos),
-    }
+    latest = load_latest_analysis(db, user_id)
+    lever = None
+    if has_any(latest):
+        lever = AttractivenessLevers.detect_lever(
+            latest["face"] or {}, latest["body"] or {}, latest["skin"] or {}, latest["hair"] or {},
+        )
+    return {**latest, "lever": lever}
 
 
 @router.post("/analyze/{photo_id}")

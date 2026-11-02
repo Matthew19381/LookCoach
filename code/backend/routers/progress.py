@@ -3,7 +3,9 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from ..database import get_db
 from ..models.photo import Photo
+from ..models.analysis import Analysis
 from ..paths import photo_url
+from ..services.state_labels import compare_labels, state_labels
 
 router = APIRouter()
 
@@ -34,15 +36,32 @@ async def get_timeline(user_id: int = 1, db: Session = Depends(get_db)):
 
 
 @router.post("/compare")
-async def compare_photos(body: CompareRequest, db: Session = Depends(get_db)):
-    before = db.query(Photo).filter(Photo.id == body.photo_before_id).first()
-    after = db.query(Photo).filter(Photo.id == body.photo_after_id).first()
+async def compare_photos(body: CompareRequest, user_id: int = 1, db: Session = Depends(get_db)):
+    """Two photos side by side + qualitative state changes from their analyses.
+
+    No score: until 2026-11-02 this returned `delta_score: 0.0` and the UI drew
+    a made-up "Look Score" line (LC-9)."""
+    before = db.query(Photo).filter(Photo.id == body.photo_before_id, Photo.user_id == user_id).first()
+    after = db.query(Photo).filter(Photo.id == body.photo_after_id, Photo.user_id == user_id).first()
 
     if not before or not after:
         raise HTTPException(404, "Photos not found")
 
+    def side(photo: Photo) -> dict:
+        return {
+            "id": photo.id,
+            "url": photo_url(photo.file_path),
+            "photo_type": photo.photo_type,
+            "uploaded_at": photo.uploaded_at.isoformat() if photo.uploaded_at else None,
+        }
+
+    def labels(photo: Photo) -> dict:
+        analysis = db.query(Analysis).filter(Analysis.photo_id == photo.id).first()
+        return state_labels(analysis)
+
     return {
-        "before": {"id": before.id, "url": photo_url(before.file_path)},
-        "after": {"id": after.id, "url": photo_url(after.file_path)},
-        "delta_score": 0.0,
+        "before": side(before),
+        "after": side(after),
+        "same_type": before.photo_type == after.photo_type,
+        "changes": compare_labels(labels(before), labels(after)),
     }

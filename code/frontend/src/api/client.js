@@ -88,8 +88,6 @@ export const getConfidenceAnalysis = () =>
 export const getActionPlan = () =>
   api.get(`/api/v1/confidence/action-plan`);
 
-export const getAttractivenessImpact = (confidenceScore = 70, presenceScore = 70) =>
-  api.get(`/api/v1/confidence/attractiveness-impact?confidence_score=${confidenceScore}&presence_score=${presenceScore}`);
 
 // Experiments
 export const getExperimentTemplates = () =>
@@ -141,6 +139,9 @@ export const detectPostureIssues = (analysis) =>
 
 export const getCorrectionPlan = (issueId) =>
   api.get(`/api/v1/posture/correction/${issueId}`);
+
+export const getPostureAssessment = () =>
+  api.get(`/api/v1/posture/assessment?user_id=${getUserId()}`);
 
 export const fullPostureAssessment = (analysis) =>
   api.post(`/api/v1/posture/assess`, { analysis });

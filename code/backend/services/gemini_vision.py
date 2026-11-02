@@ -32,6 +32,7 @@ BODY_PROMPT = """Analyze this body photo. Describe observable state only — do 
   "asymmetries": [{"part": "shoulders", "severity": "mild|moderate|significant"}],
   "missing_muscles": [{"muscle": "delts", "priority": "high|medium|low"}],
   "posture_notes": ["e.g. forward head posture visible"],
+  "posture": {"head_position": "neutral|forward|unclear", "shoulder_position": "neutral|forward|unclear", "pelvic_tilt": "neutral|anterior|posterior|unclear"},
   "focus_areas": [{"area": "training|posture|nutrition", "priority": "high|medium|low", "reason": "why"}]
 }
 Respond ONLY with valid JSON."""

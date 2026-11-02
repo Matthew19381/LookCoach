@@ -222,6 +222,98 @@ class TestProgressRouter:
         })
         assert response.status_code in [200, 404]
 
+    def test_compare_returns_qualitative_changes_no_score(self):
+        """LC-9: comparison is words from both analyses, never a score."""
+        from datetime import datetime
+        from backend.models.analysis import Analysis
+        from backend.models.photo import Photo
+
+        db = TestSessionLocal()
+        ids = []
+        for level, status in (("medium", "fair"), ("low", "good")):
+            photo = Photo(user_id=1, photo_type="front", file_path="uploads/x.jpg",
+                          uploaded_at=datetime.utcnow(), analysis_status="done")
+            db.add(photo)
+            db.commit()
+            a = Analysis(photo_id=photo.id)
+            a.set_face_data({"swelling": {"level": level}, "skin_quality": {"status": status}})
+            db.add(a)
+            db.commit()
+            ids.append(photo.id)
+        db.close()
+
+        response = client.post("/api/v1/progress/compare", json={
+            "photo_before_id": ids[0], "photo_after_id": ids[1]})
+        assert response.status_code == 200
+        data = response.json()
+        assert "delta_score" not in data
+        assert data["same_type"] is True
+        changes = {c["area"]: c for c in data["changes"]}
+        assert changes["Obrzęk twarzy"] == {
+            "area": "Obrzęk twarzy", "before": "średni", "after": "niski", "changed": True}
+        assert changes["Stan skóry twarzy"]["after"] == "dobry"
+        for c in data["changes"]:
+            assert not isinstance(c["before"], (int, float))
+
+
+class TestRecommendationsUseAnalysis:
+    def _photo_with(self, user_id, photo_type, setter, data):
+        from datetime import datetime
+        from backend.models.analysis import Analysis
+        from backend.models.photo import Photo
+
+        db = TestSessionLocal()
+        photo = Photo(user_id=user_id, photo_type=photo_type, file_path="uploads/r.jpg",
+                      uploaded_at=datetime.utcnow(), analysis_status="done")
+        db.add(photo)
+        db.commit()
+        a = Analysis(photo_id=photo.id)
+        getattr(a, setter)(data)
+        db.add(a)
+        db.commit()
+        db.close()
+
+    def test_no_analysis_gives_basics_only(self):
+        recs = client.get("/api/v1/recommendations/?user_id=9101&limit=50").json()
+        assert {r["category"] for r in recs} <= {"sleep", "nutrition", "stress"}
+
+    def test_high_skincare_focus_goes_first(self):
+        self._photo_with(9102, "front", "set_face_data", {
+            "focus_areas": [{"area": "skincare", "priority": "high", "reason": "dryness"}],
+        })
+        recs = client.get("/api/v1/recommendations/?user_id=9102&limit=50").json()
+        assert recs[0]["category"] == "skincare"
+
+    def test_hair_problem_brings_hair_recommendations(self):
+        """Back photo: hair data has no focus_areas - the lever carries it."""
+        self._photo_with(9103, "back", "set_hair_data", {
+            "hairline_status": "moderate_recession", "density_status": "thin",
+        })
+        recs = client.get("/api/v1/recommendations/?user_id=9103&limit=50").json()
+        assert "hair" in {r["category"] for r in recs}
+
+    def test_requests_do_not_leak_into_evidence_db(self):
+        from backend.services.evidence_engine import EVIDENCE_DB
+        client.get("/api/v1/recommendations/?user_id=9101")
+        assert all("roi_score" not in e and "priority_rank" not in e for e in EVIDENCE_DB)
+
+
+class TestPostureAndVideosFromAnalysis:
+    def test_posture_assessment_without_photo(self):
+        data = client.get("/api/v1/posture/assessment?user_id=9201").json()
+        assert data["has_analysis"] is False
+
+    def test_posture_assessment_from_side_photo(self):
+        TestRecommendationsUseAnalysis()._photo_with(9202, "side", "set_body_data", {
+            "posture": {"head_position": "forward", "shoulder_position": "forward", "pelvic_tilt": "neutral"},
+        })
+        data = client.get("/api/v1/posture/assessment?user_id=9202").json()
+        assert data["has_analysis"] is True
+        assert {i["issue"] for i in data["issues"]} == {"forward_head", "rounded_shoulders"}
+
+    def test_recommended_videos_empty_without_analysis(self):
+        assert client.get("/api/v1/video-learning/videos/recommended?user_id=9203").json() == []
+
 
 # ========== PROFILE ROUTER ==========
 class TestProfileRouter:
@@ -286,9 +378,34 @@ class TestConfidenceRouter:
         response = client.get("/api/v1/confidence/action-plan")
         assert response.status_code == 200
 
-    def test_attractiveness_impact(self):
+    def test_attractiveness_impact_removed(self):
         response = client.get("/api/v1/confidence/attractiveness-impact?confidence_score=70&presence_score=70")
-        assert response.status_code == 200
+        assert response.status_code == 404
+
+    def test_analyze_without_photos_says_so(self):
+        data = client.get("/api/v1/confidence/analyze?user_id=9001").json()
+        assert data["has_analysis"] is False
+        assert data["posture"] is None
+
+    def test_analyze_uses_latest_real_analysis(self):
+        from datetime import datetime
+        from backend.models.analysis import Analysis
+        from backend.models.photo import Photo
+
+        db = TestSessionLocal()
+        photo = Photo(user_id=9002, photo_type="front", file_path="uploads/c.jpg",
+                      uploaded_at=datetime.utcnow(), analysis_status="done")
+        db.add(photo)
+        db.commit()
+        a = Analysis(photo_id=photo.id)
+        a.set_face_data({"muscle_tension": {"level": "high"}})
+        db.add(a)
+        db.commit()
+        db.close()
+
+        data = client.get("/api/v1/confidence/analyze?user_id=9002").json()
+        assert data["has_analysis"] is True
+        assert any("tension" in i.lower() for i in data["facial"]["issues"])
 
 
 # ========== EXPERIMENTS ROUTER ==========

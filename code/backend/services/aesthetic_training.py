@@ -130,25 +130,22 @@ class AestheticTrainingEngine:
 
     @staticmethod
     def analyze_physique(analysis: Dict) -> Dict:
-        """Analyze physique and recommend training focus."""
-        result = {
-            "v_taper_score": 0,
-            "posture_score": 0,
-            "recommendations": [],
-        }
+        """Training focus from the qualitative body analysis (LC-9: no scores).
 
-        if not analysis:
-            return result
-
-        # Check body proportions
-        body = analysis.get("body", {})
-        result["v_taper_score"] = body.get("v_taper_score", 0)
-        result["posture_score"] = body.get("posture_score", 0)
-
-        # Recommendations based on analysis
-        if result["v_taper_score"] < 50:
-            result["recommendations"].append("Focus on lats and shoulder width for V-taper")
-        if result["posture_score"] < 50:
-            result["recommendations"].append("Prioritize posterior chain and face pulls")
-
+        Until 2026-11-02 this read `v_taper_score`/`posture_score`, numbers the
+        vision prompt never returns - so it always reported 0 and always told
+        everyone to work on the V-taper."""
+        result: Dict = {"focus": [], "recommendations": []}
+        body = (analysis or {}).get("body") or {}
+        for m in body.get("missing_muscles", []):
+            if isinstance(m, dict) and m.get("priority") in ("high", "medium") and m.get("muscle"):
+                result["focus"].append({"muscle": m["muscle"], "priority": m["priority"]})
+        for a in body.get("asymmetries", []):
+            if isinstance(a, dict) and a.get("severity") in ("moderate", "significant"):
+                result["recommendations"].append(
+                    f"Asymetria ({a.get('part', 'ciało')}): ćwiczenia jednostronne, skonsultuj w ForgeBody"
+                )
+        if result["focus"]:
+            names = ", ".join(f["muscle"] for f in result["focus"])
+            result["recommendations"].append(f"Priorytet akcesoriów w ForgeBody: {names}")
         return result

@@ -52,6 +52,12 @@ EVIDENCE_DB = [
 class EvidenceEngine:
     PRIORITY_RANK = {"high": 0, "medium": 1, "low": 2}
     DEFAULT_CATEGORIES = ["sleep", "nutrition", "stress"]
+    # AttractivenessLevers.primary_lever -> EVIDENCE_DB category
+    LEVER_CATEGORY = {
+        "skin_texture": "skincare",
+        "hair_thinning": "hair",
+        "body_proportion": "training",
+    }
 
     @staticmethod
     def get_recommendations(user_analysis: dict, user_profile: dict) -> list:
@@ -69,6 +75,18 @@ class EvidenceEngine:
                 if category:
                     priorities.append((rank, category))
 
+        # The detected lever (skin/hair problems produce no focus_areas in the
+        # prompts): its primary area is high priority, secondary ones medium.
+        lever = user_analysis.get("lever") or {}
+        known = {e["category"] for e in EVIDENCE_DB}
+        primary = lever.get("primary_lever")
+        primary = EvidenceEngine.LEVER_CATEGORY.get(primary, primary)
+        if primary in known:
+            priorities.append((0, primary))
+        for category in lever.get("secondary_levers", []):
+            if category in known:
+                priorities.append((1, category))
+
         # Always include basics at default priority
         for cat in EvidenceEngine.DEFAULT_CATEGORIES:
             priorities.append((1, cat))
@@ -76,11 +94,13 @@ class EvidenceEngine:
         priorities.sort(key=lambda x: x[0])
 
         # Get unique categories in priority order
+        # Copies: ROIEngine adds fields to each item, and mutating EVIDENCE_DB
+        # itself would leak one request's state into the next.
         seen_categories = set()
-        for _rank, category in priorities:
+        for rank, category in priorities:
             if category not in seen_categories:
                 seen_categories.add(category)
-                items = [e for e in EVIDENCE_DB if e["category"] == category]
+                items = [{**e, "priority_rank": rank} for e in EVIDENCE_DB if e["category"] == category]
                 recommendations.extend(items)
 
         return recommendations
