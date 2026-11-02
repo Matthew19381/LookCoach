@@ -508,7 +508,7 @@ class TestEventModeRouter:
         data = client.post("/api/v1/event-mode/plan?user_id=9302", json={"event_date": future}).json()
         actions = [a for day in data["timeline"] for a in day["actions"]] + data["emergency_day_of"]
         assert actions
-        assert not any("water" in a.lower() or "sodium" in a.lower() for a in actions)
+        assert not any(w in a.lower() for a in actions for w in ("wod", "sol", "sól", "nawodn", "water", "sodium"))
         assert any("nerek" in w for w in data["warnings"])
 
 
@@ -549,7 +549,7 @@ class TestConfidenceRouter:
 
         data = client.get("/api/v1/confidence/analyze?user_id=9002").json()
         assert data["has_analysis"] is True
-        assert any("tension" in i.lower() for i in data["facial"]["issues"])
+        assert any("napięcie" in i.lower() for i in data["facial"]["issues"])
 
 
 # ========== EXPERIMENTS ROUTER ==========

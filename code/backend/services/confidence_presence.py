@@ -25,21 +25,21 @@ class ConfidencePresenceEngine:
         for note in posture_notes:
             result["issues"].append(str(note))
         if asymmetries:
-            result["issues"].append(f"Body asymmetries detected ({len(asymmetries)} areas)")
+            result["issues"].append(f"Wykryto asymetrie ({len(asymmetries)} obszary)")
 
         has_issues = bool(result["issues"])
         result["status"] = "needs_work" if has_issues else "good"
 
         if has_issues:
             result["recommendations"].extend([
-                "Practice wall slides (3x10 reps daily)",
-                "Chin tucks for forward head posture",
-                "Face pulls for upper back strength",
+                "Wall slides 3×10 dziennie",
+                "Cofanie brody przy wysuniętej głowie",
+                "Face pull na górną część pleców",
             ])
         else:
             result["recommendations"].extend([
-                "Maintain good posture habits",
-                "Regular mobility work",
+                "Utrzymuj nawyki dobrej postawy",
+                "Regularna mobilność",
             ])
 
         return result
@@ -65,25 +65,25 @@ class ConfidencePresenceEngine:
         swelling_level = swelling.get("level") if isinstance(swelling, dict) else None
 
         if tension_level == "high":
-            result["issues"].append("High facial muscle tension - appears stressed")
+            result["issues"].append("Duże napięcie mięśni twarzy — wyglądasz na zestresowanego")
             result["recommendations"].extend([
-                "Practice progressive muscle relaxation",
-                "Facial massage to release tension",
-                "Jaw release exercises",
+                "Progresywna relaksacja mięśni",
+                "Masaż twarzy na rozluźnienie",
+                "Ćwiczenia rozluźniające żuchwę",
             ])
 
         if swelling_level in ("medium", "high"):
-            result["issues"].append("Facial puffiness affects presence")
-            result["recommendations"].append("Reduce sodium 2 days before important events")
+            result["issues"].append("Opuchnięta twarz wpływa na odbiór")
+            result["recommendations"].append("Mniej soli 2 dni przed ważnym wydarzeniem")
 
         result["status"] = "needs_work" if result["issues"] else "good"
 
         # Micro-habits
         result["micro_habits"] = [
-            "Maintain eye contact 60-70% of conversation",
-            "Smile with eyes (Duchenne smile) not just mouth",
-            "Keep chin parallel to ground",
-            "Take up space - avoid closed postures",
+            "Kontakt wzrokowy przez większość rozmowy",
+            "Uśmiech także oczami, nie tylko ustami",
+            "Broda równolegle do podłogi",
+            "Unikaj zamkniętej postawy",
         ]
 
         return result
@@ -94,65 +94,65 @@ class ConfidencePresenceEngine:
         return [
             {
                 "day": 1,
-                "focus": "Posture Awareness",
+                "focus": "Świadomość postawy",
                 "actions": [
-                    "Set hourly posture check reminder",
-                    "Practice power pose for 2 min before meetings",
-                    "Walk with book on head for 5 min",
+                    "Przypomnienie o postawie co godzinę",
+                    "Przed spotkaniem 2 min otwartej, swobodnej postawy",
+                    "5 min chodzenia z książką na głowie",
                 ],
             },
             {
                 "day": 2,
-                "focus": "Eye Contact",
+                "focus": "Kontakt wzrokowy",
                 "actions": [
-                    "Practice eye contact in mirror for 2 min",
-                    "Try 'triangle gaze' - look at both eyes and bridge",
-                    "Record yourself speaking, check eye movement",
+                    "2 min ćwiczenia kontaktu wzrokowego przed lustrem",
+                    "Patrz na przemian w oczy i nasadę nosa",
+                    "Nagraj, jak mówisz — sprawdź ruch oczu",
                 ],
             },
             {
                 "day": 3,
-                "focus": "Facial Relaxation",
+                "focus": "Rozluźnienie twarzy",
                 "actions": [
-                    "Jaw release: tongue on roof of mouth",
-                    "Forehead smoothing exercises",
-                    "Gua sha or facial massage before bed",
+                    "Rozluźnienie żuchwy: język przy podniebieniu",
+                    "Ćwiczenia rozluźniające czoło",
+                    "Gua sha lub masaż twarzy przed snem",
                 ],
             },
             {
                 "day": 4,
-                "focus": "Voice & Breathing",
+                "focus": "Głos i oddech",
                 "actions": [
-                    "Diaphragmatic breathing exercises",
-                    "Humming for vocal resonance",
-                    "Record voice memo, listen for confidence",
+                    "Ćwiczenia oddechu przeponowego",
+                    "Mruczenie dla rezonansu głosu",
+                    "Nagraj notatkę głosową i posłuchaj",
                 ],
             },
             {
                 "day": 5,
-                "focus": "Space & Presence",
+                "focus": "Przestrzeń i obecność",
                 "actions": [
-                    "Practice taking up space while sitting",
-                    "Walk with deliberate, slow strides",
-                    "Hand gestures - practice open palm gestures",
+                    "Siedząc, zajmuj swobodnie miejsce",
+                    "Chodź spokojnym, pewnym krokiem",
+                    "Gesty — ćwicz otwarte dłonie",
                 ],
             },
             {
                 "day": 6,
-                "focus": "Integration",
+                "focus": "Utrwalenie",
                 "actions": [
-                    "Full body check before leaving house",
-                    "Record video of yourself entering a room",
-                    "Note areas needing improvement",
+                    "Przed wyjściem spójrz na całą sylwetkę",
+                    "Nagraj, jak wchodzisz do pokoju",
+                    "Zapisz, co chcesz poprawić",
                 ],
             },
             {
                 "day": 7,
-                "focus": "Review & Plan",
+                "focus": "Podsumowanie i plan",
                 "actions": [
-                    "Review video from day 6",
-                    "Compare with day 1 if recorded",
-                    "Set 3 weekly confidence habits to maintain",
+                    "Obejrzyj nagranie z dnia 6",
+                    "Porównaj z dniem 1, jeśli nagrałeś",
+                    "Wybierz 3 nawyki na kolejne tygodnie",
                 ],
             },
         ]

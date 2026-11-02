@@ -31,7 +31,7 @@ describe('PostureCorrection', () => {
     ]);
     render(<PostureCorrection />);
     expect(await screen.findByText(/Forward Head/i)).toBeInTheDocument();
-    expect(screen.getByText(/Rounded Shoulders/i)).toBeInTheDocument();
+    expect(screen.getByText(/Zaokrąglone barki/i)).toBeInTheDocument();
   });
 
   it('assesses posture from the latest real analysis, not a mock', async () => {

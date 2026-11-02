@@ -20,7 +20,8 @@ HYPOTHESIS = {
 }
 
 # LC-8: water/sodium targets are a contraindication with kidney disease.
-_KIDNEY_UNSAFE = ("water", "sodium", "hydrated")
+# Polish stems (content translated 2026-11-02) + English for safety.
+_KIDNEY_UNSAFE = ("wod", "wody", "sod", "sól", "soli", "słon", "nawodn", "water", "sodium", "hydrat")
 
 
 def _apply_health(plan: dict, health: dict) -> dict:

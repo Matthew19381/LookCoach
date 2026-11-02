@@ -51,13 +51,13 @@ describe('EventMode', () => {
   it('shows day-of actions from emergency_day_of (backend field)', async () => {
     generateEventPlan.mockResolvedValue({
       event_type: 'general', days_until_event: 3, timeline: [],
-      emergency_day_of: ['Cold water splash 30 min before event'],
+      emergency_day_of: ['Zimna woda na twarz 30 min przed wydarzeniem'],
     })
     render(<EventMode />)
     const dateInput = document.querySelector('input[type="date"]')
     fireEvent.change(dateInput, { target: { value: '2030-01-01' } })
     fireEvent.submit(dateInput.closest('form'))
-    expect(await screen.findByText(/Cold water splash/)).toBeInTheDocument()
+    expect(await screen.findByText(/Zimna woda na twarz 30/)).toBeInTheDocument()
   })
 
   it('renders title and form', () => {
