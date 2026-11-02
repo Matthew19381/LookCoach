@@ -285,33 +285,38 @@ każda zmiana promptu = test na kształt JSON + test na brak liczb ocen.
   [WYKONANE 2026-11-02: brwi/zarost/kształt twarzy/okolica oczu jako pola `face_data` (bez migracji),
   włosy scalane z przodu i tyłu. PRZY OKAZJI: lokalny fallback zwracał zmyślone obserwacje
   („obrzęk: średni”) — teraz brak AI = 503 i nic nie jest zapisywane]
-- [ ] **4.1 Brwi.** Prompt: kształt (prosty/łukowaty/opadający), gęstość
+> 4.1–4.8 [WYKONANE 2026-11-02]: `services/style_advisor.py` (regułowo, bez AI), `GET /api/v1/style`,
+> strona Styl. Każda porada ma poziom (porada stylistyczna / hipoteza / evidence_id / blokada LC-8).
+> Minoksydyl na brodę oznaczony jako hipoteza — źródło niezweryfikowane (LC-1). 4.6 (zęby) pominięte:
+> zdjęcie z przodu ma neutralną twarz, uśmiech nie jest widoczny — wymaga osobnego ujęcia (decyzja).
+
+- [x] **4.1 Brwi.** Prompt: kształt (prosty/łukowaty/opadający), gęstość
   (rzadkie/średnie/gęste), symetria (symetryczne/lekka/wyraźna asymetria),
   zarośnięcie środka. Rekomendacje: pielęgnacja/regulacja „tylko nadmiar”,
   konsultacja ze stylistą; serum (bimatoprost — tylko na receptę, high-risk
   disclaimer). Poziom: porada stylistyczna + ewentualne źródła dla bimatoprostu.
-- [ ] **4.2 Fryzura.** Wejście: kształt twarzy (owalna/okrągła/kwadratowa/
+- [x] **4.2 Fryzura.** Wejście: kształt twarzy (owalna/okrągła/kwadratowa/
   podłużna/serce — jako opis, `[HIPOTEZA]`, brak twardych dowodów), typ włosa
   (prosty/falowany/kręcony), gęstość i linia włosów (z 4.0), **czas na stylizację**
   i **ograniczenia** (praca, sport) z profilu. Wynik: 3 propozycje fryzur z opisem
   „dlaczego” + „co powiedzieć fryzjerowi” + produkty do stylizacji.
   Opcjonalnie później: podgląd fryzury na zdjęciu (generacja obrazu) — osobna decyzja.
-- [ ] **4.3 Zarost.** Prompt: gęstość (brak/rzadki/średni/pełny), równomierność
+- [x] **4.3 Zarost.** Prompt: gęstość (brak/rzadki/średni/pełny), równomierność
   (łaty), linia policzka/szyi. Rekomendacje: styl brody do konturu żuchwy
   (porada stylistyczna), linia szyi, pielęgnacja (olejek, trymer);
   minoxidil na brodę → `[obs/małe RCT]` + Health Safety (choroba serca, ciąża partnerki
   nie dotyczy — tylko kontakt), disclaimer obowiązkowy.
-- [ ] **4.4 Budowa ciała.** Jakościowo ze zdjęć (proporcje ramiona/talia:
+- [x] **4.4 Budowa ciała.** Jakościowo ze zdjęć (proporcje ramiona/talia:
   „wąskie/zrównoważone/szerokie”, postawa) **+ pomiary z ForgeBody (3.8)**.
   Zero somatotypów i ocen; wynik zasila 3.2 (`muscle_groups` dla ForgeBody)
   i 3.4 (żywienie dla Diety). Kryterium: test — brak liczb poza pomiarami użytkownika.
-- [ ] **4.5 Okolica oczu** (cienie, opuchnięcie) → powiązanie ze snem (3.8)
+- [x] **4.5 Okolica oczu** (cienie, opuchnięcie) → powiązanie ze snem (3.8)
   i sodem (Dieta) — tylko korelacja jakościowa.
 - [ ] **4.6 Uśmiech/zęby** (przebarwienia: brak/lekkie/wyraźne) → higiena,
   wybielanie (dowody dla nadtlenku karbamidu — zweryfikować PMID), dentysta.
-- [ ] **4.7 Okulary i oprawki** (jeśli nosi): propozycje kształtu oprawek do kształtu
+- [x] **4.7 Okulary i oprawki** (jeśli nosi): propozycje kształtu oprawek do kształtu
   twarzy — porada stylistyczna.
-- [ ] **4.8 Dopasowanie ubioru do sylwetki** (fit, długości, kroje) — porada
+- [x] **4.8 Dopasowanie ubioru do sylwetki** (fit, długości, kroje) — porada
   stylistyczna; kolorystyka („typ urody”) jako osobna sekcja oznaczona `[HIPOTEZA]` (D9).
 - [x] **4.9 Kontrola jakości zdjęcia przed analizą** (lokalnie, Pillow): ostrość
   (wariancja Laplasjanu), ekspozycja (histogram), rozdzielczość, wykrycie twarzy

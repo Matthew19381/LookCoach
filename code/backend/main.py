@@ -31,6 +31,7 @@ from .routers import (
     feedback_loop,
     data,
     ecosystem,
+    style,
 )
 
 # Database
@@ -121,6 +122,7 @@ app.include_router(directives.router, prefix="/api/v1/directives", tags=["direct
 app.include_router(feedback_loop.router, prefix="/api/v1/feedback-loop", tags=["feedback-loop"])
 app.include_router(data.router, prefix="/api/v1/data", tags=["privacy"])
 app.include_router(ecosystem.router, prefix="/api/v1/ecosystem", tags=["ecosystem"])
+app.include_router(style.router, prefix="/api/v1/style", tags=["style"])
 
 
 if __name__ == "__main__":

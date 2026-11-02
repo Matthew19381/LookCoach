@@ -18,6 +18,7 @@ import StressManagement from './pages/StressManagement'
 import Privacy from './pages/Privacy'
 import Connections from './pages/Connections'
 import Profile from './pages/Profile'
+import Style from './pages/Style'
 
 function App() {
   return (
@@ -41,6 +42,7 @@ function App() {
         <Route path="privacy" element={<Privacy />} />
         <Route path="connections" element={<Connections />} />
         <Route path="profile" element={<Profile />} />
+        <Route path="style" element={<Style />} />
       </Route>
     </Routes>
   )

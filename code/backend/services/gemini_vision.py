@@ -26,6 +26,8 @@ FACE_PROMPT = """Analyze this face photo. Describe observable state only — do 
   "brows": {"shape": "straight|arched|soft_angled|unclear", "density": "sparse|medium|dense", "symmetry": "symmetric|slight_asymmetry|clear_asymmetry", "unibrow": false},
   "beard": {"present": false, "density": "none|sparse|medium|full", "evenness": "even|patchy|not_applicable", "neckline": "defined|undefined|not_applicable"},
   "eye_area": {"dark_circles": "none|mild|marked", "puffiness": "none|mild|marked"},
+  "glasses": false,
+  "skin_undertone": "warm|cool|neutral|unclear",
   "focus_areas": [{"area": "skincare|beauty_technique|posture|sleep|nutrition|stress", "priority": "high|medium|low", "reason": "why"}]
 }
 Describe brows and beard neutrally (shape, density, evenness) - no judgement of looks.
@@ -37,6 +39,7 @@ BODY_PROMPT = """Analyze this body photo. Describe observable state only — do 
   "asymmetries": [{"part": "shoulders", "severity": "mild|moderate|significant"}],
   "missing_muscles": [{"muscle": "side_delts|rear_delts|upper_chest|lower_chest|lats_width|biceps_peak|triceps_long|quads|glutes|calves|abs", "priority": "high|medium|low"}],
   "posture_notes": ["e.g. forward head posture visible"],
+  "proportions": {"shoulders_vs_hips": "narrower|balanced|broader|unclear", "torso_vs_legs": "short_torso|balanced|long_torso|unclear"},
   "posture": {"head_position": "neutral|forward|unclear", "shoulder_position": "neutral|forward|unclear", "pelvic_tilt": "neutral|anterior|posterior|unclear"},
   "focus_areas": [{"area": "training|posture|nutrition", "priority": "high|medium|low", "reason": "why"}]
 }

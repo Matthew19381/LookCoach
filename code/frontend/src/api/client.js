@@ -221,3 +221,7 @@ export const dataExportUrl = () => `${api.defaults.baseURL}/api/v1/data/export?u
 
 export const deleteAllData = (confirm) =>
   api.delete(`/api/v1/data?user_id=${getUserId()}&confirm=${encodeURIComponent(confirm)}`);
+
+// Style advice (plan 4.1-4.8)
+export const getStyleAdvice = () =>
+  api.get(`/api/v1/style?user_id=${getUserId()}`);
