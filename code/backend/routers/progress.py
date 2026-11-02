@@ -1,9 +1,9 @@
-from pathlib import Path
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from ..database import get_db
 from ..models.photo import Photo
+from ..paths import photo_url
 
 router = APIRouter()
 
@@ -25,7 +25,7 @@ async def get_timeline(user_id: int = 1, db: Session = Depends(get_db)):
         {
             "id": p.id,
             "photo_type": p.photo_type,
-            "url": f"/uploads/{Path(p.file_path).name}",
+            "url": photo_url(p.file_path),
             "uploaded_at": p.uploaded_at.isoformat(),
             "status": p.analysis_status,
         }
@@ -42,7 +42,7 @@ async def compare_photos(body: CompareRequest, db: Session = Depends(get_db)):
         raise HTTPException(404, "Photos not found")
 
     return {
-        "before": {"id": before.id, "url": f"/uploads/{Path(before.file_path).name}"},
-        "after": {"id": after.id, "url": f"/uploads/{Path(after.file_path).name}"},
+        "before": {"id": before.id, "url": photo_url(before.file_path)},
+        "after": {"id": after.id, "url": photo_url(after.file_path)},
         "delta_score": 0.0,
     }

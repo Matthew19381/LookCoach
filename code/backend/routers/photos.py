@@ -4,11 +4,9 @@ from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from sqlalchemy.orm import Session
 from ..database import get_db
 from ..models.photo import Photo
+from ..paths import UPLOAD_DIR, photo_path, photo_url
 
 router = APIRouter()
-
-UPLOAD_DIR = Path("uploads")
-UPLOAD_DIR.mkdir(exist_ok=True)
 
 
 @router.post("/upload")
@@ -52,7 +50,7 @@ async def list_photos(user_id: int = 1, db: Session = Depends(get_db)):
         {
             "id": p.id,
             "photo_type": p.photo_type,
-            "url": f"/uploads/{Path(p.file_path).name}",
+            "url": photo_url(p.file_path),
             "uploaded_at": p.uploaded_at.isoformat(),
             "status": p.analysis_status,
         }
@@ -66,7 +64,7 @@ async def delete_photo(photo_id: int, db: Session = Depends(get_db)):
     if not photo:
         raise HTTPException(404, "Photo not found")
     try:
-        Path(photo.file_path).unlink(missing_ok=True)
+        photo_path(photo.file_path).unlink(missing_ok=True)
     except Exception:
         pass
     db.delete(photo)

@@ -13,6 +13,12 @@ for _key in ("OPENROUTER_API_KEY", "GEMINI_API_KEY", "GOOGLE_API_KEY"):
 # Same for the hub: logging adherence publishes to System-Glowny (2026-10-04);
 # without a key the publisher refuses, so no test writes into the real hub.
 os.environ["MODULE_KEY"] = ""
+# Photos and the AI cache go to a throwaway dir, never into code/backend/uploads.
+import tempfile  # noqa: E402
+
+_DATA_DIR = Path(tempfile.mkdtemp(prefix="lookcoach-tests-"))
+os.environ["LOOKCOACH_UPLOAD_DIR"] = str(_DATA_DIR / "uploads")
+os.environ["LOOKCOACH_CACHE_DIR"] = str(_DATA_DIR / "cache")
 
 # Add code/ (parent of backend/) to path so that 'backend' is a package
 BACKEND_DIR = Path(__file__).parent.parent

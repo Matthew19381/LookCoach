@@ -53,3 +53,7 @@ code/looks_optimizer.db
 venv/
 # venv projektu (etap A, 2026-10-09)
 /.venv/
+
+# Dane wrażliwe (zdjęcia ciała, cache analiz AI) - niezależnie od katalogu startu (2026-11-02)
+uploads/
+.cache/

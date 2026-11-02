@@ -31,13 +31,12 @@ from .routers import (
 
 # Database
 from .database import init_db
+from .paths import UPLOAD_DIR
 
 # Environment variables - load .env from project root
 PROJECT_ROOT = Path(__file__).parent.parent.parent
 load_dotenv(dotenv_path=PROJECT_ROOT / ".env")
 
-UPLOAD_DIR = Path("uploads")
-UPLOAD_DIR.mkdir(exist_ok=True)
 
 
 @asynccontextmanager
@@ -68,7 +67,7 @@ app.add_middleware(
 )
 
 # Static files
-app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 
 
 @app.get("/health")

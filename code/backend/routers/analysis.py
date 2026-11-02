@@ -1,10 +1,10 @@
 import json
-from pathlib import Path
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from ..database import get_db
 from ..models.photo import Photo
 from ..models.analysis import Analysis
+from ..paths import photo_path
 from ..services.gemini_vision import GeminiVisionService
 from ..services.attractiveness_levers import AttractivenessLevers
 
@@ -76,7 +76,7 @@ async def analyze_photo(photo_id: int, db: Session = Depends(get_db)):
     db.commit()
 
     try:
-        image_bytes = Path(photo.file_path).read_bytes()
+        image_bytes = photo_path(photo.file_path).read_bytes()
 
         analysis = Analysis(photo_id=photo.id)
 

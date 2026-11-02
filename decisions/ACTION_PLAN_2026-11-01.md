@@ -40,20 +40,23 @@
 
 ## FAZA 0 — Higiena i powtarzalność (blokuje resztę)
 
-- [ ] **0.1 Zsynchronizuj `package-lock.json`.**
+- [x] **0.1 Zsynchronizuj `package-lock.json`.**
   Pliki: `code/frontend/package-lock.json`.
   Kryterium: `npm ci` w czystym katalogu kończy się sukcesem.
-- [ ] **0.2 Podnieś `pillow` do wersji z kołami dla 3.12 i 3.13** (np. `pillow>=11,<12`).
+- [x] **0.2 Podnieś `pillow` do wersji z kołami dla 3.12 i 3.13** (np. `pillow>=11,<12`).
+  [WYKONANE 2026-11-02: pillow 11.3.0 + sqlalchemy 2.0.36 — 2.0.29 też nie działał na 3.13]
   Pliki: `code/backend/requirements.txt`.
   Kryterium: `pip install -r requirements.txt` działa na 3.12 i 3.13; testy zielone.
-- [ ] **0.3 `.gitignore` dla danych wrażliwych uruchamianych z `code/`.**
+- [x] **0.3 `.gitignore` dla danych wrażliwych uruchamianych z `code/`.**
   Dopisz `code/uploads/`, `uploads/`, `.cache/`, `code/.cache/`, `code/backend/.cache/`.
   Kryterium: po uploadzie zdjęcia i analizie `git status` jest czysty.
-- [ ] **0.4 Ujednolić ścieżki `uploads/` i `.cache/`** — kotwiczyć do katalogu
+- [x] **0.4 Ujednolić ścieżki `uploads/` i `.cache/`** — kotwiczyć do katalogu
   backendu (jak `database.py`), nie do CWD.
   Pliki: `main.py`, `routers/photos.py`, `services/gemini_vision.py`.
   Kryterium: start z `code/` i z `code/backend/` zapisuje do tego samego katalogu.
-- [ ] **0.5 CI (GitHub Actions)**: pytest + vitest + `verify_evidence_db` + `ruff`
+  [WYKONANE 2026-11-02: `backend/paths.py`; przy okazji naprawia Dockera — zdjęcia lądowały w
+  `/app/uploads`, poza wolumenem `/app/backend/uploads`, i znikały z kontenerem]
+- [x] **0.5 CI (GitHub Actions)**: pytest + vitest + `verify_evidence_db` + `ruff`
   + `vite build` na każdy push/PR.
   Pliki: `.github/workflows/ci.yml`.
   Kryterium: zielony przebieg na gałęzi.

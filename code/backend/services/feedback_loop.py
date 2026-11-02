@@ -1,10 +1,9 @@
 from datetime import datetime, timedelta
-from typing import Optional, List, Dict, Any
+from typing import List, Dict, Any
 from enum import Enum
 import logging
 
 from .consistency_tracker import ConsistencyTracker, ProtocolType, DifficultyLevel
-from .roi_engine import ROIEngine
 
 
 class FeedbackTriggerType(str, Enum):
@@ -216,7 +215,6 @@ class SmartFeedbackLoop:
             trigger_count = len(analysis['triggers'])
             if trigger_count == 1:
                 trigger = analysis['triggers'][0]
-                details = trigger.get('details', {})
                 trigger_type_name = trigger['trigger_type'] if isinstance(trigger['trigger_type'], str) else trigger['trigger_type'].value
                 analysis['explanation'] = f"Detected {trigger_type_name} trigger. {self._get_trigger_explanation(trigger)}"
             else:
