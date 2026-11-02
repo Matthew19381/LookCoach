@@ -46,10 +46,11 @@ def test_hub_signal_once_per_week(db_session):
     result = assess(db_session, 1, now=NOW)
     assert signal_hub_if_needed(db_session, 1, result) is True
     assert signal_hub_if_needed(db_session, 1, result) is False
-    row = db_session.query(OutboxEvent).one()
-    data = json.loads(row.data)
-    assert row.event_type == "state_observation"
-    assert data["observation_type"] == "photo_checking_pattern" and data["level"] == "concern"
+    rows = {r.event_type: json.loads(r.data) for r in db_session.query(OutboxEvent).all()}
+    assert set(rows) == {"state_observation", "module_directive"}
+    assert rows["state_observation"]["observation_type"] == "photo_checking_pattern"
+    assert rows["module_directive"]["target_module"] == "mentalnosc"
+    assert rows["module_directive"]["directive"] == "body_image_signal"
 
 
 def test_ok_sends_nothing(db_session):

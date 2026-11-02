@@ -77,7 +77,7 @@ def assess(db: Session, user_id: int, now: datetime | None = None) -> dict:
 
 
 def signal_hub_if_needed(db: Session, user_id: int, result: dict) -> bool:
-    """Queue a state_observation for Mentalność at most once per SIGNAL_EVERY."""
+    """Tell the hub and Mentalność at most once per SIGNAL_EVERY."""
     if result["level"] != "concern":
         return False
     since = _now() - SIGNAL_EVERY
@@ -94,5 +94,13 @@ def signal_hub_if_needed(db: Session, user_id: int, result: dict) -> bool:
         "level": "concern",
         "signals": result["signals"],
         "target_hint": "mentalnosc",
+    }, user_id=user_id)
+    # H-6: delivered to Mentalność by the hub (module_directive, System-Glowny §1.5) -
+    # it shows a gentle card in its check-in until acknowledged.
+    outbox.enqueue(db, "module_directive", {
+        "target_module": "mentalnosc",
+        "directive": "body_image_signal",
+        "reason": "Bardzo częste sprawdzanie wyglądu albo cierpienie z powodu wyglądu (LookCoach)",
+        "payload": {"level": "concern", "signals": result["signals"]},
     }, user_id=user_id)
     return True

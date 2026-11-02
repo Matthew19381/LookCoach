@@ -239,9 +239,9 @@
 
 ### 3B. Zmiany po stronie innych repo (do zrobienia w ich sesjach — tu tylko śledzenie)
 
-> Stan 2026-11-02: H-1..H-5 zrobione na gałęziach `claude/lookcoach-integracja` w repo
-> System-Glowny, ForgeBody i Dieta (wypchnięte, **bez merge** — D6). Hub: event
-> `module_directive` (kontrakt §1.5). Do merge: najpierw hub, potem ForgeBody/Dieta, na końcu
+> Stan 2026-11-02: H-1..H-6 zrobione na gałęziach `claude/lookcoach-integracja` w repo
+> System-Glowny, ForgeBody, Dieta i Mentalnosc-i-Psychika (wypchnięte, **bez merge** — D6/D11). Hub: event
+> `module_directive` (kontrakt §1.5). Do merge: najpierw hub, potem ForgeBody/Dieta/Mentalność, na końcu
 > ta gałąź LookCoach (działa też bez nich — eventy czekają w kolejce lub hub odpowie 422,
 > co oznacza je jako `failed`).
 
@@ -270,8 +270,10 @@
 - [x] **H-5 (System-Glowny)**: odczyt eventów innych modułów kluczem modułu
   (dziś `GET /integrations/events` wymaga `get_read_user`) — albo nowy endpoint
   „dane dla modułu” z białą listą typów eventów.
-- [ ] **H-6 (Mentalność)**: przyjmowanie `state_observation` z LookCoach
+- [x] **H-6 (Mentalność)**: przyjmowanie `state_observation` z LookCoach
   (sygnał częstotliwości skanowania — pkt 5.6).
+  [WYKONANE 2026-11-02 (D11): dyrektywa `body_image_signal` (hub ją przekazuje), w Mentalności tabela
+  `module_signals` i łagodna karta w check-inie do potwierdzenia; gałęzie `claude/lookcoach-integracja`]
 
 ---
 

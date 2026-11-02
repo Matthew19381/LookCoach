@@ -53,7 +53,7 @@ class SuggestedItem(BaseModel):  # §1.1a
 
 
 COMPLETE_ON = re.compile(r"^[a-z_]+(:[a-z_]+=[A-Za-z0-9_.-]+)?$")
-ROUTABLE = {"aesthetic_priority", "nutrition_needs"}  # hub routers/directives.py
+ROUTABLE = {"aesthetic_priority", "nutrition_needs", "body_image_signal"}  # hub routers/directives.py
 
 
 def test_published_event_body_is_a_valid_hub_module_event():
