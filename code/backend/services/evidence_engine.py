@@ -78,8 +78,8 @@ class EvidenceEngine:
 
         # The detected lever (skin/hair problems produce no focus_areas in the
         # prompts): its primary area is high priority, secondary ones medium.
-        lever = user_analysis.get("lever") or {}
         known = {e["category"] for e in EVIDENCE_DB}
+        lever = user_analysis.get("lever") or {}
         primary = lever.get("primary_lever")
         primary = EvidenceEngine.LEVER_CATEGORY.get(primary, primary)
         if primary in known:
@@ -87,6 +87,11 @@ class EvidenceEngine:
         for category in lever.get("secondary_levers", []):
             if category in known:
                 priorities.append((1, category))
+
+        # Hub directive `priority` (e.g. "skincare") outranks everything (plan 3.7)
+        hub_priority = user_analysis.get("hub_priority")
+        if hub_priority in known:
+            priorities.append((-1, hub_priority))
 
         # Always include basics at default priority
         for cat in EvidenceEngine.DEFAULT_CATEGORIES:

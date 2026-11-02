@@ -201,10 +201,12 @@
 - [x] **3.6 `state_observation` po analizie** — jakościowe obserwacje
   (obrzęk, stan skóry, linia włosów) do huba, bez liczb, dla korelacji w hubie
   i dla Mentalności.
-- [ ] **3.7 Konsumpcja dyrektywy `priority`** — jeśli hub ustawi priorytet
+- [x] **3.7 Konsumpcja dyrektywy `priority`** — jeśli hub ustawi priorytet
   (np. `skincare`), rekomendacje i plan dnia stawiają ten obszar na górze.
   `quiet_hours` → brak przypomnień w tych godzinach.
   Kryterium: testy.
+  [WYKONANE 2026-11-02: `priority` → kategoria na samej górze rekomendacji. `quiet_hours` jest
+  zapisywane, a zastosowanie wejdzie z powiadomieniami (5.5) — dziś LookCoach nic nie wysyła]
 - [ ] **3.8 Klient danych z innych modułów** (`services/ecosystem_client.py`):
   odczyt z huba `GET /api/v1/integrations/events?module=…&event_type=…&since=…`
   (sprawdzić wymagania `get_read_user` — H-5):
@@ -214,9 +216,9 @@
   - Mentalność / Affect `affect_logged` (sen, stres) → zastępuje ręczne ankiety
     w Sen/Stres (pkt 1.7, INT-4 z TASKS).
   Fallback: gdy hub niedostępny — ostatnie dane z lokalnego cache, w UI „dane z …”.
-- [ ] **3.9 Napraw schemat `POST /integrations/event`** na kontrakt 1.2
+- [x] **3.9 Napraw schemat `POST /integrations/event`** na kontrakt 1.2
   (`module`, `data`), zachowując zgodność wstecz; odbiór eventów zasila 3.8.
-- [ ] **3.10 Plan dnia**: pozycja „Zdjęcia kontrolne” co 14–28 dni
+- [x] **3.10 Plan dnia**: pozycja „Zdjęcia kontrolne” co 14–28 dni
   (`complete_on: ["state_observation:observation_type=photo_session"]`),
   nie częściej (wspiera LC-9 — przeciw kompulsywnemu skanowaniu).
 - [ ] **3.11 LC-4: usuń własne plany treningowe i jadłospisy.**
@@ -229,20 +231,32 @@
 
 ### 3B. Zmiany po stronie innych repo (do zrobienia w ich sesjach — tu tylko śledzenie)
 
-- [ ] **H-1 (System-Glowny)**: dyrektywy z adresatem — `target_module` w payloadzie
+> Stan 2026-11-02: H-1..H-5 zrobione na gałęziach `claude/lookcoach-integracja` w repo
+> System-Glowny, ForgeBody i Dieta (wypchnięte, **bez merge** — D6). Hub: event
+> `module_directive` (kontrakt §1.5). Do merge: najpierw hub, potem ForgeBody/Dieta, na końcu
+> ta gałąź LookCoach (działa też bez nich — eventy czekają w kolejce lub hub odpowie 422,
+> co oznacza je jako `failed`).
+
+- [x] **H-1 (System-Glowny)**: dyrektywy z adresatem — `target_module` w payloadzie
   `broadcast_directive` (wysyłka tylko do wskazanego modułu) + reguła
   „event `aesthetic_priority_directive` od lookcoach → dyrektywa `aesthetic_priority`
   do forge-body”, z zachowaniem zagnieżdżonego `payload`.
-- [ ] **H-2 (System-Glowny + Dieta)**: nowa dyrektywa `nutrition_needs`
+- [x] **H-2 (System-Glowny + Dieta)**: nowa dyrektywa `nutrition_needs`
   (`sodium_limit_mg`, `low_glycemic`, `hydration_ml`, `reason`, `evidence_id`);
   Dieta: dopisać do `KNOWN` w `backend/routers/directives.py`, model stanu,
   użycie w planie posiłków (limit sodu w doborze produktów — pole `sodium_mg` już istnieje).
-- [ ] **H-3 (ForgeBody)**: poprawka mapy w `routers/directives.py`
-  (`"quads_special populations_"` to literówka) + odpowiedź z listą faktycznie
-  dodanych akcesoriów, żeby LookCoach mógł to pokazać.
-- [ ] **H-4 (System-Glowny)**: `broadcast_directive` wysyła `X-Module-Key`
+- [x] **H-3 (ForgeBody)**: poprawka mapy w `routers/directives.py`
+  (`"quads_special populations_"` to literówka) — oraz `rear_delts` → „rear delts”, czego nie
+  ma w żadnym splicie; teraz test pilnuje zgodności ze SPLITS.
+- [ ] **H-3b (ForgeBody)**: `aesthetic_priority` tylko DOKŁADA grupy do `focus_muscles`
+  (nigdy nie zdejmuje) i ignoruje `duration_weeks`. Potrzebne: zapamiętanie, które grupy dodał
+  LookCoach (nowa kolumna/tabela + migracja), zastępowanie zestawu i wygasanie po N tyg.
+- [ ] **H-2b (Dieta)**: liczenie sodu w dzienniku posiłków i uwzględnianie `nutrition_needs`
+  (limit sodu, niski ładunek glikemiczny) przy układaniu planu; dziś potrzeby są tylko zapisane
+  i widoczne w `GET /directives/{user_id}`.
+- [x] **H-4 (System-Glowny)**: `broadcast_directive` wysyła `X-Module-Key`
   (moduły mogą wtedy wymagać klucza na `/directives`).
-- [ ] **H-5 (System-Glowny)**: odczyt eventów innych modułów kluczem modułu
+- [x] **H-5 (System-Glowny)**: odczyt eventów innych modułów kluczem modułu
   (dziś `GET /integrations/events` wymaga `get_read_user`) — albo nowy endpoint
   „dane dla modułu” z białą listą typów eventów.
 - [ ] **H-6 (Mentalność)**: przyjmowanie `state_observation` z LookCoach

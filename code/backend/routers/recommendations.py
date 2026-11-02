@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from ..database import get_db
+from ..models.directive_state import DirectiveState
 from ..models.profile import UserProfile
 from ..services.analysis_store import has_any, load_latest_analysis
 from ..services.attractiveness_levers import AttractivenessLevers
@@ -22,6 +23,10 @@ async def get_recommendations(limit: int = 10, user_id: int = 1, db: Session = D
         user_analysis["lever"] = AttractivenessLevers.detect_lever(
             user_analysis["face"], user_analysis["body"], user_analysis["skin"], user_analysis["hair"],
         )
+
+    directives = db.query(DirectiveState).filter(DirectiveState.user_id == user_id).first()
+    if directives and directives.priority:
+        user_analysis["hub_priority"] = directives.priority
 
     profile_row = (
         db.query(UserProfile).filter(UserProfile.user_id == user_id).first()

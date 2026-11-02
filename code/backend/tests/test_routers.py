@@ -320,6 +320,17 @@ class TestRecommendationsUseAnalysis:
         recs = client.get("/api/v1/recommendations/?user_id=9103&limit=50").json()
         assert "hair" in {r["category"] for r in recs}
 
+    def test_hub_priority_directive_goes_first(self):
+        """Plan 3.7: hub `priority` = skincare puts skincare on top even without analysis."""
+        from backend.models.directive_state import DirectiveState
+
+        db = TestSessionLocal()
+        db.add(DirectiveState(user_id=9104, priority="skincare"))
+        db.commit()
+        db.close()
+        recs = client.get("/api/v1/recommendations/?user_id=9104&limit=50").json()
+        assert recs[0]["category"] == "skincare"
+
     def test_requests_do_not_leak_into_evidence_db(self):
         from backend.services.evidence_engine import EVIDENCE_DB
         client.get("/api/v1/recommendations/?user_id=9101")
@@ -665,6 +676,29 @@ class TestIntegrationRouter:
         match = [e for e in events if e["event_type"] == "workout_completed"]
         assert len(match) >= 1
         assert match[0]["payload"]["duration_min"] == 45
+
+    def test_receive_event_in_hub_contract_shape(self, monkeypatch):
+        """Plan 3.9: hub contract 1.2 uses module/data (numeric user_id tolerated)."""
+        monkeypatch.setenv("MODULE_KEY", "correct-secret")
+        response = client.post(
+            "/api/v1/integrations/event",
+            json={"module": "forge-body", "event_type": "measurement_logged", "user_id": 777,
+                  "timestamp": "2026-11-02T08:00:00Z", "data": {"waist_cm": 82}},
+            headers={"X-Module-Key": "correct-secret"},
+        )
+        assert response.status_code == 200, response.text
+        events = client.get("/api/v1/integrations/events?user_id=777").json()
+        assert events[0]["source_module"] == "forge-body"
+        assert events[0]["payload"] == {"waist_cm": 82}
+
+    def test_receive_event_without_sender_is_422(self, monkeypatch):
+        monkeypatch.setenv("MODULE_KEY", "correct-secret")
+        response = client.post(
+            "/api/v1/integrations/event",
+            json={"event_type": "x", "user_id": "1"},
+            headers={"X-Module-Key": "correct-secret"},
+        )
+        assert response.status_code == 422
 
     def test_summary_exposes_stored_events(self, monkeypatch):
         monkeypatch.setenv("MODULE_KEY", "correct-secret")

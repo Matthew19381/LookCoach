@@ -39,7 +39,7 @@ def _suggested_items(db: Session, user_id: int, day: date_type) -> list[dict]:
     done_today = {log.protocol_type.value for log in logs if log.date.date() == day}
     state = db.query(DirectiveState).filter(DirectiveState.user_id == user_id).first()
     survival = bool(state and state.survival_mode)
-    return [
+    items = [
         {
             "title": title + (" (wersja bazowa)" if survival else ""),
             "intention_cue": cue,
@@ -50,6 +50,35 @@ def _suggested_items(db: Session, user_id: int, day: date_type) -> list[dict]:
         for protocol, (title, cue) in ROUTINES.items()
         if protocol in tracked and protocol not in done_today
     ]
+    photo_item = _photo_session_item(db, user_id, day, survival)
+    if photo_item:
+        items.append(photo_item)
+    return items[:3]  # hub contract: max 3 per module
+
+
+# Plan 3.10: control photos every PHOTO_INTERVAL_DAYS - regular enough to see a
+# trend, rare enough not to feed compulsive checking (LC-9). Only for users who
+# already took photos; never in survival mode.
+PHOTO_INTERVAL_DAYS = 14
+
+
+def _photo_session_item(db: Session, user_id: int, day: date_type, survival: bool) -> dict | None:
+    if survival:
+        return None
+    last = (
+        db.query(func.max(Photo.uploaded_at))
+        .filter(Photo.user_id == user_id, Photo.analysis_status == "done")
+        .scalar()
+    )
+    if last is None or (day - last.date()).days < PHOTO_INTERVAL_DAYS:
+        return None
+    return {
+        "title": "Zdjęcia kontrolne (przód i bok)",
+        "intention_cue": "rano, to samo światło i miejsce co ostatnio",
+        "estimated_minutes": 5,
+        "priority": 3,
+        "complete_on": ["state_observation:observation_type=photo_session"],
+    }
 
 
 def _day(raw: str) -> date_type:

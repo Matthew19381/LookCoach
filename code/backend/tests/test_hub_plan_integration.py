@@ -93,3 +93,20 @@ def test_without_key_events_stay_queued():
     row = db.query(OutboxEvent).filter(OutboxEvent.user_id == 505).one()
     assert row.status == "pending" and "MODULE_KEY" in (row.last_error or "")
     db.close()
+
+
+def test_photo_session_suggested_after_14_days_only():
+    from backend.models.photo import Photo
+
+    db = Local()
+    db.add(Photo(user_id=601, photo_type="front", file_path="uploads/a.jpg", analysis_status="done",
+                 uploaded_at=datetime.now() - timedelta(days=15)))
+    db.add(Photo(user_id=602, photo_type="front", file_path="uploads/b.jpg", analysis_status="done",
+                 uploaded_at=datetime.now() - timedelta(days=3)))
+    db.commit()
+    db.close()
+    (item,) = _suggested(601)
+    assert item["title"].startswith("Zdjęcia kontrolne")
+    assert item["complete_on"] == ["state_observation:observation_type=photo_session"]
+    assert _suggested(602) == []
+    assert _suggested(603) == []  # never took photos -> nothing pushed
