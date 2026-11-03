@@ -15,12 +15,19 @@ import PostureCorrection from './pages/PostureCorrection'
 import NutritionLooks from './pages/NutritionLooks'
 import SleepOptimizer from './pages/SleepOptimizer'
 import StressManagement from './pages/StressManagement'
+import Privacy from './pages/Privacy'
+import Connections from './pages/Connections'
+import Profile from './pages/Profile'
+import Style from './pages/Style'
+import Today from './pages/Today'
+import Assistant from './pages/Assistant'
 
 function App() {
   return (
     <Routes>
       <Route path="/" element={<Layout />}>
-        <Route index element={<PhotoUpload />} />
+        <Route index element={<Today />} />
+        <Route path="photos" element={<PhotoUpload />} />
         <Route path="analysis" element={<AnalysisResults />} />
         <Route path="recommendations" element={<Recommendations />} />
         <Route path="progress" element={<ProgressTracker />} />
@@ -35,6 +42,11 @@ function App() {
         <Route path="nutrition" element={<NutritionLooks />} />
         <Route path="sleep" element={<SleepOptimizer />} />
         <Route path="stress" element={<StressManagement />} />
+        <Route path="privacy" element={<Privacy />} />
+        <Route path="connections" element={<Connections />} />
+        <Route path="profile" element={<Profile />} />
+        <Route path="style" element={<Style />} />
+        <Route path="assistant" element={<Assistant />} />
       </Route>
     </Routes>
   )

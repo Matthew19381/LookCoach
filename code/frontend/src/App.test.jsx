@@ -11,7 +11,7 @@ describe('App', () => {
       </BrowserRouter>
     )
     // Check that the Layout is rendered (it has "LookCoach" brand)
-    expect(screen.getByText('LookCoach')).toBeInTheDocument()
+    expect(screen.getAllByText('LookCoach').length).toBeGreaterThan(0)
   })
 
   it('has the correct routes', () => {
@@ -21,7 +21,7 @@ describe('App', () => {
       </BrowserRouter>
     )
     // Check navigation is present (from Layout)
-    expect(screen.getByText('Upload')).toBeInTheDocument()
-    expect(screen.getByText('Analysis')).toBeInTheDocument()
+    expect(screen.getByText('Zdjęcia')).toBeInTheDocument()
+    expect(screen.getByText('Wyniki analizy')).toBeInTheDocument()
   })
 })

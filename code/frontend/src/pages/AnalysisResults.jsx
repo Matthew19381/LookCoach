@@ -7,21 +7,22 @@ export default function AnalysisResults() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
+  // No synchronous setState here: it runs inside the mount effect (react-hooks lint).
   const fetchAnalysis = useCallback(async () => {
-    setLoading(true)
-    setError('')
     try {
       const data = await getAnalysis()
       setAnalysis(data)
+      setError('')
     } catch (e) {
-      setError(`Failed to load analysis: ${e.message}`)
+      setError(`Nie udało się wczytać analizy: ${e.message}`)
     } finally {
       setLoading(false)
     }
   }, [])
 
   useEffect(() => {
-    fetchAnalysis()
+    // loader sets state only after await; .then keeps it out of the effect body (react-hooks lint)
+    Promise.resolve().then(fetchAnalysis)
   }, [fetchAnalysis])
 
   if (loading) {
@@ -44,11 +45,11 @@ export default function AnalysisResults() {
   if (!analysis || analysis.photos_analyzed === 0) {
     return (
       <div className="space-y-6">
-        <h1 className="text-3xl font-bold text-gray-900">Analysis Results</h1>
+        <h1 className="text-3xl font-bold text-gray-900">Wyniki analizy</h1>
         <div className="bg-yellow-50 border border-yellow-200 rounded-md p-6 text-center">
-          <p className="text-yellow-800 mb-4">Please upload all 3 photos (front, side, back) to get your analysis.</p>
-          <a href="/" className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
-            Go to Upload
+          <p className="text-yellow-800 mb-4">Zrób zdjęcia (przód, bok, tył), żeby zobaczyć analizę.</p>
+          <a href="/photos" className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+            Przejdź do zdjęć
           </a>
         </div>
       </div>
@@ -58,19 +59,19 @@ export default function AnalysisResults() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-gray-900">Analysis Results</h1>
+        <h1 className="text-3xl font-bold text-gray-900">Wyniki analizy</h1>
         <button
-          onClick={fetchAnalysis}
+          onClick={() => { setLoading(true); fetchAnalysis() }}
           className="inline-flex items-center px-3 py-2 border border-gray-300 rounded-md text-sm hover:bg-gray-50"
         >
           <RefreshCw size={16} className="mr-2" />
-          Refresh
+          Odśwież
         </button>
       </div>
 
       {(analysis.face?.observations?.length || analysis.body?.observations?.length) ? (
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-          <h2 className="text-2xl font-bold text-blue-900">Observations</h2>
+          <h2 className="text-2xl font-bold text-blue-900">Obserwacje</h2>
           <ul className="mt-2 space-y-1 text-blue-800">
             {[...(analysis.face?.observations || []), ...(analysis.body?.observations || [])].map((obs, i) => (
               <li key={i}>• {obs}</li>
@@ -85,7 +86,7 @@ export default function AnalysisResults() {
           <p className="text-green-700 mt-1">{analysis.lever.reason}</p>
           {analysis.lever.secondary_levers && (
             <div className="mt-3">
-              <p className="text-sm font-medium text-green-800">Secondary levers:</p>
+              <p className="text-sm font-medium text-green-800">Obszary pomocnicze:</p>
               <div className="flex gap-2 mt-1 flex-wrap">
                 {analysis.lever.secondary_levers.map((l) => (
                   <span key={l} className="px-2 py-1 bg-green-100 text-green-800 rounded text-sm">{l}</span>
@@ -97,16 +98,16 @@ export default function AnalysisResults() {
       )}
 
       {analysis.face && (
-        <SectionCard title="Face Analysis" data={analysis.face} />
+        <SectionCard title="Twarz" data={analysis.face} />
       )}
       {analysis.body && (
-        <SectionCard title="Body Analysis" data={analysis.body} />
+        <SectionCard title="Sylwetka" data={analysis.body} />
       )}
       {analysis.skin && (
-        <SectionCard title="Skin Analysis" data={analysis.skin} />
+        <SectionCard title="Skóra" data={analysis.skin} />
       )}
       {analysis.hair && (
-        <SectionCard title="Hair Analysis" data={analysis.hair} />
+        <SectionCard title="Włosy" data={analysis.hair} />
       )}
     </div>
   )

@@ -1,10 +1,9 @@
 from datetime import datetime, timedelta
-from typing import Optional, List, Dict, Any
+from typing import List, Dict, Any
 from enum import Enum
 import logging
 
 from .consistency_tracker import ConsistencyTracker, ProtocolType, DifficultyLevel
-from .roi_engine import ROIEngine
 
 
 class FeedbackTriggerType(str, Enum):
@@ -18,7 +17,7 @@ class FeedbackTriggerType(str, Enum):
 class FeedbackActionType(str, Enum):
     """Types of actions the feedback loop can take."""
     REDUCE_PROTOCOLS = "reduce_protocols"  # Reduce number of active protocols
-    RECOMPOSE_PLAN = "recompose_plan"  # Recompose plan using ROI Engine
+    RECOMPOSE_PLAN = "recompose_plan"  # Recompose plan around best-kept protocols
     PAUSE_PROTOCOL = "pause_protocol"  # Temporarily pause specific protocol
     ADJUST_TIMELINE = "adjust_timeline"  # Adjust expected timeline for effects
     ESCALATE_SUPPORT = "escalate_support"  # Escalate to human support
@@ -40,7 +39,7 @@ class SmartFeedbackLoop:
     by dynamically adjusting the plan rather than pushing harder.
     
     Two main trigger types:
-    1. NO_EFFECTS: No measurable progress over N days → recompose plan with ROI Engine
+    1. NO_EFFECTS: No measurable progress over N days → recompose plan around best-kept protocols
     2. ANTAGONISM: Skip rate/negative feedback → reduce active protocols
     
     Based on behavioral psychology principles:
@@ -216,7 +215,6 @@ class SmartFeedbackLoop:
             trigger_count = len(analysis['triggers'])
             if trigger_count == 1:
                 trigger = analysis['triggers'][0]
-                details = trigger.get('details', {})
                 trigger_type_name = trigger['trigger_type'] if isinstance(trigger['trigger_type'], str) else trigger['trigger_type'].value
                 analysis['explanation'] = f"Detected {trigger_type_name} trigger. {self._get_trigger_explanation(trigger)}"
             else:
@@ -308,43 +306,45 @@ class SmartFeedbackLoop:
         }
     
     def _recompose_plan(self, context: Dict) -> Dict[str, Any]:
-        """Recompose plan using ROI Engine to focus on highest impact interventions."""
-        # This would integrate with the ROI Engine to create a new plan
-        # For now, return a placeholder implementation
+        """Recompose the plan around the 3 protocols the user actually keeps up.
+
+        Protocols are routines (skincare_morning, ...), not EVIDENCE_DB entries,
+        so ROIEngine does not apply; adherence is the honest signal here (LC-7:
+        a smaller plan that gets done beats a full one that does not).
+        Until 2026-11-02 this called itself "highest ROI" and a placeholder."""
         
         # Get current adherence rates
         protocols_status = self.consistency_tracker.get_all_protocols_status()
         
-        # Get user mode for ROI calculation
+        # User mode (reported in the reason)
         user_mode = context.get('user_mode', 'free')
         
-        # Sort by ROI potential (higher adherence = better ROI)
-        # In real implementation, this would use ROIEngine.rank_recommendations with mode
+        # Best-kept protocols first
         sorted_protocols = sorted(
             protocols_status.items(),
             key=lambda x: x[1]['adherence_rate'],
             reverse=True
         )
         
-        # Focus on top 3 highest ROI protocols
+        # Keep the top 3
         selected_protocols = []
         for protocol_name, status in sorted_protocols[:3]:
             selected_protocols.append({
                 'protocol': protocol_name,
                 'adherence_rate': status['adherence_rate'],
-                'difficulty': DifficultyLevel.FULL.value,  # Reset to full for high ROI
+                'difficulty': DifficultyLevel.FULL.value,
             })
         
         changes = [{
             'action': 'recompose_plan',
             'selected_protocols': selected_protocols,
             'removed_protocols': [p[0] for p in sorted_protocols[3:]],
-            'reason': f'Focus on highest ROI interventions based on current adherence (mode: {user_mode}).',
+            'reason': f'Focus on the protocols with the best adherence (mode: {user_mode}).',
         }]
         
         return {
             'changes': changes,
-            'message': f"Recomposed plan focusing on {len(selected_protocols)} highest ROI protocols.",
+            'message': f"Recomposed plan around the {len(selected_protocols)} best-kept protocols.",
         }
     
     def _pause_protocol(self, context: Dict) -> Dict[str, Any]:
@@ -407,7 +407,7 @@ class SmartFeedbackLoop:
             FeedbackTriggerType.NO_EFFECTS: (
                 f"No measurable progress for {details.get('days_without_improvement', 21)} days. "
                 f"Expected {details.get('expected_progress', 0.1):.2f} progress, got {details.get('actual_progress', 0):.2f}. "
-                f"Plan needs recomposition with ROI Engine."
+                f"Plan needs recomposition around the protocols you keep up."
             ),
             FeedbackTriggerType.HIGH_SKIP_RATE: (
                 f"High skip rate ({details.get('skip_rate', 0):.1%}) indicates cognitive overload. "
@@ -415,7 +415,7 @@ class SmartFeedbackLoop:
             ),
             FeedbackTriggerType.NEGATIVE_FEEDBACK: (
                 f"{details.get('negative_feedback_count', 0)} negative feedback events suggest plan misalignment. "
-                f"Reducing complexity and focusing on highest ROI interventions."
+                f"Reducing complexity and focusing on what you already do."
             ),
             FeedbackTriggerType.MULTIPLE_FAILURES: (
                 f"{details.get('count', 0)} protocols failing simultaneously indicates system overload. "

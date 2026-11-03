@@ -31,7 +31,8 @@ export default function StressManagement() {
   }, []);
 
   useEffect(() => {
-    loadData();
+    // loader sets state only after await; .then keeps it out of the effect body (react-hooks lint)
+    Promise.resolve().then(loadData)
   }, [loadData]);
 
   const handleAnalyze = async () => {
@@ -51,7 +52,7 @@ export default function StressManagement() {
   };
 
   if (loading) {
-    return <div className="p-8 text-center">Loading stress data...</div>;
+    return <div className="p-8 text-center">Ładowanie...</div>;
   }
 
   return (
@@ -63,7 +64,7 @@ export default function StressManagement() {
       {/* Effects */}
       {effects && (
         <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <h2 className="text-xl font-semibold mb-4">Stress Effects on Looks</h2>
+          <h2 className="text-xl font-semibold mb-4">Stres a wygląd</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {Object.entries(effects).map(([key, effect]) => (
               <div key={key} className="border rounded p-4">
@@ -71,7 +72,7 @@ export default function StressManagement() {
                 <p className="text-sm text-gray-600">{effect.looks_impact}</p>
                 {effect.signs && (
                   <div className="mt-2 text-xs text-red-600">
-                    Signs: {effect.signs.join(', ')}
+                    Objawy: {effect.signs.join(', ')}
                   </div>
                 )}
               </div>
@@ -104,7 +105,7 @@ export default function StressManagement() {
           <Activity className="w-5 h-5" /> Stress Analysis
         </h2>
         <div className="mb-4">
-          <label className="block text-sm font-medium mb-2">Stress Level</label>
+          <label className="block text-sm font-medium mb-2">Poziom stresu</label>
           <div className="flex gap-4">
             {['low', 'medium', 'high'].map(level => (
               <button key={level} onClick={() => setStressData({...stressData, level})}
@@ -115,7 +116,7 @@ export default function StressManagement() {
           </div>
         </div>
         <div className="mb-4">
-          <label className="block text-sm font-medium mb-2">Physical Signs</label>
+          <label className="block text-sm font-medium mb-2">Objawy</label>
           <div className="flex flex-wrap gap-2">
             {signsList.map(sign => (
               <button key={sign} onClick={() => toggleSign(sign)}
@@ -127,15 +128,15 @@ export default function StressManagement() {
         </div>
         <button onClick={handleAnalyze}
           className="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600">
-          Analyze Stress
+          Oceń stres
         </button>
 
         {analysis && (
           <div className="mt-4 p-4 bg-gray-50 rounded">
-            <div className="text-2xl font-bold text-purple-600">Score: {analysis.score}/100</div>
+            <div className="text-2xl font-bold text-purple-600">Stan: {analysis.status_label ?? '—'}</div>
             {analysis.effects?.length > 0 && (
               <div className="mt-2">
-                <div className="font-semibold text-red-600">Active Effects:</div>
+                <div className="font-semibold text-red-600">Możliwe skutki:</div>
                 <ul className="list-disc ml-5">
                   {analysis.effects.map((eff, i) => (
                     <li key={i}>{eff.name} - {eff.looks_impact}</li>
@@ -145,7 +146,7 @@ export default function StressManagement() {
             )}
             {analysis.recommendations?.length > 0 && (
               <div className="mt-2">
-                <div className="font-semibold text-green-600">Recommendations:</div>
+                <div className="font-semibold text-green-600">Wskazówki:</div>
                 <ul className="list-disc ml-5">
                   {analysis.recommendations.map((rec, i) => <li key={i}>{rec}</li>)}
                 </ul>

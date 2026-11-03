@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, waitFor, within } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { BrowserRouter } from 'react-router-dom'
 
@@ -15,12 +15,12 @@ vi.mock('../api/client', () => ({
 }))
 
 import Experiments from './Experiments'
-import { getExperimentTemplates, startExperiment, getActiveExperiments } from '../api/client'
+import { getExperimentTemplates, getActiveExperiments } from '../api/client'
 
 const mockTemplates = [
   {
     id: 'skincare_vitamin_c',
-    name: 'Vitamin C Serum Test',
+    name: 'Serum z witaminą C',
     category: 'skincare',
     description: 'Test Vitamin C effectiveness',
     duration_days: 14,
@@ -28,7 +28,7 @@ const mockTemplates = [
   },
   {
     id: 'diet_water',
-    name: 'Water Intake Test',
+    name: 'Ilość wody',
     category: 'diet',
     description: 'Test effect of water intake',
     duration_days: 14,
@@ -63,7 +63,7 @@ describe('Experiments', () => {
       expect(screen.getByText('Personal Experiment Engine')).toBeInTheDocument()
     })
 
-    expect(screen.getByRole('button', { name: /Start Experiment/ })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Zacznij eksperyment/ })).toBeInTheDocument()
   })
 
   it('shows available templates', async () => {
@@ -77,11 +77,11 @@ describe('Experiments', () => {
     )
 
     await waitFor(() => {
-      expect(screen.getByText('Available Templates')).toBeInTheDocument()
+      expect(screen.getByText('Dostępne eksperymenty')).toBeInTheDocument()
     })
 
-    expect(screen.getByText('Vitamin C Serum Test')).toBeInTheDocument()
-    expect(screen.getByText('Water Intake Test')).toBeInTheDocument()
+    expect(screen.getByText('Serum z witaminą C')).toBeInTheDocument()
+    expect(screen.getByText('Ilość wody')).toBeInTheDocument()
     expect(screen.getByText('Test Vitamin C effectiveness')).toBeInTheDocument()
     expect(screen.getByText('Test effect of water intake')).toBeInTheDocument()
   })
@@ -116,11 +116,11 @@ describe('Experiments', () => {
     )
 
     await waitFor(() => {
-      expect(screen.getByText('Vitamin C Serum Test')).toBeInTheDocument()
+      expect(screen.getByText('Serum z witaminą C')).toBeInTheDocument()
     })
 
     // Click Start Experiment button
-    const startButton = screen.getByRole('button', { name: /Start Experiment/ })
+    const startButton = screen.getByRole('button', { name: /Zacznij eksperyment/ })
     await user.click(startButton)
 
     // Modal should appear with templates
@@ -167,11 +167,11 @@ describe('Experiments', () => {
     await user.click(screen.getByText('Active Vitamin C Test'))
 
     await waitFor(() => {
-      expect(screen.getByText(/Daily Log/)).toBeInTheDocument()
+      expect(screen.getByText(/Wpisy dzienne/)).toBeInTheDocument()
     })
 
-    expect(screen.getByText('Rating (1-10)')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /Log Day/ })).toBeInTheDocument()
+    expect(screen.getByText('Ocena dnia (1-10)')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Zapisz dzień/ })).toBeInTheDocument()
   })
 
   it('displays logged days', async () => {
@@ -194,7 +194,7 @@ describe('Experiments', () => {
     await user.click(screen.getByText('Active Vitamin C Test'))
 
     await waitFor(() => {
-      expect(screen.getByText(/Daily Logs/)).toBeInTheDocument()
+      expect(screen.getByText(/Wpisy dzienne/)).toBeInTheDocument()
     })
 
     expect(screen.getByText('Day 1')).toBeInTheDocument()

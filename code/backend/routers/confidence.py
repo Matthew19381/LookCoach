@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
+
 from ..database import get_db
+from ..services.analysis_store import has_any, load_latest_analysis
 from ..services.confidence_presence import ConfidencePresenceEngine
 
 router = APIRouter()
@@ -8,18 +10,22 @@ router = APIRouter()
 
 @router.get("/analyze")
 async def analyze_confidence(user_id: int = 1, db: Session = Depends(get_db)):
-    # In full version, would fetch user's latest photo analysis
-    dummy_analysis = {
-        "face": {"muscle_tension": {"level": "medium"}, "swelling": {"level": "low"}},
-        "body": {"asymmetries": [], "posture_notes": []},
-    }
+    """Posture/facial indicators from the user's latest analysis.
 
-    posture = ConfidencePresenceEngine.analyze_posture_indicators(dummy_analysis)
-    facial = ConfidencePresenceEngine.analyze_facial_expressions(dummy_analysis)
-
+    Until 2026-11-02 this analysed a hard-coded `dummy_analysis`, so everyone
+    saw the same "medium tension" result."""
+    latest = load_latest_analysis(db, user_id)
+    if not has_any(latest):
+        return {
+            "has_analysis": False,
+            "message": "Brak analizy zdjęć — zrób zdjęcia przód i bok, żeby zobaczyć wskazówki.",
+            "posture": None,
+            "facial": None,
+        }
     return {
-        "posture": posture,
-        "facial": facial,
+        "has_analysis": True,
+        "posture": ConfidencePresenceEngine.analyze_posture_indicators(latest),
+        "facial": ConfidencePresenceEngine.analyze_facial_expressions(latest),
     }
 
 
@@ -29,7 +35,6 @@ async def get_action_plan():
         "plan": ConfidencePresenceEngine.get_confidence_action_plan(),
     }
 
-
-@router.get("/attractiveness-impact")
-async def get_attractiveness_impact(confidence_score: float = 70, presence_score: float = 70):
-    return ConfidencePresenceEngine.calculate_attractiveness_impact(confidence_score, presence_score)
+# /attractiveness-impact removed 2026-11-02: it claimed confidence raises
+# attractiveness "by up to 20%" with no source (LC-1) and returned a percentage
+# of attractiveness (LC-9).

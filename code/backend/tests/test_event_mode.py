@@ -16,7 +16,7 @@ class TestEventModeEngine:
         past_date = "2020-01-01"
         result = EventModeEngine.generate_event_plan(past_date, "party", {})
         assert "error" in result
-        assert "past" in result["error"].lower()
+        assert "minęła" in result["error"].lower()
 
     def test_generate_event_plan_invalid_date(self):
         result = EventModeEngine.generate_event_plan("invalid-date", "party", {})

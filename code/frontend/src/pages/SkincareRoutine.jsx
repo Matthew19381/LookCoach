@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 import {
   deleteProduct, getMyRotation, getProducts, getSkincareRoutine, logProductUsage,
-  logSkinReaction, parseProductText, saveProduct, scanProductLabel,
+  logSkinReaction, parseProductText, saveProduct, scanProductLabel, lookupProductBarcode,
 } from '../api/client'
+import BarcodeBox from '../components/BarcodeBox'
 import { AlertTriangle, Camera, Check, Droplets, Info, Moon, RotateCcw, Sun, Trash2 } from 'lucide-react'
 
 const SLOTS = [['morning', 'Rano'], ['evening', 'Wieczór'], ['both', 'Rano i wieczór']]
@@ -39,7 +40,7 @@ function ProductReport({ report, onSaved, onCancel }) {
   }
   return (
     <div className="border rounded-lg p-4 space-y-3 bg-gray-50">
-      <input className="w-full border rounded px-3 py-2" placeholder="Nazwa produktu" value={name} onChange={(e) => setName(e.target.value)} />
+      <input aria-label="Nazwa produktu" className="w-full border rounded px-3 py-2" placeholder="Nazwa produktu" value={name} onChange={(e) => setName(e.target.value)} />
       <div>
         <p className="text-sm font-medium text-gray-700">Składniki aktywne</p>
         {report.actives.length === 0 && <p className="text-sm text-gray-500">Brak rozpoznanych aktywnych — produkt bazowy (np. nawilżający).</p>}
@@ -57,6 +58,11 @@ function ProductReport({ report, onSaved, onCancel }) {
       {report.conflicts.map((c) => (
         <div key={c.type} className="text-sm text-red-800 bg-red-50 border border-red-200 rounded p-2 flex gap-2">
           <AlertTriangle size={16} className="mt-0.5 flex-shrink-0" /> {c.message}
+        </div>
+      ))}
+      {(report.health_warnings || []).map((w) => (
+        <div key={w} role="alert" className="text-sm text-red-900 bg-red-100 border border-red-300 rounded p-2 flex gap-2">
+          <AlertTriangle size={16} className="mt-0.5 flex-shrink-0" /> {w}
         </div>
       ))}
       {report.tolerance_warnings.map((t) => (
@@ -90,6 +96,10 @@ function MyProducts({ onChange }) {
     setErr(''); setBusy(true)
     try { setReport(await scanProductLabel(file)) } catch (e) { setErr(errText(e)) } finally { setBusy(false) }
   }
+  const barcode = async (code) => {
+    setErr(''); setBusy(true)
+    try { setReport(await lookupProductBarcode(code)) } catch (e) { setErr(errText(e)) } finally { setBusy(false) }
+  }
   const parse = async () => {
     setErr('')
     try { setReport(await parseProductText(text)); setText('') } catch (e) { setErr(errText(e)) }
@@ -108,9 +118,10 @@ function MyProducts({ onChange }) {
             <input type="file" accept="image/*" capture="environment" className="hidden" disabled={busy} onChange={(e) => scan(e.target.files?.[0])} />
           </label>
           <div className="flex flex-col gap-2">
-            <textarea className="border rounded p-2 text-sm flex-1" rows={3} placeholder="…albo wklej skład: Aqua, Glycerin, Niacinamide, …" value={text} onChange={(e) => setText(e.target.value)} />
+            <textarea aria-label="Skład produktu (INCI)" className="border rounded p-2 text-sm flex-1" rows={3} placeholder="…albo wklej skład: Aqua, Glycerin, Niacinamide, …" value={text} onChange={(e) => setText(e.target.value)} />
             <button onClick={parse} disabled={!text.trim()} className="bg-blue-600 disabled:opacity-50 text-white rounded py-2 text-sm">Sprawdź skład</button>
           </div>
+          <div className="md:col-span-2"><BarcodeBox onCode={barcode} busy={busy} /></div>
         </div>
       )}
       {err && <p className="text-sm text-red-600">{err}</p>}
@@ -148,14 +159,14 @@ function ReactionForm({ actives }) {
     <div className="bg-white border rounded-lg p-6 space-y-3">
       <h2 className="text-xl font-semibold">Reakcja skóry</h2>
       <div className="grid md:grid-cols-3 gap-2">
-        <select className="border rounded px-2 py-2" value={ingredient} onChange={(e) => setIngredient(e.target.value)}>
+        <select aria-label="Składnik" className="border rounded px-2 py-2" value={ingredient} onChange={(e) => setIngredient(e.target.value)}>
           <option value="">Składnik…</option>
           {actives.map((a) => <option key={a}>{a}</option>)}
         </select>
-        <select className="border rounded px-2 py-2" value={reaction} onChange={(e) => setReaction(e.target.value)}>
+        <select aria-label="Reakcja skóry" className="border rounded px-2 py-2" value={reaction} onChange={(e) => setReaction(e.target.value)}>
           {REACTIONS.map(([k, l]) => <option key={k} value={k}>{l}</option>)}
         </select>
-        <select className="border rounded px-2 py-2" value={severity} onChange={(e) => setSeverity(e.target.value)}>
+        <select aria-label="Nasilenie" className="border rounded px-2 py-2" value={severity} onChange={(e) => setSeverity(e.target.value)}>
           <option value="low">lekka</option><option value="medium">średnia</option><option value="high">silna</option>
         </select>
       </div>

@@ -1,6 +1,5 @@
 import importlib
 from logging.config import fileConfig
-import os
 import sys
 from pathlib import Path
 
@@ -26,13 +25,15 @@ Base = backend_models_base.Base
 # access to the values within the .ini file in use.
 config = context.config
 
-# Use the app's DATABASE_URL (env var wins over alembic.ini placeholder)
-config.set_main_option("sqlalchemy.url", os.getenv("DATABASE_URL", DATABASE_URL))
+# The app's DATABASE_URL - already includes the env var AND anchors a relative sqlite
+# path to backend/ (the raw env var used here before 2026-11-02 resolved against the CWD).
+config.set_main_option("sqlalchemy.url", DATABASE_URL)
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
+# (init_db passes no ini file: the app keeps its own logging configuration)
 if config.config_file_name is not None:
-    fileConfig(config.config_file_name)
+    fileConfig(config.config_file_name, disable_existing_loggers=False)
 
 target_metadata = Base.metadata
 

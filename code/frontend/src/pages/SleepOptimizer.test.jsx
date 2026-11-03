@@ -12,8 +12,8 @@ vi.mock('../api/client', () => ({
 }))
 
 const mockFactors = {
-  duration: { name: 'Sleep Duration', looks_impact: 'Skin repair', optimal: '7-9 hours', poor: '<6' },
-  quality: { name: 'Sleep Quality', looks_impact: 'Skin glow', optimal: 'Deep', poor: 'Fragmented' },
+  duration: { name: 'Długość snu', looks_impact: 'Skin repair', optimal: '7-9 hours', poor: '<6' },
+  quality: { name: 'Jakość snu', looks_impact: 'Skin glow', optimal: 'Głęboki', poor: 'Fragmented' },
 }
 
 describe('SleepOptimizer', () => {
@@ -40,13 +40,13 @@ describe('SleepOptimizer', () => {
       </BrowserRouter>
     )
     await waitFor(() => {
-      expect(screen.getByText('Sleep Duration')).toBeInTheDocument()
-      expect(screen.getByText('Sleep Quality')).toBeInTheDocument()
+      expect(screen.getByText('Długość snu')).toBeInTheDocument()
+      expect(screen.getByText('Jakość snu')).toBeInTheDocument()
     })
   })
 
   it('analyzes sleep data', async () => {
-    analyzeSleep.mockResolvedValue({ score: 80, issues: [], recommendations: ['Sleep more'] })
+    analyzeSleep.mockResolvedValue({ status: 'needs_improvement', status_label: 'do poprawy', issues: [], recommendations: ['Sleep more'] })
     const user = userEvent.setup()
     render(
       <BrowserRouter>
@@ -56,11 +56,13 @@ describe('SleepOptimizer', () => {
     await waitFor(() => {
       expect(screen.getByText('Sleep Optimizer')).toBeInTheDocument()
     })
-    const analyzeBtn = screen.getByText('Analyze Sleep')
+    const analyzeBtn = screen.getByText('Oceń sen')
     await user.click(analyzeBtn)
     await waitFor(() => {
       expect(analyzeSleep).toHaveBeenCalled()
     })
+    expect(await screen.findByText('Stan: do poprawy')).toBeInTheDocument()
+    expect(document.body.textContent).not.toMatch(/\/100/)
   })
 
   it('loads pre-event tips', async () => {
@@ -74,7 +76,7 @@ describe('SleepOptimizer', () => {
     await waitFor(() => {
       expect(screen.getByText('Sleep Optimizer')).toBeInTheDocument()
     })
-    const getTipsBtn = screen.getByText('Get Tips')
+    const getTipsBtn = screen.getByText('Pokaż wskazówki')
     await user.click(getTipsBtn)
     await waitFor(() => {
       expect(getPreEventSleepTips).toHaveBeenCalled()

@@ -12,11 +12,11 @@ vi.mock('../api/client', () => ({
 }))
 
 const mockEffects = {
-  cortisol_spike: { name: 'Cortisol Spike', looks_impact: 'Acne, skin thinning', signs: ['acne', 'oily skin'] },
+  cortisol_spike: { name: 'Skok kortyzolu', looks_impact: 'Acne, skin thinning', signs: ['acne', 'oily skin'] },
 }
 
 const mockTechniques = [
-  { name: 'Box Breathing', duration: '5 min', looks_benefit: 'Reduces cortisol' },
+  { name: 'Oddech pudełkowy', duration: '5 min', looks_benefit: 'Reduces cortisol' },
 ]
 
 describe('StressManagement', () => {
@@ -44,7 +44,7 @@ describe('StressManagement', () => {
       </BrowserRouter>
     )
     await waitFor(() => {
-      expect(screen.getByText('Cortisol Spike')).toBeInTheDocument()
+      expect(screen.getByText('Skok kortyzolu')).toBeInTheDocument()
     })
   })
 
@@ -55,13 +55,13 @@ describe('StressManagement', () => {
       </BrowserRouter>
     )
     await waitFor(() => {
-      expect(screen.getByText('Box Breathing')).toBeInTheDocument()
+      expect(screen.getByText('Oddech pudełkowy')).toBeInTheDocument()
       expect(screen.getByText('Reduces cortisol')).toBeInTheDocument()
     })
   })
 
   it('analyzes stress data', async () => {
-    analyzeStress.mockResolvedValue({ score: 70, effects: [], recommendations: ['Meditate'] })
+    analyzeStress.mockResolvedValue({ status: 'needs_improvement', status_label: 'do poprawy', effects: [], recommendations: ['Meditate'] })
     const user = userEvent.setup()
     render(
       <BrowserRouter>
@@ -71,7 +71,7 @@ describe('StressManagement', () => {
     await waitFor(() => {
       expect(screen.getByText('Stress Management')).toBeInTheDocument()
     })
-    const analyzeBtn = screen.getByText('Analyze Stress')
+    const analyzeBtn = screen.getByText('Oceń stres')
     await user.click(analyzeBtn)
     await waitFor(() => {
       expect(analyzeStress).toHaveBeenCalled()

@@ -45,7 +45,7 @@ describe('VideoLearning', () => {
       </BrowserRouter>
     )
 
-    expect(screen.getByText('Loading videos...')).toBeInTheDocument()
+    expect(screen.getByText('Ładowanie filmów...')).toBeInTheDocument()
   })
 
   it('renders videos after data loaded', async () => {
@@ -58,7 +58,7 @@ describe('VideoLearning', () => {
     )
 
     await waitFor(() => {
-      expect(screen.getByText('Video Learning')).toBeInTheDocument()
+      expect(screen.getByText('Wideo')).toBeInTheDocument()
     })
 
     expect(screen.getByText('Gua Sha Tutorial')).toBeInTheDocument()
@@ -93,10 +93,10 @@ describe('VideoLearning', () => {
     )
 
     await waitFor(() => {
-      expect(screen.getByPlaceholderText(/Search videos/)).toBeInTheDocument()
+      expect(screen.getByPlaceholderText(/Szukaj filmów/)).toBeInTheDocument()
     })
 
-    expect(screen.getByRole('button', { name: /Search/ })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Szukaj/ })).toBeInTheDocument()
   })
 
   it('performs search when form submitted', async () => {
@@ -112,13 +112,13 @@ describe('VideoLearning', () => {
     )
 
     await waitFor(() => {
-      expect(screen.getByPlaceholderText(/Search videos/)).toBeInTheDocument()
+      expect(screen.getByPlaceholderText(/Szukaj filmów/)).toBeInTheDocument()
     })
 
-    const searchInput = screen.getByPlaceholderText(/Search videos/)
+    const searchInput = screen.getByPlaceholderText(/Szukaj filmów/)
     await user.type(searchInput, 'gua sha')
 
-    const searchButton = screen.getByRole('button', { name: /Search/ })
+    const searchButton = screen.getByRole('button', { name: /Szukaj/ })
     await user.click(searchButton)
 
     expect(searchVideos).toHaveBeenCalledWith('gua sha')
@@ -137,13 +137,13 @@ describe('VideoLearning', () => {
     )
 
     await waitFor(() => {
-      expect(screen.getByPlaceholderText(/Search videos/)).toBeInTheDocument()
+      expect(screen.getByPlaceholderText(/Szukaj filmów/)).toBeInTheDocument()
     })
 
-    const searchInput = screen.getByPlaceholderText(/Search videos/)
+    const searchInput = screen.getByPlaceholderText(/Szukaj filmów/)
     await user.type(searchInput, 'gua sha')
 
-    const searchButton = screen.getByRole('button', { name: /Search/ })
+    const searchButton = screen.getByRole('button', { name: /Szukaj/ })
     await user.click(searchButton)
 
     await waitFor(() => {
@@ -170,16 +170,16 @@ describe('VideoLearning', () => {
     })
 
     // Perform search
-    const searchInput = screen.getByPlaceholderText(/Search videos/)
+    const searchInput = screen.getByPlaceholderText(/Szukaj filmów/)
     await user.type(searchInput, 'gua sha')
-    await user.click(screen.getByRole('button', { name: /Search/ }))
+    await user.click(screen.getByRole('button', { name: /Szukaj/ }))
 
     await waitFor(() => {
       expect(screen.getByText(/Found.*results/)).toBeInTheDocument()
     })
 
     // Clear search
-    const clearButton = screen.getByText('Clear')
+    const clearButton = screen.getByText('Wyczyść')
     await user.click(clearButton)
 
     await waitFor(() => {
@@ -200,7 +200,7 @@ describe('VideoLearning', () => {
     )
 
     await waitFor(() => {
-      expect(screen.getByText(/No videos found/)).toBeInTheDocument()
+      expect(screen.getByText(/Nie znaleziono filmów/)).toBeInTheDocument()
     })
   })
 
@@ -214,7 +214,7 @@ describe('VideoLearning', () => {
     )
 
     await waitFor(() => {
-      const links = screen.getAllByText('Watch on YouTube')
+      const links = screen.getAllByText('Obejrzyj na YouTube')
       expect(links).toHaveLength(2)
       expect(links[0]).toHaveAttribute('href', 'https://youtube.com/watch?v=123')
       expect(links[1]).toHaveAttribute('href', 'https://youtube.com/watch?v=456')

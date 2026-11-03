@@ -1,3 +1,6 @@
+> **ARCHIWUM (2026-11-02).** Lista z czerwca 2026 — większość zrobiona (CLAUDE.md, README, pyproject,
+> .gitignore). Otwarte punkty przeniesione do `decisions/ACTION_PLAN_2026-11-01.md` (Faza 7).
+
 # LookCoach — Usprawnienia
 
 > Ostatnia aktualizacja: 2026-06-07

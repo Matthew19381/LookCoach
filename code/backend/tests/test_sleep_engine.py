@@ -14,20 +14,22 @@ class TestSleepEngine:
             assert "optimal" in factor
 
     def test_analyze_sleep_good(self):
-        sleep_data = {"hours": 8, "quality": "deep", "timing": "10PM"}
+        sleep_data = {"hours": 8, "quality": "deep", "bedtime": "22:30", "back_sleeping": True}
         result = SleepEngine.analyze_sleep(sleep_data)
-        assert "score" in result
-        assert result["score"] >= 70
+        assert "status" in result and "score" not in result
+        assert result["status"] == "good"
+        assert result["status_label"] == "dobry"
 
     def test_analyze_sleep_poor(self):
         sleep_data = {"hours": 4, "quality": "light", "timing": "2AM"}
         result = SleepEngine.analyze_sleep(sleep_data)
-        assert "score" in result
-        assert result["score"] < 70
+        assert "status" in result and "score" not in result
+        assert result["status"] == "needs_attention"
+        assert len(result["issues"]) >= 3
 
     def test_analyze_sleep_empty(self):
         result = SleepEngine.analyze_sleep({})
-        assert "score" in result
+        assert "status" in result and "score" not in result
 
     def test_get_pre_event_tips_party(self):
         result = SleepEngine.get_pre_event_tips("party")
@@ -53,12 +55,12 @@ class TestSleepEngine:
             assert "10PM" in factors["timing"]["optimal"] or "11PM" in factors["timing"]["optimal"]
 
     def test_sleep_score_range(self):
-        """Verify sleep scores are in valid range."""
+        """Verify sleep status is one of the qualitative categories (no X/100)."""
         for hours in [4, 6, 8, 10]:
             sleep_data = {"hours": hours, "quality": "deep", "timing": "10PM"}
             result = SleepEngine.analyze_sleep(sleep_data)
-            assert "score" in result
-            assert 0 <= result["score"] <= 100
+            assert "status" in result and "score" not in result
+            assert result["status"] in {None, "good", "needs_improvement", "needs_attention"}
 
     def test_sleep_issues_detection(self):
         sleep_data = {"hours": 4, "quality": "light", "timing": "3AM"}
@@ -75,10 +77,18 @@ class TestSleepEngine:
     def test_analyze_sleep_consistency(self):
         sleep_data = {"hours": 8, "quality": "deep", "timing": "10PM", "consistent": True}
         result = SleepEngine.analyze_sleep(sleep_data)
-        assert "score" in result
+        assert "status" in result and "score" not in result
 
     def test_pillow_height_factor(self):
         factors = SleepEngine.SLEEP_FACTORS
         if "pillow_height" in factors:
             factor = factors["pillow_height"]
-            assert "10-12cm" in factor["optimal"] or "medium" in factor["optimal"].lower()
+            assert "10–12 cm" in factor["optimal"]
+
+
+def test_bedtime_is_compared_as_time_not_text():
+    """22:30 is before midnight, 01:00 after (string compare got both wrong)."""
+    early = SleepEngine.analyze_sleep({"hours": 8, "quality": "deep", "bedtime": "22:30", "back_sleeping": True})
+    late = SleepEngine.analyze_sleep({"hours": 8, "quality": "deep", "bedtime": "01:00", "back_sleeping": True})
+    assert "Późne zasypianie (po północy)" not in early["issues"]
+    assert "Późne zasypianie (po północy)" in late["issues"]

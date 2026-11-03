@@ -43,8 +43,8 @@ export const deletePhoto = (id) =>
 export const getAnalysis = () =>
   api.get(`/api/v1/analysis/latest?user_id=${getUserId()}`);
 
-export const analyzePhoto = (photoId) =>
-  api.post(`/api/v1/analysis/analyze/${photoId}`);
+export const analyzePhoto = (photoId, force = false) =>
+  api.post(`/api/v1/analysis/analyze/${photoId}${force ? "?force=true" : ""}`);
 
 export const getRecommendations = (limit = 10) =>
   api.get(`/api/v1/recommendations/?limit=${limit}`);
@@ -88,8 +88,6 @@ export const getConfidenceAnalysis = () =>
 export const getActionPlan = () =>
   api.get(`/api/v1/confidence/action-plan`);
 
-export const getAttractivenessImpact = (confidenceScore = 70, presenceScore = 70) =>
-  api.get(`/api/v1/confidence/attractiveness-impact?confidence_score=${confidenceScore}&presence_score=${presenceScore}`);
 
 // Experiments
 export const getExperimentTemplates = () =>
@@ -122,15 +120,18 @@ export const getActiveExperiments = () =>
 export const finishExperiment = (experimentId) =>
   api.post(`/api/v1/experiments/${experimentId}/finish`);
 
-// Aesthetic Training
-export const getAvailablePlans = () =>
-  api.get(`/api/v1/aesthetic-training/plans`);
+// Ecosystem (plan 3.8/3.11/3.12): needs for ForgeBody/Dieta, data from other modules
+export const getEcosystemNeeds = () =>
+  api.get(`/api/v1/ecosystem/needs?user_id=${getUserId()}`);
 
-export const generateTrainingPlan = (goal = "v_taper") =>
-  api.post(`/api/v1/aesthetic-training/plan`, { goal });
+export const sendEcosystemNeeds = (force = false) =>
+  api.post(`/api/v1/ecosystem/needs/send?user_id=${getUserId()}&force=${force}`);
 
-export const analyzePhysique = (measurements) =>
-  api.post(`/api/v1/aesthetic-training/analyze`, { measurements });
+export const getEcosystemOverview = () =>
+  api.get(`/api/v1/ecosystem/overview?user_id=${getUserId()}`);
+
+export const getConnectionStatus = () =>
+  api.get(`/api/v1/ecosystem/connection?user_id=${getUserId()}`);
 
 // Posture Correction
 export const getPostureIssues = () =>
@@ -142,6 +143,9 @@ export const detectPostureIssues = (analysis) =>
 export const getCorrectionPlan = (issueId) =>
   api.get(`/api/v1/posture/correction/${issueId}`);
 
+export const getPostureAssessment = () =>
+  api.get(`/api/v1/posture/assessment?user_id=${getUserId()}`);
+
 export const fullPostureAssessment = (analysis) =>
   api.post(`/api/v1/posture/assess`, { analysis });
 
@@ -152,11 +156,6 @@ export const getNutritionFactors = () =>
 export const getNutritionRecommendations = () =>
   api.get(`/api/v1/nutrition/recommendations`);
 
-export const getMealPlan = (planType = "pre_event") =>
-  api.get(`/api/v1/nutrition/meal-plan/${planType}`);
-
-export const analyzeDiet = (dietLog) =>
-  api.post(`/api/v1/nutrition/analyze`, { diet_log: dietLog });
 
 // Sleep Optimization
 export const getSleepFactors = () =>
@@ -216,3 +215,52 @@ export const getMinimumEffectiveProtocol = (protocol_type, difficulty = "full") 
   api.get(`/api/v1/consistency/minimum-effective/${protocol_type}?${q({ difficulty })}`);
 export const recalculateMetrics = (days = 28) => api.post(`/api/v1/consistency/recalculate?${q({ days })}`);
 export const getPatternAlert = () => api.get(`/api/v1/consistency/pattern-alert?${q({})}`);
+
+// Privacy (plan 2.5)
+export const dataExportUrl = () => `${api.defaults.baseURL}/api/v1/data/export?user_id=${getUserId()}`;
+
+export const deleteAllData = (confirm) =>
+  api.delete(`/api/v1/data?user_id=${getUserId()}&confirm=${encodeURIComponent(confirm)}`);
+
+// Style advice (plan 4.1-4.8)
+export const getStyleAdvice = () =>
+  api.get(`/api/v1/style?user_id=${getUserId()}`);
+
+export const getStylePreviewOptions = () =>
+  api.get(`/api/v1/style/preview/options?user_id=${getUserId()}`);
+
+export const generateStylePreview = (kind, option) =>
+  api.post(`/api/v1/style/preview?user_id=${getUserId()}`, { kind, option });
+
+// 'Dziś' (plan 5.4) and state timeline (plan 5.1)
+export const getToday = () =>
+  api.get(`/api/v1/today?user_id=${getUserId()}`);
+
+export const getStateTimeline = () =>
+  api.get(`/api/v1/progress/states?user_id=${getUserId()}`);
+
+// Assistant (plan 8)
+export const assistantChat = (message) =>
+  api.post(`/api/v1/assistant/chat?user_id=${getUserId()}`, { message });
+
+export const getAssistantHistory = () =>
+  api.get(`/api/v1/assistant/history?user_id=${getUserId()}`);
+
+export const clearAssistantHistory = () =>
+  api.delete(`/api/v1/assistant/history?user_id=${getUserId()}`);
+
+export const getCorrelations = () =>
+  api.get(`/api/v1/progress/correlations?user_id=${getUserId()}`);
+
+// Plan 5.7: barcode -> Open Beauty Facts -> local INCI analysis
+export const lookupProductBarcode = (code) =>
+  api.post(`/api/v1/skincare/products/barcode?user_id=${getUserId()}`, { code });
+
+// Push reminders (plan 5.5)
+export const getVapidKey = () => api.get(`/api/v1/notifications/vapid-public-key`);
+export const pushSubscribe = (subscription) =>
+  api.post(`/api/v1/notifications/subscribe?user_id=${getUserId()}`, subscription);
+export const getReminderSettings = () => api.get(`/api/v1/notifications/settings?user_id=${getUserId()}`);
+export const putReminderSettings = (settings) =>
+  api.put(`/api/v1/notifications/settings?user_id=${getUserId()}`, settings);
+export const testPush = () => api.post(`/api/v1/notifications/test?user_id=${getUserId()}`);

@@ -29,32 +29,12 @@ def test_generate_text_failure():
         result = llm.generate_text("Test prompt")
         assert result == ""
 
-def test_analyze_image_fallback_face():
+def test_fallback_never_invents_a_state():
+    """No AI -> an explicit 'no result', not fixed 'swelling: medium' observations."""
     llm = LocalLLMService()
-    result = llm.analyze_image_fallback(b"fake_image", "face")
-    assert "swelling" in result
-    assert "observations" in result
-    assert result["swelling"]["level"] in ("low", "medium", "high")
+    for kind in ("face", "body", "skin", "hair", "crown", "unknown"):
+        result = llm.analyze_image_fallback(b"fake_image", kind)
+        assert result["fallback"] is True
+        assert not {"swelling", "skin_quality", "skin_type", "hairline_status", "asymmetries"} & set(result)
 
-def test_analyze_image_fallback_body():
-    llm = LocalLLMService()
-    result = llm.analyze_image_fallback(b"fake_image", "body")
-    assert "asymmetries" in result
-    assert "posture_notes" in result
 
-def test_analyze_image_fallback_skin():
-    llm = LocalLLMService()
-    result = llm.analyze_image_fallback(b"fake_image", "skin")
-    assert "skin_type" in result
-    assert "hydration_status" in result
-
-def test_analyze_image_fallback_hair():
-    llm = LocalLLMService()
-    result = llm.analyze_image_fallback(b"fake_image", "hair")
-    assert "hairline_status" in result
-    assert "density_status" in result
-
-def test_analyze_image_fallback_unknown():
-    llm = LocalLLMService()
-    result = llm.analyze_image_fallback(b"fake_image", "unknown")
-    assert "error" in result

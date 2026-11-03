@@ -3,13 +3,13 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { BrowserRouter } from 'react-router-dom'
 import NutritionLooks from './NutritionLooks'
-import { getNutritionFactors, getNutritionRecommendations, getMealPlan, analyzeDiet } from '../api/client'
+import { getNutritionFactors, getNutritionRecommendations, getEcosystemNeeds, sendEcosystemNeeds } from '../api/client'
 
 vi.mock('../api/client', () => ({
   getNutritionFactors: vi.fn(),
   getNutritionRecommendations: vi.fn(),
-  getMealPlan: vi.fn(),
-  analyzeDiet: vi.fn(),
+  getEcosystemNeeds: vi.fn(),
+  sendEcosystemNeeds: vi.fn(),
 }))
 
 const mockFactors = {
@@ -18,16 +18,24 @@ const mockFactors = {
 }
 
 const mockRecommendations = ['Drink 8+ glasses of water daily', 'Avoid sugar for clear skin']
-const mockMealPlan = [
-  { timing: 'Morning', foods: 'Water, protein', looks_benefit: 'Hydration' },
-]
+const mockNeeds = {
+  aesthetic_priority: { target_module: 'forge-body', current: null, last_sent: null },
+  nutrition_needs: {
+    target_module: 'dieta',
+    current: {
+      sodium_limit_mg: 2300, low_glycemic_load: true, reason: 'Analiza zdjęcia: obrzęk',
+      items: [{ need: 'low_glycemic_load', evidence_id: 'nutrition_005', evidence_level: 'rct' }],
+    },
+    last_sent: null,
+  },
+}
 
 describe('NutritionLooks', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     getNutritionFactors.mockResolvedValue(mockFactors)
     getNutritionRecommendations.mockResolvedValue(mockRecommendations)
-    getMealPlan.mockResolvedValue(mockMealPlan)
+    getEcosystemNeeds.mockResolvedValue(mockNeeds)
   })
 
   it('renders nutrition page', async () => {
@@ -37,7 +45,7 @@ describe('NutritionLooks', () => {
       </BrowserRouter>
     )
     await waitFor(() => {
-      expect(screen.getByText('Nutrition for Looks')).toBeInTheDocument()
+      expect(screen.getByText('Żywienie')).toBeInTheDocument()
     })
   })
 
@@ -64,21 +72,19 @@ describe('NutritionLooks', () => {
     })
   })
 
-  it('analyzes diet', async () => {
-    analyzeDiet.mockResolvedValue({ score: 75, issues: ['Low water'], recommendations: ['Drink more'] })
+  it('shows needs for Dieta with evidence and sends them (LC-4: no meal plan, no own diet log)', async () => {
+    sendEcosystemNeeds.mockResolvedValue({ queued: ['nutrition_needs'] })
     const user = userEvent.setup()
     render(
       <BrowserRouter>
         <NutritionLooks />
       </BrowserRouter>
     )
-    await waitFor(() => {
-      expect(screen.getByText('Nutrition for Looks')).toBeInTheDocument()
-    })
-    const analyzeBtn = screen.getByText('Analyze Diet')
-    await user.click(analyzeBtn)
-    await waitFor(() => {
-      expect(analyzeDiet).toHaveBeenCalled()
-    })
+    expect(await screen.findByText('Sód do 2300 mg dziennie')).toBeInTheDocument()
+    expect(screen.getByText(/nutrition_005/)).toBeInTheDocument()
+    expect(document.body.textContent).not.toMatch(/Meal Plan|Diet Analysis/)
+    await user.click(screen.getByRole('button', { name: 'Wyślij do Diety' }))
+    expect(sendEcosystemNeeds).toHaveBeenCalledWith(false)
+    expect(await screen.findByText('Potrzeby przekazane do Diety.')).toBeInTheDocument()
   })
 })

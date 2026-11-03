@@ -1,0 +1,33 @@
+# Plan 7.2 - run: pip install pre-commit && pre-commit install
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+        files: ^(code/|decisions/|docs/|.*\.md$)
+      - id: end-of-file-fixer
+        files: ^(code/|decisions/|docs/)
+      - id: check-yaml
+      - id: check-added-large-files
+        args: ["--maxkb=1024"]
+      - id: detect-private-key
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.8.4
+    hooks:
+      - id: ruff
+        args: ["--config", "code/backend/pyproject.toml"]
+        files: ^code/backend/
+  - repo: local
+    hooks:
+      - id: eslint
+        name: eslint (frontend)
+        entry: bash -c 'cd code/frontend && npx eslint src --max-warnings 0'
+        language: system
+        files: ^code/frontend/src/.*\.(js|jsx)$
+        pass_filenames: false
+      - id: evidence-gate
+        name: verify_evidence_db (LC-1)
+        entry: bash -c 'cd code && python -m backend.scripts.verify_evidence_db'
+        language: system
+        files: ^code/backend/services/evidence_engine\.py$
+        pass_filenames: false

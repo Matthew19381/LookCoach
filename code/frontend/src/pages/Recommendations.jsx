@@ -10,9 +10,9 @@ const evidenceColors = {
 }
 
 const confidenceLabels = {
-  high: 'High potential',
-  moderate: 'Moderate potential',
-  low: 'Exploratory',
+  high: 'Duży potencjał',
+  moderate: 'Umiarkowany potencjał',
+  low: 'Do sprawdzenia',
 }
 
 export default function Recommendations() {
@@ -27,12 +27,12 @@ export default function Recommendations() {
   }, [])
 
   if (loading) {
-    return <div className="text-center py-20">Loading recommendations...</div>
+    return <div className="text-center py-20">Ładowanie rekomendacji...</div>
   }
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold text-gray-900">Recommendations</h1>
+      <h1 className="text-3xl font-bold text-gray-900">Rekomendacje</h1>
       <div className="grid gap-4">
         {recs.map((rec, idx) => (
           <div key={idx} className="bg-white border rounded-lg p-6 hover:shadow-md transition-shadow">
@@ -50,7 +50,7 @@ export default function Recommendations() {
                   </span>
                   <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs font-medium flex items-center gap-1">
                     <BarChart3 size={12} />
-                    {confidenceLabels[rec.confidence] || 'Exploratory'}
+                    {confidenceLabels[rec.confidence] || 'Do sprawdzenia'}
                   </span>
                 </div>
               </div>

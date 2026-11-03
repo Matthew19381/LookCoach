@@ -29,21 +29,21 @@ export default function VideoLearning() {
   const displayVideos = searchResults.length > 0 ? searchResults : videos
 
   if (loading) {
-    return <div className="text-center py-20">Loading videos...</div>
+    return <div className="text-center py-20">Ładowanie filmów...</div>
   }
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-gray-900">Video Learning</h1>
+        <h1 className="text-3xl font-bold text-gray-900">Wideo</h1>
       </div>
 
       <form onSubmit={handleSearch} className="flex gap-2">
-        <input
+        <input aria-label="Szukaj filmów"
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search videos (gua sha, massage, skincare...)"
+          placeholder="Szukaj filmów (gua sha, masaż, pielęgnacja...)"
           className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
         <button
@@ -51,7 +51,7 @@ export default function VideoLearning() {
           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2"
         >
           <Search size={16} />
-          Search
+          Szukaj
         </button>
       </form>
 
@@ -62,7 +62,7 @@ export default function VideoLearning() {
             onClick={() => { setSearchResults([]); setQuery('') }}
             className="ml-2 underline"
           >
-            Clear
+            Wyczyść
           </button>
         </div>
       )}
@@ -86,7 +86,7 @@ export default function VideoLearning() {
                 className="inline-flex items-center mt-3 text-sm text-blue-600 hover:text-blue-800"
               >
                 <Play size={14} className="mr-1" />
-                Watch on YouTube
+                Obejrzyj na YouTube
               </a>
             </div>
           </div>
@@ -95,7 +95,7 @@ export default function VideoLearning() {
 
       {displayVideos.length === 0 && !loading && (
         <div className="text-center py-10 text-gray-500">
-          No videos found. Try a different search term.
+          Nie znaleziono filmów. Spróbuj innej frazy.
         </div>
       )}
     </div>

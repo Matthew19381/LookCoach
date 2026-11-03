@@ -1,7 +1,8 @@
 # LookCoach — Task Roadmap
 
-**Status:** v0.3.0 — fundamenty naprawione (ACTION_PLAN Fazy 0–6, 2026-08-23).
+**Status:** v0.4.0 — plan 2026-11-01 w realizacji (Fazy 0–3, 4–6 i 8 w większości zrobione).
 Ten plik to **operacyjna lista bieżących zadań**, nie druga kopia strategii.
+Aktualny plan działania (z checkboxami): `decisions/ACTION_PLAN_2026-11-01.md`.
 Strategia i architektura docelowa: `decisions/ACTION_PLAN_2026-08-09_wykonane_2026-08-23.md` + `NEURO_PLAN.md`.
 
 ---
@@ -58,4 +59,4 @@ Strategia i architektura docelowa: `decisions/ACTION_PLAN_2026-08-09_wykonane_20
 - Photo quality check przed analizą (oświetlenie/kąt).
 - Barcode scanner kosmetyków + safety check (pregnancy/allergies).
 
-*Ostatnia aktualizacja: 2026-08-23*
+*Ostatnia aktualizacja: 2026-11-02 — bieżące prace wg `decisions/ACTION_PLAN_2026-11-01.md`*

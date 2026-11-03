@@ -1,96 +1,101 @@
 import json
-from pathlib import Path
-from fastapi import APIRouter, Depends, HTTPException
+import logging
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from sqlalchemy.orm import Session
 from ..database import get_db
 from ..models.photo import Photo
 from ..models.analysis import Analysis
+from ..paths import photo_path
 from ..services.gemini_vision import GeminiVisionService
+from ..services.analysis_store import has_any, load_latest_analysis
+from ..services import outbox
 from ..services.attractiveness_levers import AttractivenessLevers
+from ..services.ecosystem_dispatch import dispatch_needs, observe_session
+from ..services.photo_storage import quality_check
+from ..services.wellbeing_guard import assess
+from ..services.state_labels import state_labels
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 VISION_SERVICE = GeminiVisionService()
 
 
 @router.get("/latest")
 async def get_latest_analysis(user_id: int = 1, db: Session = Depends(get_db)):
-    photos = (
-        db.query(Photo)
-        .filter(Photo.user_id == user_id, Photo.analysis_status == "done")
-        .all()
-    )
+    latest = load_latest_analysis(db, user_id)
+    lever = None
+    if has_any(latest):
+        lever = AttractivenessLevers.detect_lever(
+            latest["face"] or {}, latest["body"] or {}, latest["skin"] or {}, latest["hair"] or {},
+        )
+    return {**latest, "lever": lever}
 
-    if not photos:
-        return {
-            "face": None,
-            "body": None,
-            "skin": None,
-            "hair": None,
-            "lever": None,
-            "photos_analyzed": 0,
-        }
 
-    result = {}
-    photo_map = {}
-    for p in photos:
-        # Keep the most recent photo for each type
-        if p.photo_type not in photo_map or p.uploaded_at > photo_map[p.photo_type].uploaded_at:
-            photo_map[p.photo_type] = p
+class AIUnavailable(Exception):
+    """Every AI provider failed - nothing is stored (no invented state)."""
 
-    for ptype in ["front", "side", "back"]:
-        if ptype in photo_map:
-            analysis = (
-                db.query(Analysis)
-                .filter(Analysis.photo_id == photo_map[ptype].id)
-                .first()
-            )
-            if analysis:
-                if ptype == "front":
-                    result["face"] = analysis.get_face_data()
-                elif ptype == "side":
-                    result["body"] = analysis.get_body_data()
-                elif ptype == "back":
-                    result["skin"] = analysis.get_skin_data()
-                    result["hair"] = analysis.get_hair_data()
 
-    lever = AttractivenessLevers.detect_lever(
-        result.get("face") or {}, result.get("body") or {},
-        result.get("skin") or {}, result.get("hair") or {},
-    )
-
-    return {
-        **result,
-        "lever": lever,
-        "photos_analyzed": len(photos),
-    }
+def _require_ai(*results: dict | None) -> None:
+    if any((r or {}).get("fallback") for r in results):
+        raise AIUnavailable
 
 
 @router.post("/analyze/{photo_id}")
-async def analyze_photo(photo_id: int, db: Session = Depends(get_db)):
+async def analyze_photo(
+    photo_id: int, background_tasks: BackgroundTasks, force: bool = False, db: Session = Depends(get_db),
+):
     photo = db.query(Photo).filter(Photo.id == photo_id).first()
     if not photo:
         raise HTTPException(404, "Photo not found")
+
+    # Plan 5.6: very frequent checking -> pause, the user has to confirm (force)
+    if not force:
+        wellbeing = assess(db, photo.user_id)
+        if wellbeing["level"] == "concern":
+            raise HTTPException(429, {"message": wellbeing["message"], "wellbeing": wellbeing})
+
+    # Plan 4.9: an unusable photo is not analysed (and does not cost an AI call)
+    # unless the user explicitly insists (force=true).
+    path = photo_path(photo.file_path)
+    if not force and path.exists():
+        try:
+            quality = quality_check(path.read_bytes())
+        except Exception:  # not decodable - let the analysis path report it
+            quality = {"ok": True}
+        if not quality["ok"]:
+            raise HTTPException(422, {"message": "Zdjęcie ma słabą jakość.", "problems": quality["problems"]})
 
     photo.analysis_status = "processing"
     db.commit()
 
     try:
-        image_bytes = Path(photo.file_path).read_bytes()
+        image_bytes = photo_path(photo.file_path).read_bytes()
 
         analysis = Analysis(photo_id=photo.id)
 
+        # D1 (2026-11-02): skin and hairline come from the FRONT photo (until
+        # then skin + hair were read from the back photo). Back = crown density.
         if photo.photo_type == "front":
-            data = VISION_SERVICE.analyze_face(image_bytes)
-            analysis.set_face_data(data or {})
+            face = VISION_SERVICE.analyze_face(image_bytes)
+            skin = VISION_SERVICE.analyze_skin(image_bytes)
+            hair = VISION_SERVICE.analyze_hair(image_bytes)
+            _require_ai(face, skin, hair)
+            analysis.set_face_data(face or {})
+            analysis.set_skin_data(skin or {})
+            analysis.set_hair_data(hair or {})
         elif photo.photo_type == "side":
-            data = VISION_SERVICE.analyze_body(image_bytes)
-            analysis.set_body_data(data or {})
+            body = VISION_SERVICE.analyze_body(image_bytes)
+            _require_ai(body)
+            analysis.set_body_data(body or {})
         elif photo.photo_type == "back":
-            skin_data = VISION_SERVICE.analyze_skin(image_bytes)
-            hair_data = VISION_SERVICE.analyze_hair(image_bytes)
-            analysis.set_skin_data(skin_data or {})
-            analysis.set_hair_data(hair_data or {})
+            crown = VISION_SERVICE.analyze_crown(image_bytes)
+            _require_ai(crown)
+            analysis.set_hair_data(crown or {})
+        elif photo.photo_type == "smile":
+            smile = VISION_SERVICE.analyze_smile(image_bytes)
+            _require_ai(smile)
+            analysis.set_smile_data(smile or {})
 
         lever = AttractivenessLevers.detect_lever(
             analysis.get_face_data(),
@@ -104,8 +109,26 @@ async def analyze_photo(photo_id: int, db: Session = Depends(get_db)):
         photo.analysis_status = "done"
         db.commit()
 
+        # Plan 3.3-3.6: share the new state with the hub / ForgeBody / Dieta.
+        # Never fails the analysis itself - the outbox retries delivery later.
+        try:
+            observe_session(db, photo.user_id, photo.photo_type, state_labels(analysis))
+            dispatch_needs(db, photo.user_id)
+            background_tasks.add_task(outbox.deliver_in_new_session, db.get_bind())
+        except Exception:
+            logger.exception("Queueing ecosystem events after analysis %s failed", analysis.id)
+
         return {"message": "Analysis complete", "analysis_id": analysis.id}
-    except Exception as e:
+    except AIUnavailable:
+        db.rollback()
         photo.analysis_status = "failed"
         db.commit()
-        raise HTTPException(500, f"Analysis failed: {str(e)}")
+        raise HTTPException(503, "Usługa AI jest teraz niedostępna — spróbuj ponownie później.")
+    except Exception:
+        # Details go to the log, not to the client (they can contain paths or
+        # provider responses - plan 2.6).
+        logger.exception("Analysis of photo %s failed", photo_id)
+        db.rollback()
+        photo.analysis_status = "failed"
+        db.commit()
+        raise HTTPException(500, "Analiza nie powiodła się. Spróbuj ponownie za chwilę.")

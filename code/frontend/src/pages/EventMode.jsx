@@ -2,12 +2,16 @@ import { useState } from 'react'
 import { Calendar, Clock, Sun, Droplets } from 'lucide-react'
 import { generateEventPlan, getEventTips } from '../api/client'
 
+const EVENT_TYPE_PL = { party: 'Impreza', photoshoot: 'Sesja zdjęciowa', date: 'Randka', wedding: 'Wesele', general: 'Ogólne' }
+
 export default function EventMode() {
   const [eventDate, setEventDate] = useState('')
   const [eventType, setEventType] = useState('general')
   const [plan, setPlan] = useState(null)
   const [loading, setLoading] = useState(false)
   const [tips, setTips] = useState([])
+  // Backend field is emergency_day_of; day_of_event kept for older responses.
+  const dayOf = plan?.emergency_day_of ?? plan?.day_of_event ?? []
 
   const handleGeneratePlan = async (e) => {
     e.preventDefault()
@@ -36,20 +40,25 @@ export default function EventMode() {
     <div className="space-y-6">
       <div className="flex items-center gap-3">
         <Calendar size={28} className="text-purple-600" />
-        <h1 className="text-3xl font-bold text-gray-900">Event Mode</h1>
+        <h1 className="text-3xl font-bold text-gray-900">Przed wydarzeniem</h1>
+      </div>
+
+      <div role="note" className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-sm text-amber-900">
+        <strong>HIPOTEZA.</strong> Protokół przed wydarzeniem to zestaw rozsądnych nawyków, a nie
+        przebadana interwencja — efekty krótkoterminowe są niepewne i indywidualne.
       </div>
 
       <div className="bg-white border rounded-lg p-6">
-        <h3 className="text-lg font-semibold mb-4">Prepare for Your Event</h3>
+        <h3 className="text-lg font-semibold mb-4">Przygotuj się do wydarzenia</h3>
         <form onSubmit={handleGeneratePlan} className="space-y-4">
           <div className="grid md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Event Date
+                Data wydarzenia
               </label>
               <input
                 type="date"
-                aria-label="Event Date"
+                aria-label="Data wydarzenia"
                 value={eventDate}
                 onChange={(e) => setEventDate(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md"
@@ -58,19 +67,19 @@ export default function EventMode() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Event Type
+                Rodzaj wydarzenia
               </label>
               <select
-                aria-label="Event Type"
+                aria-label="Rodzaj wydarzenia"
                 value={eventType}
                 onChange={(e) => setEventType(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md"
               >
-                <option value="general">General</option>
-                <option value="party">Party</option>
-                <option value="photoshoot">Photoshoot</option>
-                <option value="date">Date</option>
-                <option value="wedding">Wedding</option>
+                <option value="general">Ogólne</option>
+                <option value="party">Impreza</option>
+                <option value="photoshoot">Sesja zdjęciowa</option>
+                <option value="date">Randka</option>
+                <option value="wedding">Wesele</option>
               </select>
             </div>
           </div>
@@ -79,10 +88,16 @@ export default function EventMode() {
             disabled={!eventDate || loading}
             className="px-6 py-3 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50"
           >
-            {loading ? 'Generating...' : 'Generate Plan'}
+            {loading ? 'Przygotowuję...' : 'Przygotuj plan'}
           </button>
         </form>
       </div>
+
+      {plan?.warnings?.length > 0 && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-sm text-red-900">
+          {plan.warnings.map((w, i) => <p key={i}>{w}</p>)}
+        </div>
+      )}
 
       {plan && plan.timeline && (
         <div className="space-y-4">
@@ -99,11 +114,11 @@ export default function EventMode() {
           </div>
 
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Daily Action Plan</h3>
+            <h3 className="text-lg font-semibold">Plan na kolejne dni</h3>
             {plan.timeline.map((day, idx) => (
               <div key={idx} className="bg-white border rounded-lg p-6">
                 <h4 className="font-medium text-gray-900 mb-3">
-                  {day.days_before === 0 ? 'Day of Event' : `${day.days_before} days before`}
+                  {day.days_before === 0 ? 'Dzień wydarzenia' : `${day.days_before} days before`}
                 </h4>
                 <ul className="space-y-2">
                   {day.actions.map((action, i) => (
@@ -119,11 +134,11 @@ export default function EventMode() {
             ))}
           </div>
 
-          {plan.day_of_event && plan.day_of_event.length > 0 && (
+          {dayOf.length > 0 && (
             <div className="bg-green-50 border border-green-200 rounded-lg p-6">
-              <h4 className="font-medium text-green-900 mb-3">Day of Event - Quick Actions</h4>
+              <h4 className="font-medium text-green-900 mb-3">W dniu wydarzenia</h4>
               <ul className="space-y-2">
-                {plan.day_of_event.map((action, i) => (
+                {dayOf.map((action, i) => (
                   <li key={i} className="flex items-start gap-2">
                     <Sun size={16} className="text-green-600 mt-0.5" />
                     <span className="text-green-800">{action}</span>
@@ -136,7 +151,7 @@ export default function EventMode() {
       )}
 
       <div className="bg-white border rounded-lg p-6">
-        <h3 className="text-lg font-semibold mb-4">Quick Tips by Event Type</h3>
+        <h3 className="text-lg font-semibold mb-4">Wskazówki dla rodzaju wydarzenia</h3>
         <div className="flex gap-2 mb-4 flex-wrap">
           {['party', 'photoshoot', 'date', 'wedding', 'general'].map((type) => (
             <button
@@ -148,7 +163,7 @@ export default function EventMode() {
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
-              {type.charAt(0).toUpperCase() + type.slice(1)}
+              {EVENT_TYPE_PL[type]}
             </button>
           ))}
         </div>

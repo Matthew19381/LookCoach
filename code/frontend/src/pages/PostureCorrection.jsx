@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react'
 import { StretchVertical, AlertTriangle, CheckCircle } from 'lucide-react'
-import { getPostureIssues, detectPostureIssues, getCorrectionPlan, fullPostureAssessment } from '../api/client'
+import { getPostureIssues, getCorrectionPlan, getPostureAssessment } from '../api/client'
 
 export default function PostureCorrection() {
   const [issues, setIssues] = useState([])
-  const [selectedIssue, setSelectedIssue] = useState(null)
+  const [, setSelectedIssue] = useState(null)
   const [correction, setCorrection] = useState(null)
   const [assessment, setAssessment] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -16,14 +16,11 @@ export default function PostureCorrection() {
     }).catch(() => setLoading(false))
   }, [])
 
-  const handleDetect = async () => {
-    // In real app, this would use actual body analysis
-    const mockAnalysis = { head_position: 'forward', shoulder_position: 'forward' }
+  const handleAssess = async () => {
     try {
-      const result = await detectPostureIssues(mockAnalysis)
-      setAssessment(result)
+      setAssessment(await getPostureAssessment())
     } catch (e) {
-      console.error('Detection failed:', e)
+      console.error('Assessment failed:', e)
     }
   }
 
@@ -37,46 +34,36 @@ export default function PostureCorrection() {
     }
   }
 
-  const handleFullAssessment = async () => {
-    const mockAnalysis = { head_position: 'forward', shoulder_position: 'forward' }
-    try {
-      const result = await fullPostureAssessment(mockAnalysis)
-      setAssessment(result)
-    } catch (e) {
-      console.error('Assessment failed:', e)
-    }
-  }
-
   if (loading) {
-    return <div className="text-center py-20">Loading posture issues...</div>
+    return <div className="text-center py-20">Ładowanie...</div>
   }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
         <StretchVertical size={28} className="text-green-600" />
-        <h1 className="text-3xl font-bold text-gray-900">Posture Correction</h1>
+        <h1 className="text-3xl font-bold text-gray-900">Postawa</h1>
       </div>
 
       <div className="flex gap-2">
         <button
-          onClick={handleDetect}
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-        >
-          Detect Issues
-        </button>
-        <button
-          onClick={handleFullAssessment}
+          onClick={handleAssess}
           className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
         >
-          Full Assessment
+          Oceń postawę z ostatniego zdjęcia z boku
         </button>
       </div>
 
-      {assessment && (
+      {assessment && assessment.has_analysis === false && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-blue-900">
+          {assessment.message}
+        </div>
+      )}
+
+      {assessment?.has_analysis && (
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-          <h3 className="text-lg font-semibold mb-4">Assessment Results</h3>
-          <p className="mb-2">Issues detected: <span className="font-bold">{assessment.issues_detected}</span></p>
+          <h3 className="text-lg font-semibold mb-4">Wynik oceny</h3>
+          <p className="mb-2">Wykryte problemy: <span className="font-bold">{assessment.issues_detected}</span></p>
           {assessment.issues?.map((issue, idx) => (
             <div key={idx} className="bg-white border rounded p-4 mb-2">
               <p className="font-medium">{issue.name}</p>
@@ -85,7 +72,7 @@ export default function PostureCorrection() {
           ))}
           {assessment.daily_habits && (
             <div className="mt-4">
-              <h4 className="font-medium mb-2">Daily Habits:</h4>
+              <h4 className="font-medium mb-2">Codzienne nawyki:</h4>
               <ul className="space-y-1">
                 {assessment.daily_habits.map((habit, i) => (
                   <li key={i} className="text-sm text-gray-700 flex items-start gap-2">
@@ -112,7 +99,7 @@ export default function PostureCorrection() {
               onClick={() => handleGetCorrection(issue.id)}
               className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm"
             >
-              Get Correction Plan
+              Pokaż ćwiczenia korygujące
             </button>
           </div>
         ))}

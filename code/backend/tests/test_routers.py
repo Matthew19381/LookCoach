@@ -104,6 +104,31 @@ client = TestClient(test_app)
 
 # ========== PHOTOS ROUTER ==========
 class TestPhotosRouter:
+    def test_upload_rejects_html_with_image_name(self):
+        response = client.post(
+            "/api/v1/photos/upload",
+            files={"file": ("selfie.jpg", b"<html><script>x</script></html>", "image/jpeg")},
+            data={"photo_type": "front", "user_id": "1"},
+        )
+        assert response.status_code == 400
+
+    def test_upload_stores_clean_image_under_server_name(self):
+        import io
+        from PIL import Image
+        from backend.paths import photo_path
+
+        buf = io.BytesIO()
+        Image.new("RGB", (16, 16)).save(buf, format="JPEG")
+        response = client.post(
+            "/api/v1/photos/upload",
+            files={"file": ("../../evil.html", buf.getvalue(), "text/html")},
+            data={"photo_type": "front", "user_id": "1"},
+        )
+        assert response.status_code == 200
+        url = response.json()["url"]
+        assert url.endswith(".jpg") and "evil" not in url
+        assert photo_path(url).exists()
+
     def test_upload_photo_no_file(self):
         response = client.post("/api/v1/photos/upload")
         assert response.status_code == 422
@@ -135,7 +160,7 @@ class TestAnalysisRouter:
         tmp.close()
         db = TestSessionLocal()
         photo = Photo(
-            user_id=1,
+            user_id=9603,
             photo_type="front",
             file_path=tmp.name,
             uploaded_at=datetime.utcnow(),
@@ -152,10 +177,10 @@ class TestAnalysisRouter:
             "skin_quality": {"status": "good", "issues": []},
             "focus_areas": [{"area": "skincare", "priority": "medium", "reason": "hydration"}],
         }
-        with patch(
-            "backend.routers.analysis.VISION_SERVICE.analyze_face",
-            return_value=fake_face_data,
-        ):
+        # D1: the front photo also gives skin and hairline
+        with patch("backend.routers.analysis.VISION_SERVICE.analyze_face", return_value=fake_face_data), \
+             patch("backend.routers.analysis.VISION_SERVICE.analyze_skin", return_value={"skin_type": "dry"}), \
+             patch("backend.routers.analysis.VISION_SERVICE.analyze_hair", return_value={"hairline_status": "stable"}):
             response = client.post(f"/api/v1/analysis/analyze/{photo_id}")
 
         os.unlink(tmp.name)
@@ -163,6 +188,77 @@ class TestAnalysisRouter:
         body = response.json()
         assert body["message"] == "Analysis complete"
         assert isinstance(body["analysis_id"], int)
+        latest = client.get("/api/v1/analysis/latest?user_id=9603").json()
+        assert latest["skin"]["skin_type"] == "dry"
+        assert latest["hair"]["hairline_status"] == "stable"
+
+    def test_smile_photo_is_analysed_into_smile_section(self):
+        """Plan 4.6 (D12): optional 4th view."""
+        from datetime import datetime
+        from unittest.mock import patch
+        from backend.models.photo import Photo
+
+        tmp = tempfile.NamedTemporaryFile(suffix=".jpg", delete=False)
+        tmp.write(b"\xff\xd8x")
+        tmp.close()
+        db = TestSessionLocal()
+        photo = Photo(user_id=9605, photo_type="smile", file_path=tmp.name, uploaded_at=datetime.utcnow())
+        db.add(photo)
+        db.commit()
+        photo_id = photo.id
+        db.close()
+        with patch("backend.routers.analysis.VISION_SERVICE.analyze_smile",
+                   return_value={"teeth_visible": True, "discoloration": "mild"}):
+            assert client.post(f"/api/v1/analysis/analyze/{photo_id}").status_code == 200
+        os.unlink(tmp.name)
+        latest = client.get("/api/v1/analysis/latest?user_id=9605").json()
+        assert latest["smile"]["discoloration"] == "mild"
+
+    def test_ai_unavailable_stores_nothing(self):
+        """No AI -> 503 and no invented analysis (the old fallback said 'swelling: medium')."""
+        from datetime import datetime
+        from unittest.mock import patch
+        from backend.models.analysis import Analysis
+        from backend.models.photo import Photo
+
+        tmp = tempfile.NamedTemporaryFile(suffix=".jpg", delete=False)
+        tmp.write(b"\xff\xd8x")
+        tmp.close()
+        db = TestSessionLocal()
+        photo = Photo(user_id=9401, photo_type="side", file_path=tmp.name, uploaded_at=datetime.utcnow())
+        db.add(photo)
+        db.commit()
+        photo_id = photo.id
+        db.close()
+        with patch("backend.routers.analysis.VISION_SERVICE.analyze_body",
+                   return_value={"fallback": True, "observations": ["x"]}):
+            response = client.post(f"/api/v1/analysis/analyze/{photo_id}")
+        os.unlink(tmp.name)
+        assert response.status_code == 503
+        db = TestSessionLocal()
+        assert db.query(Analysis).filter(Analysis.photo_id == photo_id).count() == 0
+        assert db.get(Photo, photo_id).analysis_status == "failed"
+        db.close()
+
+    def test_back_photo_reads_crown_and_merges_with_front_hairline(self):
+        from datetime import datetime, timedelta
+        from backend.models.analysis import Analysis
+        from backend.models.photo import Photo
+
+        db = TestSessionLocal()
+        for ptype, data, age in (("front", {"hairline_status": "mild_recession", "hair_type": "wavy"}, 2),
+                                 ("back", {"crown_density": "thinning"}, 1)):
+            photo = Photo(user_id=9402, photo_type=ptype, file_path="uploads/h.jpg", analysis_status="done",
+                          uploaded_at=datetime.utcnow() - timedelta(days=age))
+            db.add(photo)
+            db.commit()
+            a = Analysis(photo_id=photo.id)
+            a.set_hair_data(data)
+            db.add(a)
+            db.commit()
+        db.close()
+        hair = client.get("/api/v1/analysis/latest?user_id=9402").json()["hair"]
+        assert hair == {"hairline_status": "mild_recession", "hair_type": "wavy", "crown_density": "thinning"}
 
     def test_latest_analysis_has_no_numeric_person_scores(self):
         """/api/v1/analysis/latest must not expose numeric attractiveness ratings (LC-9)."""
@@ -185,7 +281,7 @@ class TestAnalysisRouter:
 
         db = TestSessionLocal()
         photo = Photo(
-            user_id=1,
+            user_id=9604,
             photo_type="front",
             file_path="Z:/nonexistent/path/photo.jpg",
             uploaded_at=datetime.utcnow(),
@@ -197,6 +293,9 @@ class TestAnalysisRouter:
 
         response = client.post(f"/api/v1/analysis/analyze/{photo_id}")
         assert response.status_code == 500
+        # Plan 2.6: no exception text / paths leak to the client
+        detail = response.json()["detail"]
+        assert "nonexistent" not in detail and "Errno" not in detail
 
 
 # ========== RECOMMENDATIONS ROUTER ==========
@@ -222,6 +321,109 @@ class TestProgressRouter:
         })
         assert response.status_code in [200, 404]
 
+    def test_compare_returns_qualitative_changes_no_score(self):
+        """LC-9: comparison is words from both analyses, never a score."""
+        from datetime import datetime
+        from backend.models.analysis import Analysis
+        from backend.models.photo import Photo
+
+        db = TestSessionLocal()
+        ids = []
+        for level, status in (("medium", "fair"), ("low", "good")):
+            photo = Photo(user_id=1, photo_type="front", file_path="uploads/x.jpg",
+                          uploaded_at=datetime.utcnow(), analysis_status="done")
+            db.add(photo)
+            db.commit()
+            a = Analysis(photo_id=photo.id)
+            a.set_face_data({"swelling": {"level": level}, "skin_quality": {"status": status}})
+            db.add(a)
+            db.commit()
+            ids.append(photo.id)
+        db.close()
+
+        response = client.post("/api/v1/progress/compare", json={
+            "photo_before_id": ids[0], "photo_after_id": ids[1]})
+        assert response.status_code == 200
+        data = response.json()
+        assert "delta_score" not in data
+        assert data["same_type"] is True
+        changes = {c["area"]: c for c in data["changes"]}
+        assert changes["Obrzęk twarzy"] == {
+            "area": "Obrzęk twarzy", "before": "średni", "after": "niski", "changed": True}
+        assert changes["Stan skóry twarzy"]["after"] == "dobry"
+        for c in data["changes"]:
+            assert not isinstance(c["before"], (int, float))
+
+
+class TestRecommendationsUseAnalysis:
+    def _photo_with(self, user_id, photo_type, setter, data):
+        from datetime import datetime
+        from backend.models.analysis import Analysis
+        from backend.models.photo import Photo
+
+        db = TestSessionLocal()
+        photo = Photo(user_id=user_id, photo_type=photo_type, file_path="uploads/r.jpg",
+                      uploaded_at=datetime.utcnow(), analysis_status="done")
+        db.add(photo)
+        db.commit()
+        a = Analysis(photo_id=photo.id)
+        getattr(a, setter)(data)
+        db.add(a)
+        db.commit()
+        db.close()
+
+    def test_no_analysis_gives_basics_only(self):
+        recs = client.get("/api/v1/recommendations/?user_id=9101&limit=50").json()
+        assert {r["category"] for r in recs} <= {"sleep", "nutrition", "stress"}
+
+    def test_high_skincare_focus_goes_first(self):
+        self._photo_with(9102, "front", "set_face_data", {
+            "focus_areas": [{"area": "skincare", "priority": "high", "reason": "dryness"}],
+        })
+        recs = client.get("/api/v1/recommendations/?user_id=9102&limit=50").json()
+        assert recs[0]["category"] == "skincare"
+
+    def test_hair_problem_brings_hair_recommendations(self):
+        """Back photo: hair data has no focus_areas - the lever carries it."""
+        self._photo_with(9103, "back", "set_hair_data", {
+            "hairline_status": "moderate_recession", "density_status": "thin",
+        })
+        recs = client.get("/api/v1/recommendations/?user_id=9103&limit=50").json()
+        assert "hair" in {r["category"] for r in recs}
+
+    def test_hub_priority_directive_goes_first(self):
+        """Plan 3.7: hub `priority` = skincare puts skincare on top even without analysis."""
+        from backend.models.directive_state import DirectiveState
+
+        db = TestSessionLocal()
+        db.add(DirectiveState(user_id=9104, priority="skincare"))
+        db.commit()
+        db.close()
+        recs = client.get("/api/v1/recommendations/?user_id=9104&limit=50").json()
+        assert recs[0]["category"] == "skincare"
+
+    def test_requests_do_not_leak_into_evidence_db(self):
+        from backend.services.evidence_engine import EVIDENCE_DB
+        client.get("/api/v1/recommendations/?user_id=9101")
+        assert all("roi_score" not in e and "priority_rank" not in e for e in EVIDENCE_DB)
+
+
+class TestPostureAndVideosFromAnalysis:
+    def test_posture_assessment_without_photo(self):
+        data = client.get("/api/v1/posture/assessment?user_id=9201").json()
+        assert data["has_analysis"] is False
+
+    def test_posture_assessment_from_side_photo(self):
+        TestRecommendationsUseAnalysis()._photo_with(9202, "side", "set_body_data", {
+            "posture": {"head_position": "forward", "shoulder_position": "forward", "pelvic_tilt": "neutral"},
+        })
+        data = client.get("/api/v1/posture/assessment?user_id=9202").json()
+        assert data["has_analysis"] is True
+        assert {i["issue"] for i in data["issues"]} == {"forward_head", "rounded_shoulders"}
+
+    def test_recommended_videos_empty_without_analysis(self):
+        assert client.get("/api/v1/video-learning/videos/recommended?user_id=9203").json() == []
+
 
 # ========== PROFILE ROUTER ==========
 class TestProfileRouter:
@@ -235,6 +437,37 @@ class TestProfileRouter:
             "lifestyle": {"sleep_hours": 7}
         })
         assert response.status_code == 200
+
+    def test_goals_and_health_roundtrip_for_the_given_user(self):
+        body = {
+            "goals": {"focus": ["skin", "hair"], "minutes_per_day": 15, "styling_minutes": 5},
+            "health": {"pregnancy": True},
+            "mode": "improvement",
+        }
+        data = client.put("/api/v1/profile/?user_id=9501", json=body).json()
+        assert data["goals"]["focus"] == ["skin", "hair"]
+        assert data["health"]["pregnancy"] is True and data["health"]["kidney_disease"] is False
+        again = client.get("/api/v1/profile/?user_id=9501").json()
+        assert again["mode"] == "improvement"
+        from backend.models.user import User
+        db = TestSessionLocal()
+        assert db.get(User, 9501) is not None  # not "the next free id"
+        db.close()
+
+    def test_invalid_goal_and_minutes_rejected(self):
+        assert client.put("/api/v1/profile/?user_id=9502", json={"goals": {"focus": ["abs"]}}).status_code == 422
+        assert client.put("/api/v1/profile/?user_id=9502", json={"goals": {"minutes_per_day": -5}}).status_code == 422
+
+    def test_pregnancy_flag_blocks_retinol(self):
+        """LC-8 end to end: the flag set via the profile removes retinol (skincare_002)."""
+        client.put("/api/v1/profile/?user_id=9503", json={"health": {"pregnancy": True}, "goals": {"focus": ["skin"]}})
+        ids = {r["id"] for r in client.get("/api/v1/recommendations/?user_id=9503&limit=50").json()}
+        assert "skincare_001" in ids and "skincare_002" not in ids
+
+    def test_goal_focus_moves_category_up(self):
+        client.put("/api/v1/profile/?user_id=9504", json={"goals": {"focus": ["hair"]}})
+        recs = client.get("/api/v1/recommendations/?user_id=9504&limit=50").json()
+        assert recs[0]["category"] == "hair"
 
 
 # ========== SKINCARE ROUTER ==========
@@ -274,6 +507,31 @@ class TestEventModeRouter:
     def test_get_event_tips(self):
         response = client.get("/api/v1/event-mode/tips/wedding")
         assert response.status_code == 200
+        assert response.json()["evidence_level"] == "hipoteza"
+
+    def test_plan_is_marked_hypothesis(self):
+        from datetime import date, timedelta
+        future = (date.today() + timedelta(days=5)).isoformat()
+        data = client.post("/api/v1/event-mode/plan?user_id=9301", json={"event_date": future}).json()
+        assert data["evidence_level"] == "hipoteza"
+        assert "HIPOTEZA" in data["disclaimer"]
+
+    def test_kidney_disease_removes_water_and_sodium_targets(self):
+        """LC-8: no water/sodium targets with kidney disease."""
+        import json
+        from datetime import date, timedelta
+        from backend.models.profile import UserProfile
+
+        db = TestSessionLocal()
+        db.add(UserProfile(user_id=9302, health=json.dumps({"kidney_disease": True})))
+        db.commit()
+        db.close()
+        future = (date.today() + timedelta(days=5)).isoformat()
+        data = client.post("/api/v1/event-mode/plan?user_id=9302", json={"event_date": future}).json()
+        actions = [a for day in data["timeline"] for a in day["actions"]] + data["emergency_day_of"]
+        assert actions
+        assert not any(w in a.lower() for a in actions for w in ("wod", "sol", "sól", "nawodn", "water", "sodium"))
+        assert any("nerek" in w for w in data["warnings"])
 
 
 # ========== CONFIDENCE ROUTER ==========
@@ -286,9 +544,34 @@ class TestConfidenceRouter:
         response = client.get("/api/v1/confidence/action-plan")
         assert response.status_code == 200
 
-    def test_attractiveness_impact(self):
+    def test_attractiveness_impact_removed(self):
         response = client.get("/api/v1/confidence/attractiveness-impact?confidence_score=70&presence_score=70")
-        assert response.status_code == 200
+        assert response.status_code == 404
+
+    def test_analyze_without_photos_says_so(self):
+        data = client.get("/api/v1/confidence/analyze?user_id=9001").json()
+        assert data["has_analysis"] is False
+        assert data["posture"] is None
+
+    def test_analyze_uses_latest_real_analysis(self):
+        from datetime import datetime
+        from backend.models.analysis import Analysis
+        from backend.models.photo import Photo
+
+        db = TestSessionLocal()
+        photo = Photo(user_id=9002, photo_type="front", file_path="uploads/c.jpg",
+                      uploaded_at=datetime.utcnow(), analysis_status="done")
+        db.add(photo)
+        db.commit()
+        a = Analysis(photo_id=photo.id)
+        a.set_face_data({"muscle_tension": {"level": "high"}})
+        db.add(a)
+        db.commit()
+        db.close()
+
+        data = client.get("/api/v1/confidence/analyze?user_id=9002").json()
+        assert data["has_analysis"] is True
+        assert any("napięcie" in i.lower() for i in data["facial"]["issues"])
 
 
 # ========== EXPERIMENTS ROUTER ==========
@@ -306,19 +589,10 @@ class TestExperimentsRouter:
 
 # ========== AESTHETIC TRAINING ROUTER ==========
 class TestAestheticTrainingRouter:
-    def test_get_plans(self):
-        response = client.get("/api/v1/aesthetic-training/plans")
-        assert response.status_code == 200
-        data = response.json()
-        assert isinstance(data, list)
-        assert len(data) > 0
-
-    def test_generate_plan(self):
-        response = client.post("/api/v1/aesthetic-training/plan", json={
-            "goal": "v_taper",
-            "fitness_level": "beginner"
-        })
-        assert response.status_code == 200
+    def test_no_training_plans_in_lookcoach(self):
+        """LC-4: training plans belong to ForgeBody."""
+        assert client.get("/api/v1/aesthetic-training/plans").status_code == 404
+        assert client.post("/api/v1/aesthetic-training/plan", json={}).status_code in (404, 405)
 
     def test_get_exercises(self):
         response = client.get("/api/v1/aesthetic-training/exercises")
@@ -377,18 +651,6 @@ class TestNutritionRouter:
         assert response.status_code == 200
         assert isinstance(response.json(), list)
 
-    def test_get_meal_plan(self):
-        response = client.get("/api/v1/nutrition/meal-plan/pre_event")
-        assert response.status_code == 200
-
-    def test_analyze_diet(self):
-        response = client.post("/api/v1/nutrition/analyze", json={
-            "diet_log": {"calories": 2000, "protein": 150}
-        })
-        assert response.status_code == 200
-
-
-# ========== SLEEP ROUTER ==========
 class TestSleepRouter:
     def test_get_factors(self):
         response = client.get("/api/v1/sleep/factors")
@@ -428,7 +690,7 @@ class TestSummaryRouter:
         response = client.get("/api/v1/summary?user_id=test123")
         assert response.status_code == 200, response.text
         body = response.json()
-        assert set(body.keys()) == {"module", "user_id", "date", "summary", "events"}
+        assert set(body.keys()) == {"module", "user_id", "date", "summary", "events", "wellbeing_contribution"}
         assert body["module"] == "lookcoach"
         assert body["user_id"] == "test123"
         assert isinstance(body["summary"], dict)
@@ -496,7 +758,30 @@ class TestIntegrationRouter:
         assert len(match) >= 1
         assert match[0]["payload"]["duration_min"] == 45
 
-    def test_summary_exposes_stored_events(self, monkeypatch):
+    def test_receive_event_in_hub_contract_shape(self, monkeypatch):
+        """Plan 3.9: hub contract 1.2 uses module/data (numeric user_id tolerated)."""
+        monkeypatch.setenv("MODULE_KEY", "correct-secret")
+        response = client.post(
+            "/api/v1/integrations/event",
+            json={"module": "forge-body", "event_type": "measurement_logged", "user_id": 777,
+                  "timestamp": "2026-11-02T08:00:00Z", "data": {"waist_cm": 82}},
+            headers={"X-Module-Key": "correct-secret"},
+        )
+        assert response.status_code == 200, response.text
+        events = client.get("/api/v1/integrations/events?user_id=777").json()
+        assert events[0]["source_module"] == "forge-body"
+        assert events[0]["payload"] == {"waist_cm": 82}
+
+    def test_receive_event_without_sender_is_422(self, monkeypatch):
+        monkeypatch.setenv("MODULE_KEY", "correct-secret")
+        response = client.post(
+            "/api/v1/integrations/event",
+            json={"event_type": "x", "user_id": "1"},
+            headers={"X-Module-Key": "correct-secret"},
+        )
+        assert response.status_code == 422
+
+    def test_summary_does_not_echo_received_events(self, monkeypatch):
         monkeypatch.setenv("MODULE_KEY", "correct-secret")
         client.post(
             "/api/v1/integrations/event",
@@ -511,7 +796,8 @@ class TestIntegrationRouter:
         )
         summary = client.get("/api/v1/summary?user_id=summary-user").json()
         types = [e["event_type"] for e in summary["events"]]
-        assert "lesson_completed" in types
+        # Contract 1.1: only LookCoach's own events - never echo what other modules sent
+        assert "lesson_completed" not in types
 
 
 # ========== EXPERIMENTS PERSISTENCE (FAZA 4) ==========

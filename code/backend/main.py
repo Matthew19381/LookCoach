@@ -1,3 +1,6 @@
+import logging
+import asyncio
+import os
 from pathlib import Path
 from contextlib import asynccontextmanager
 from dotenv import load_dotenv
@@ -27,34 +30,57 @@ from .routers import (
     consistency,
     directives,
     feedback_loop,
+    data,
+    ecosystem,
+    style,
+    today,
+    assistant,
+    notifications,
 )
 
 # Database
 from .database import init_db
+from .paths import UPLOAD_DIR
+from .services import outbox, reminders
+
+logger = logging.getLogger(__name__)
 
 # Environment variables - load .env from project root
 PROJECT_ROOT = Path(__file__).parent.parent.parent
 load_dotenv(dotenv_path=PROJECT_ROOT / ".env")
 
-UPLOAD_DIR = Path("uploads")
-UPLOAD_DIR.mkdir(exist_ok=True)
+
+
+OUTBOX_INTERVAL_S = int(os.getenv("LOOKCOACH_OUTBOX_INTERVAL", "60"))
+
+
+async def _outbox_worker() -> None:
+    """Plan 3.1: retry queued hub events (hub restarted, network back, key fixed).
+    Plan 5.5: the same tick sends due push reminders (no-op without VAPID keys)."""
+    while True:
+        await asyncio.sleep(OUTBOX_INTERVAL_S)
+        await outbox.deliver_in_new_session()
+        await asyncio.to_thread(reminders.run_in_new_session)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
-    print("Starting LookCoach API...")
+    logger.info("Starting LookCoach API...")
     init_db()
-    print("Database initialized.")
+    logger.info("Database initialized.")
+    worker = asyncio.create_task(_outbox_worker()) if OUTBOX_INTERVAL_S > 0 else None
     yield
     # Shutdown
-    print("Shutting down LookCoach API...")
+    if worker:
+        worker.cancel()
+    logger.info("Shutting down LookCoach API...")
 
 
 app = FastAPI(
     title="LookCoach API",
     description="AI-powered Looks Optimizer",
-    version="0.2.0",
+    version="0.4.0",
     lifespan=lifespan,
 )
 
@@ -68,7 +94,7 @@ app.add_middleware(
 )
 
 # Static files
-app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 
 
 @app.get("/health")
@@ -102,6 +128,12 @@ app.include_router(stress.router, prefix="/api/v1/stress", tags=["stress"])
 app.include_router(consistency.router, prefix="/api/v1/consistency", tags=["consistency"])
 app.include_router(directives.router, prefix="/api/v1/directives", tags=["directives"])
 app.include_router(feedback_loop.router, prefix="/api/v1/feedback-loop", tags=["feedback-loop"])
+app.include_router(data.router, prefix="/api/v1/data", tags=["privacy"])
+app.include_router(ecosystem.router, prefix="/api/v1/ecosystem", tags=["ecosystem"])
+app.include_router(style.router, prefix="/api/v1/style", tags=["style"])
+app.include_router(today.router, prefix="/api/v1/today", tags=["today"])
+app.include_router(assistant.router, prefix="/api/v1/assistant", tags=["assistant"])
+app.include_router(notifications.router, prefix="/api/v1/notifications", tags=["notifications"])
 
 
 if __name__ == "__main__":

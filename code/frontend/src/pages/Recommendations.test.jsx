@@ -31,7 +31,7 @@ const mockRecs = [
   },
 ]
 
-describe('Recommendations', () => {
+describe('Rekomendacje', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
@@ -45,7 +45,7 @@ describe('Recommendations', () => {
       </BrowserRouter>
     )
 
-    expect(screen.getByText('Loading recommendations...')).toBeInTheDocument()
+    expect(screen.getByText('Ładowanie rekomendacji...')).toBeInTheDocument()
   })
 
   it('calls getRecommendations with limit 10', async () => {
@@ -107,9 +107,9 @@ describe('Recommendations', () => {
     )
 
     await waitFor(() => {
-      expect(screen.getByText('High potential')).toBeInTheDocument()
+      expect(screen.getByText('Duży potencjał')).toBeInTheDocument()
     })
-    expect(screen.getByText('Moderate potential')).toBeInTheDocument()
+    expect(screen.getByText('Umiarkowany potencjał')).toBeInTheDocument()
     expect(screen.getByText('~4 weeks')).toBeInTheDocument()
     expect(screen.getByText('~8 weeks')).toBeInTheDocument()
 
@@ -144,7 +144,7 @@ describe('Recommendations', () => {
 
     await waitFor(() => {
       // After error, loading should stop and no recommendations rendered
-      expect(screen.queryByText('Loading recommendations...')).not.toBeInTheDocument()
+      expect(screen.queryByText('Ładowanie rekomendacji...')).not.toBeInTheDocument()
     })
     // No recommendation items rendered
     expect(screen.queryByText('Vitamin C Serum')).not.toBeInTheDocument()

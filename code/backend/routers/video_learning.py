@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from ..database import get_db
+from ..services.analysis_store import load_latest_analysis
 from ..services.video_learning import VideoLearningEngine
 
 router = APIRouter()
@@ -17,9 +18,8 @@ async def get_all_videos(technique: str = None, query: str = None):
 
 @router.get("/videos/recommended")
 async def get_recommended_videos(user_id: int = 1, db: Session = Depends(get_db)):
-    # In full version, would fetch user's latest analysis
+    # Until 2026-11-02 this used hard-coded sample data for everyone.
+    latest = load_latest_analysis(db, user_id)
     return VideoLearningEngine.get_videos_for_analysis(
-        {"observations": ["sample"]},
-        {"skin_type": "combination"},
-        {"density_status": "normal"}
+        latest["face"] or {}, latest["skin"] or {}, latest["hair"] or {},
     )

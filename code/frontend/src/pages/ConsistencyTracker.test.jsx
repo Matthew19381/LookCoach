@@ -23,7 +23,6 @@ const mockGetAdherenceRate = api.getAdherenceRate
 const mockGetRecommendedDifficulty = api.getRecommendedDifficulty
 const mockGetAllProtocolsStatus = api.getAllProtocolsStatus
 const mockGetConsistencySummary = api.getConsistencySummary
-const mockGetMinimumEffectiveProtocol = api.getMinimumEffectiveProtocol
 const mockRecalculateMetrics = api.recalculateMetrics
 const mockGetPatternAlert = api.getPatternAlert
 
@@ -77,14 +76,14 @@ describe('ConsistencyTracker', () => {
 
   it('renders loading state initially', () => {
     render(<ConsistencyTracker />)
-    expect(screen.getByText('Loading consistency tracker...')).toBeInTheDocument()
+    expect(screen.getByText('Ładowanie...')).toBeInTheDocument()
   })
 
   it('renders consistency summary after loading', async () => {
     render(<ConsistencyTracker />)
     
     await waitFor(() => {
-      expect(screen.getByText('Consistency Summary')).toBeInTheDocument()
+      expect(screen.getByText('Podsumowanie')).toBeInTheDocument()
     })
     
     expect(screen.getByText('75%')).toBeInTheDocument() // Overall Score
@@ -97,7 +96,7 @@ describe('ConsistencyTracker', () => {
     render(<ConsistencyTracker />)
     
     await waitFor(() => {
-      expect(screen.getByText('Pattern Alerts')).toBeInTheDocument()
+      expect(screen.getByText('Zauważone wzorce')).toBeInTheDocument()
     })
     
     // 'exercise' appears in the alert and in the protocol status card
@@ -109,24 +108,24 @@ describe('ConsistencyTracker', () => {
     render(<ConsistencyTracker />)
     
     await waitFor(() => {
-      expect(screen.getByText('Consistency Summary')).toBeInTheDocument()
+      expect(screen.getByText('Podsumowanie')).toBeInTheDocument()
     })
     
-    fireEvent.change(screen.getByLabelText('Protocol Type'), { target: { value: 'skincare' } })
+    fireEvent.change(screen.getByLabelText('Protokół'), { target: { value: 'skincare_morning' } })
     
-    fireEvent.change(screen.getByLabelText('Date'), { target: { value: '2026-09-18' } })
+    fireEvent.change(screen.getByLabelText('Data'), { target: { value: '2026-09-18' } })
     
-    fireEvent.change(screen.getByLabelText('Completed'), { target: { value: 'true' } })
-    fireEvent.change(screen.getByLabelText('Difficulty Level'), { target: { value: 'full' } })
+    fireEvent.change(screen.getByLabelText('Wykonane'), { target: { value: 'true' } })
+    fireEvent.change(screen.getByLabelText('Poziom'), { target: { value: 'full' } })
     
-    fireEvent.change(screen.getByLabelText('Notes'), { target: { value: 'Test notes' } })
+    fireEvent.change(screen.getByLabelText('Notatki'), { target: { value: 'Test notes' } })
     
     // Submit the form
-    fireEvent.click(screen.getByRole('button', { name: 'Log Adherence' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Zapisz wykonanie' }))
     
     await waitFor(() => {
       expect(mockLogAdherence).toHaveBeenCalledWith({
-        protocol_type: 'skincare',
+        protocol_type: 'skincare_morning',
         completed: true,
         date: '2026-09-18',
         difficulty_level: 'full',
@@ -139,10 +138,10 @@ describe('ConsistencyTracker', () => {
     render(<ConsistencyTracker />)
     
     await waitFor(() => {
-      expect(screen.getByText('Protocol Status')).toBeInTheDocument()
+      expect(screen.getByText('Stan protokołów')).toBeInTheDocument()
     })
     
-    const statusCard = screen.getByText('Protocol Status').parentElement
+    const statusCard = screen.getByText('Stan protokołów').parentElement
     expect(within(statusCard).getByText('skincare')).toBeInTheDocument()
     expect(within(statusCard).getByText('exercise')).toBeInTheDocument()
     
@@ -155,18 +154,18 @@ describe('ConsistencyTracker', () => {
     render(<ConsistencyTracker />)
     
     await waitFor(() => {
-      expect(screen.getByText('Consistency Summary')).toBeInTheDocument()
+      expect(screen.getByText('Podsumowanie')).toBeInTheDocument()
     })
     
-    fireEvent.change(screen.getByLabelText('Protocol Type'), { target: { value: 'skincare' } })
+    fireEvent.change(screen.getByLabelText('Protokół'), { target: { value: 'skincare_morning' } })
     
     // Click to load history
-    fireEvent.click(screen.getByText('Load History & Analysis'))
+    fireEvent.click(screen.getByText('Pokaż historię i analizę'))
     
     await waitFor(() => {
-      expect(mockGetAdherenceHistory).toHaveBeenCalledWith('skincare')
-      expect(mockGetAdherenceRate).toHaveBeenCalledWith('skincare')
-      expect(mockGetRecommendedDifficulty).toHaveBeenCalledWith('skincare')
+      expect(mockGetAdherenceHistory).toHaveBeenCalledWith('skincare_morning')
+      expect(mockGetAdherenceRate).toHaveBeenCalledWith('skincare_morning')
+      expect(mockGetRecommendedDifficulty).toHaveBeenCalledWith('skincare_morning')
     })
   })
 
@@ -174,16 +173,23 @@ describe('ConsistencyTracker', () => {
     render(<ConsistencyTracker />)
     
     await waitFor(() => {
-      expect(screen.getByText('Consistency Summary')).toBeInTheDocument()
+      expect(screen.getByText('Podsumowanie')).toBeInTheDocument()
     })
     
-    fireEvent.change(screen.getByLabelText('Protocol Type'), { target: { value: 'skincare' } })
+    fireEvent.change(screen.getByLabelText('Protokół'), { target: { value: 'skincare_morning' } })
     
     // Click to recalculate
-    fireEvent.click(screen.getByText('Recalculate Metrics'))
+    fireEvent.click(screen.getByText('Przelicz'))
     
     await waitFor(() => {
       expect(mockRecalculateMetrics).toHaveBeenCalled()
     })
+  })
+
+  it('offers exactly the protocol types the API accepts (skincare/exercise/supplements were rejected with 400)', async () => {
+    render(<ConsistencyTracker />)
+    await waitFor(() => expect(screen.getByText('Podsumowanie')).toBeInTheDocument())
+    const values = [...screen.getByLabelText('Protokół').querySelectorAll('option')].map((o) => o.value).filter(Boolean)
+    expect(values).toEqual(['skincare_morning', 'skincare_evening', 'training', 'sleep', 'nutrition', 'stress'])
   })
 })

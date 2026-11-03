@@ -2,6 +2,101 @@
 
 ---
 
+## [Unreleased] — 2026-11-02 (domknięcie planu: push, kod kreskowy, aparat, migracje, uśmiech, Mentalność)
+### Dodane
+- **Przypomnienia push** (Profil → Przypomnienia): rutyna rano/wieczorem i zdjęcia kontrolne, z ciszą nocną
+  i trybem przetrwania z huba; własna implementacja Web Push (RFC 8291 + VAPID). Wymaga kluczy VAPID w `.env`
+  (`python -m backend.scripts.generate_vapid_keys`).
+- **Kod kreskowy kosmetyku** (Open Beauty Facts) + ostrzeżenia zdrowotne produktu (retinoid w ciąży, kwasy przy
+  wrażliwej skórze).
+- **Aparat z szablonem kadru**, suwak przed/po, korelacje „Co idzie w parze” (pielęgnacja–skóra, stres i sód–obrzęk).
+- **Opcjonalne zdjęcie „uśmiech”** (zęby, dziąsła) z poradami w Stylu.
+- Sygnał do **Mentalności** przy bardzo częstym sprawdzaniu wyglądu lub cierpieniu z jego powodu.
+- Treści z backendu po polsku; CI: mypy, ESLint; pre-commit.
+### Naprawione
+- Migracje Alembic: łańcuch nie działał na czystej bazie; start aplikacji robi teraz `alembic upgrade head`
+  (stara baza bez utraty danych).
+- `/summary` oddawał hubowi cudze eventy w starym formacie — teraz własne, zgodnie z kontraktem.
+- Regularność: zapis pielęgnacji z UI zawsze kończył się błędem 400 (zła lista protokołów).
+- Filtr nerkowy w Event Mode działa na polskich treściach.
+
+## [Unreleased] — 2026-11-02 (Fazy 4, 5, 6.2, 8)
+### Dodane
+- **Asystent AI** (strona Asystent): rozmowa na podstawie Twoich analiz, rutyn, profilu i danych z innych
+  modułów; bez liczbowych ocen wyglądu (odpowiedź z oceną jest podmieniana), rekomendacje z poziomem dowodów,
+  przeciwwskazania respektowane, akcje (wyślij potrzeby, eksperyment, otwórz stronę) tylko po potwierdzeniu.
+- **Styl**: 3 propozycje fryzur z tekstem „powiedz fryzjerowi” (dopasowane do czasu na układanie), brwi,
+  zarost, okolica oczu, oprawki, ubiór, kolorystyka (HIPOTEZA); opcjonalny płatny podgląd fryzury/zarostu
+  na własnym zdjęciu (limit 5/dobę, obraz niezapisywany).
+- **Dziś** jako strona startowa; **Profil** (cele + flagi zdrowotne — wcześniej nieustawialne z UI);
+  oś czasu stanu słowami w Postępie; nawigacja w grupach po polsku z menu na telefon.
+- **Kontrola jakości zdjęcia** (ostrość, ekspozycja, rozdzielczość) przed analizą.
+- **Detektor częstego sprawdzania wyglądu**: łagodne komunikaty, pauza analizy, sygnał do Mentalności.
+### Naprawione
+- UI nigdy nie uruchamiał analizy zdjęć — teraz startuje po wysłaniu.
+- Fallback bez AI zwracał zmyślone obserwacje („obrzęk: średni”) — teraz brak AI = czytelny błąd, nic nie jest zapisywane.
+- Skóra i linia włosów analizowane ze zdjęcia z przodu (wcześniej z tyłu); tył = czubek głowy.
+- Profil zapisywał się pod innym id użytkownika, gdy użytkownik nie istniał.
+
+## [Unreleased] — 2026-11-02 (Faza 3 — wymiana danych z ekosystemem)
+### Dodane
+- **Kolejka do huba** (`outbox_events`): każdy event jest najpierw zapisywany, potem wysyłany z ponawianiem
+  (worker co 60 s). Wyłączony hub, zły lub brak klucza nie gubią już eventów.
+- **Analiza → ForgeBody/Dieta**: po analizie LookCoach wysyła (przez hub, event `module_directive`) priorytet
+  mięśni do ForgeBody i potrzeby żywieniowe do Diety (limit sodu przy obrzęku, niski ładunek glikemiczny przy
+  trądziku — RCT Smith 2007), tylko gdy coś się zmieniło; Health Safety (nerki) respektowane. Plus
+  `state_observation` ze słownym stanem sesji zdjęć.
+- **Dane z innych modułów** (`GET /ecosystem/overview`): pomiary i treningi z ForgeBody, waga z Diety,
+  samopoczucie (`affect`); przy niedostępnym hubie ostatnie zapisane dane.
+- Strona **Połączenia**: dane z modułów, kolejka wysyłki, dyrektywy huba.
+- Plan dnia huba: „Zdjęcia kontrolne” co 14 dni (odhaczane po sesji zdjęć).
+- Dyrektywa `priority` z huba wpływa na kolejność rekomendacji.
+### Zmienione (LC-4)
+- Usunięte generowanie planów treningowych i jadłospisów oraz własny formularz diety (był też zepsuty —
+  wysyłał inne pola niż czytał backend). Strony Trening i Żywienie pokazują, co LookCoach przekazuje do
+  ForgeBody/Diety, z przyciskiem „Wyślij”.
+- `POST /integrations/event` przyjmuje kontrakt huba (`module`/`data`) i stary format.
+### Wymaga zmian w innych repo (zrobione na gałęziach `claude/lookcoach-integracja`, bez merge)
+- System-Glowny: routing `module_directive`, klucz modułu przy dyrektywach, odczyt eventów kluczem modułu.
+- ForgeBody: mapa mięśni (rear_delts/quads nic nie zmieniały). Dieta: dyrektywa `nutrition_needs`.
+
+## [Unreleased] — 2026-11-02 (Faza 2 — bezpieczeństwo i prywatność zdjęć)
+### Dodane
+- Strona **Prywatność**: pobranie wszystkich danych (ZIP: JSON + zdjęcia) i trwałe usunięcie
+  (fraza `USUN-WSZYSTKO`). API: `GET /api/v1/data/export`, `DELETE /api/v1/data`.
+### Naprawione
+- Upload przyjmował dowolny plik pod rozszerzeniem z nazwy (np. `.html` serwowany z `/uploads`).
+  Teraz tylko prawdziwe JPEG/PNG/WEBP do 15 MB, nazwa nadawana przez serwer, zdjęcie
+  przekodowane bez metadanych (EXIF/GPS), z zachowaną orientacją.
+- Usunięcie zdjęcia zostawiało analizę i cache AI — teraz znika wszystko; stare osierocone
+  analizy są sprzątane przy starcie.
+- `POST /directives` bez autoryzacji — teraz klucz `X-Module-Key` albo połączenie z localhost;
+  porównanie kluczy w stałym czasie.
+- Błąd analizy zwracał treść wyjątku (ścieżki) — teraz ogólny komunikat, szczegóły w logu.
+- Docker: backend i Ollama publikowane tylko na `127.0.0.1`.
+
+## [Unreleased] — 2026-11-02 (plan działania 2026-11-01, Fazy 0–1)
+### Usunięte (zmyślone dane i oceny — LC-1/LC-9)
+- Wykres „Look Score” w Postępie: linia `50 + i*5` rosła o 5 pkt na każde zdjęcie niezależnie od analizy.
+  W zamian porównanie dwóch zdjęć słowami (np. „Obrzęk twarzy: średni → niski”).
+- `delta_score` (zawsze 0.0), `/confidence/attractiveness-impact` („do +20% atrakcyjności” bez źródła),
+  hasło „Confidence is the #1 most attractive quality”, wyniki „X/100” w Śnie/Stresie/Żywieniu (wagi bez
+  źródła) → status `dobry / do poprawy / wymaga uwagi` z listą przyczyn, `v_taper_score`/`posture_score`.
+- Atrapy analizy: rekomendacje (pusta analiza), Confidence (`dummy_analysis`), Postawa (`mockAnalysis`
+  w przeglądarce), Wideo (dane przykładowe). Martwe `/integrations/output` i udawany `POST /feedback-loop/thresholds`.
+### Naprawione
+- Rekomendacje zależą od Twoich zdjęć: priorytet z analizy i wykrytej dźwigni (skóra/włosy), ROI sortuje
+  dopiero w obrębie priorytetu; zapytania nie mutują już globalnej bazy dowodów.
+- Postawa oceniana z ostatniego zdjęcia z boku (`GET /posture/assessment`); prompt zwraca pola postawy.
+- Event Mode oznaczony jako HIPOTEZA (API + baner); przy chorobie nerek bez zaleceń wody/sodu (LC-8);
+  sekcja „w dniu wydarzenia” wreszcie się wyświetla (frontend czytał złe pole).
+- Sen: godzina zaśnięcia porównywana jako czas, nie tekst („22:30” liczyło się jako „po północy”).
+- Docker: zdjęcia trafiały do `/app/uploads`, poza wolumen — znikały z kontenerem. `uploads/` i `.cache/`
+  kotwiczone w `backend/paths.py` i ignorowane przez git niezależnie od katalogu startu.
+- Instalacja: `npm ci` (lockfile), Python 3.13 (pillow 11.3.0, sqlalchemy 2.0.36).
+### Dodane
+- CI (GitHub Actions): ruff, pytest, `verify_evidence_db`, vitest, build.
+
 ## [Unreleased] — 2026-10-04 (plan dnia Systemu Głównego)
 ### Naprawione
 - **LookCoach nie wysyłał do huba żadnych eventów**: `integration_publisher` był przetestowany, ale żaden

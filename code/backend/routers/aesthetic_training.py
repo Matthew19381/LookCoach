@@ -4,26 +4,11 @@ from ..services.aesthetic_training import AestheticTrainingEngine
 
 router = APIRouter()
 
-class TrainingPlanRequest(BaseModel):
-    goal: str = "v_taper"
-    fitness_level: str = "beginner"
-
 class PhysiqueAnalysisRequest(BaseModel):
     analysis: dict
 
-@router.get("/plans")
-async def get_available_plans():
-    """List available training plans."""
-    return [
-        {"id": k, "name": v["name"], "description": v["description"]}
-        for k, v in AestheticTrainingEngine.PLANS.items()
-    ]
-
-@router.post("/plan")
-async def generate_plan(body: TrainingPlanRequest):
-    """Generate training plan based on goal."""
-    plan = AestheticTrainingEngine.generate_plan(body.goal, body.fitness_level)
-    return plan
+# /plans and /plan removed 2026-11-02 (LC-4): LookCoach does not write training
+# plans - it sends the muscle priorities to ForgeBody (GET/POST /ecosystem/needs).
 
 @router.get("/exercises")
 async def get_exercises():

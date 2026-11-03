@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { BrowserRouter } from 'react-router-dom'
 
@@ -43,6 +43,23 @@ describe('EventMode', () => {
     vi.clearAllMocks()
   })
 
+  it('always shows the HIPOTEZA banner (LC-5)', () => {
+    render(<EventMode />)
+    expect(screen.getByRole('note')).toHaveTextContent('HIPOTEZA')
+  })
+
+  it('shows day-of actions from emergency_day_of (backend field)', async () => {
+    generateEventPlan.mockResolvedValue({
+      event_type: 'general', days_until_event: 3, timeline: [],
+      emergency_day_of: ['Zimna woda na twarz 30 min przed wydarzeniem'],
+    })
+    render(<EventMode />)
+    const dateInput = document.querySelector('input[type="date"]')
+    fireEvent.change(dateInput, { target: { value: '2030-01-01' } })
+    fireEvent.submit(dateInput.closest('form'))
+    expect(await screen.findByText(/Zimna woda na twarz 30/)).toBeInTheDocument()
+  })
+
   it('renders title and form', () => {
     render(
       <BrowserRouter>
@@ -50,10 +67,10 @@ describe('EventMode', () => {
       </BrowserRouter>
     )
 
-    expect(screen.getByText('Event Mode')).toBeInTheDocument()
-    expect(screen.getByLabelText('Event Date')).toBeInTheDocument()
-    expect(screen.getByLabelText('Event Type')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /Generate Plan/ })).toBeInTheDocument()
+    expect(screen.getByText('Przed wydarzeniem')).toBeInTheDocument()
+    expect(screen.getByLabelText('Data wydarzenia')).toBeInTheDocument()
+    expect(screen.getByLabelText('Rodzaj wydarzenia')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Przygotuj plan/ })).toBeInTheDocument()
   })
 
   it('generates plan on submit', async () => {
@@ -68,15 +85,15 @@ describe('EventMode', () => {
     )
 
     // Set event date
-    const dateInput = screen.getByLabelText('Event Date')
+    const dateInput = screen.getByLabelText('Data wydarzenia')
     await user.type(dateInput, '2026-05-20')
 
     // Select event type
-    const typeSelect = screen.getByLabelText('Event Type')
+    const typeSelect = screen.getByLabelText('Rodzaj wydarzenia')
     await user.selectOptions(typeSelect, 'party')
 
     // Click generate
-    const generateButton = screen.getByRole('button', { name: /Generate Plan/ })
+    const generateButton = screen.getByRole('button', { name: /Przygotuj plan/ })
     await user.click(generateButton)
 
     expect(generateEventPlan).toHaveBeenCalledWith('2026-05-20', 'party')
@@ -93,10 +110,10 @@ describe('EventMode', () => {
       </BrowserRouter>
     )
 
-    const dateInput = screen.getByLabelText('Event Date')
+    const dateInput = screen.getByLabelText('Data wydarzenia')
     await user.type(dateInput, '2026-05-20')
 
-    const generateButton = screen.getByRole('button', { name: /Generate Plan/ })
+    const generateButton = screen.getByRole('button', { name: /Przygotuj plan/ })
     await user.click(generateButton)
 
     await waitFor(() => {
@@ -119,19 +136,19 @@ describe('EventMode', () => {
       </BrowserRouter>
     )
 
-    const dateInput = screen.getByLabelText('Event Date')
+    const dateInput = screen.getByLabelText('Data wydarzenia')
     await user.type(dateInput, '2026-05-20')
 
-    const generateButton = screen.getByRole('button', { name: /Generate Plan/ })
+    const generateButton = screen.getByRole('button', { name: /Przygotuj plan/ })
     await user.click(generateButton)
 
     await waitFor(() => {
-      expect(screen.getByText('Daily Action Plan')).toBeInTheDocument()
+      expect(screen.getByText('Plan na kolejne dni')).toBeInTheDocument()
     })
 
     expect(screen.getByText('5 days before')).toBeInTheDocument()
     expect(screen.getByText('2 days before')).toBeInTheDocument()
-    expect(screen.getByText('Day of Event')).toBeInTheDocument()
+    expect(screen.getByText('Dzień wydarzenia')).toBeInTheDocument()
 
     expect(screen.getByText('Start drinking more water')).toBeInTheDocument()
     expect(screen.getByText('Exfoliate skin')).toBeInTheDocument()
@@ -149,14 +166,14 @@ describe('EventMode', () => {
       </BrowserRouter>
     )
 
-    const dateInput = screen.getByLabelText('Event Date')
+    const dateInput = screen.getByLabelText('Data wydarzenia')
     await user.type(dateInput, '2026-05-20')
 
-    const generateButton = screen.getByRole('button', { name: /Generate Plan/ })
+    const generateButton = screen.getByRole('button', { name: /Przygotuj plan/ })
     await user.click(generateButton)
 
     await waitFor(() => {
-      expect(screen.getByText('Day of Event - Quick Actions')).toBeInTheDocument()
+      expect(screen.getByText('W dniu wydarzenia')).toBeInTheDocument()
     })
 
     expect(screen.getByText('Smile confidently')).toBeInTheDocument()
@@ -173,7 +190,7 @@ describe('EventMode', () => {
     )
 
     // Click on Party button (among quick tips buttons)
-    const partyButton = screen.getByRole('button', { name: 'Party' })
+    const partyButton = screen.getByRole('button', { name: 'Impreza' })
     await userEvent.setup().click(partyButton)
 
     expect(getEventTips).toHaveBeenCalledWith('party')
@@ -188,7 +205,7 @@ describe('EventMode', () => {
       </BrowserRouter>
     )
 
-    const partyButton = screen.getByRole('button', { name: 'Party' })
+    const partyButton = screen.getByRole('button', { name: 'Impreza' })
     await userEvent.setup().click(partyButton)
 
     await waitFor(() => {
@@ -213,19 +230,19 @@ describe('EventMode', () => {
       </BrowserRouter>
     )
 
-    const dateInput = screen.getByLabelText('Event Date')
+    const dateInput = screen.getByLabelText('Data wydarzenia')
     await user.type(dateInput, '2026-05-20')
 
-    const generateButton = screen.getByRole('button', { name: /Generate Plan/ })
+    const generateButton = screen.getByRole('button', { name: /Przygotuj plan/ })
     await user.click(generateButton)
 
-    expect(screen.getByText('Generating...')).toBeInTheDocument()
+    expect(screen.getByText('Przygotowuję...')).toBeInTheDocument()
 
     // Resolve the promise
     resolvePromise(mockPlan)
 
     await waitFor(() => {
-      expect(screen.queryByText('Generating...')).not.toBeInTheDocument()
+      expect(screen.queryByText('Przygotowuję...')).not.toBeInTheDocument()
     })
   })
 })

@@ -25,6 +25,7 @@ export default defineConfig({
       shortcuts: [],
     },
     workbox: {
+      importScripts: ['push-sw.js'],  // plan 5.5: push + notificationclick handlers
       globPatterns: ['**/*.{js,css,html,svg,png,ico,woff2}'],
       navigateFallback: '/index.html',
       runtimeCaching: [

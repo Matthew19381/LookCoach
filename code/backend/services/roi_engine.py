@@ -41,7 +41,7 @@ class ROIEngine:
     @staticmethod
     def rank_recommendations(recommendations: list, mode: str = "free") -> list:
         """Add ROI point estimate + uncertainty range to each recommendation and
-        sort by point estimate descending.
+        sort by analysis priority, then by point estimate descending.
 
         The point estimate is a heuristic for internal ranking only — it must not
         be shown to users as a precise number. Consumers should render
@@ -68,4 +68,9 @@ class ROIEngine:
             rec["roi_score_low"] = max(0.0, round(point * (1 - width), 2))
             rec["roi_score_high"] = round(point * (1 + width), 2)
             rec["confidence"] = confidence
-        return sorted(recommendations, key=lambda x: x["roi_score"], reverse=True)
+        # Analysis priority first (EvidenceEngine's priority_rank, 0 = high),
+        # ROI only orders items within the same priority.
+        return sorted(
+            recommendations,
+            key=lambda x: (x.get("priority_rank", 1), -x["roi_score"]),
+        )

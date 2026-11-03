@@ -1,6 +1,6 @@
-from fastapi import APIRouter, Depends, Query, HTTPException, Body
+from fastapi import APIRouter, Depends, HTTPException, Body
 from sqlalchemy.orm import Session
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict
 from datetime import datetime, timedelta
 from ..database import get_db
 from ..services.feedback_loop import (
@@ -184,27 +184,5 @@ async def get_feedback_thresholds():
     }
 
 
-@router.post("/thresholds")
-async def update_feedback_thresholds(
-    no_effects_threshold_days: Optional[int] = Body(default=None),
-    skip_rate_threshold: Optional[float] = Body(default=None),
-    negative_feedback_threshold: Optional[int] = Body(default=None),
-    multiple_failures_threshold: Optional[int] = Body(default=None),
-):
-    """
-    Update feedback loop thresholds.
-    
-    Note: This creates a new instance with updated thresholds.
-    In production, this would update configuration in database.
-    """
-    # This is a simplified implementation
-    # In production, you'd store these thresholds in the database
-    return {
-        "message": "Thresholds updated (simulation - actual persistence not implemented)",
-        "updated_thresholds": {
-            "no_effects_threshold_days": no_effects_threshold_days,
-            "skip_rate_threshold": skip_rate_threshold,
-            "negative_feedback_threshold": negative_feedback_threshold,
-            "multiple_failures_threshold": multiple_failures_threshold,
-        }
-    }
+# POST /thresholds removed 2026-11-02: it answered "Thresholds updated" but
+# persisted nothing (a simulated endpoint nobody called).

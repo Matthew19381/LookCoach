@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 
 from ..database import get_db
 from ..models.directive_state import DirectiveState
+from ..security import require_module_key_or_local
 
 router = APIRouter()
 
@@ -28,7 +29,7 @@ class DirectivePayload(BaseModel):
     to: str | None = None
 
 
-@router.post("")
+@router.post("", dependencies=[Depends(require_module_key_or_local)])
 def apply_directive(payload: DirectivePayload, db: Session = Depends(get_db)):
     if payload.directive not in KNOWN:
         raise HTTPException(status_code=422, detail=f"Unknown directive: {payload.directive}")

@@ -24,7 +24,8 @@ export default function SleepOptimizer() {
   }, []);
 
   useEffect(() => {
-    loadData();
+    // loader sets state only after await; .then keeps it out of the effect body (react-hooks lint)
+    Promise.resolve().then(loadData)
   }, [loadData]);
 
   const handleAnalyze = async () => {
@@ -46,7 +47,7 @@ export default function SleepOptimizer() {
   };
 
   if (loading) {
-    return <div className="p-8 text-center">Loading sleep data...</div>;
+    return <div className="p-8 text-center">Ładowanie...</div>;
   }
 
   return (
@@ -58,7 +59,7 @@ export default function SleepOptimizer() {
       {/* Factors */}
       {factors && (
         <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <h2 className="text-xl font-semibold mb-4">Sleep Factors for Looks</h2>
+          <h2 className="text-xl font-semibold mb-4">Sen a wygląd</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {Object.entries(factors).map(([key, factor]) => (
               <div key={key} className="border rounded p-4">
@@ -81,25 +82,25 @@ export default function SleepOptimizer() {
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           <div>
-            <label className="block text-sm font-medium mb-1">Hours of sleep</label>
-            <input type="number" value={sleepData.hours}
+            <label className="block text-sm font-medium mb-1">Godziny snu</label>
+            <input aria-label="Godziny snu" type="number" value={sleepData.hours}
               onChange={(e) => setSleepData({...sleepData, hours: +e.target.value})}
               className="border rounded p-2 w-full" />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Quality</label>
-            <select value={sleepData.quality}
+            <label className="block text-sm font-medium mb-1">Jakość</label>
+            <select aria-label="Jakość snu" value={sleepData.quality}
               onChange={(e) => setSleepData({...sleepData, quality: e.target.value})}
               className="border rounded p-2 w-full">
-              <option value="deep">Deep</option>
-              <option value="medium">Medium</option>
-              <option value="light">Light</option>
-              <option value="poor">Poor</option>
+              <option value="deep">Głęboki</option>
+              <option value="medium">Średni</option>
+              <option value="light">Płytki</option>
+              <option value="poor">Słaby</option>
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Bedtime</label>
-            <input type="time" value={sleepData.bedtime}
+            <label className="block text-sm font-medium mb-1">Pora zaśnięcia</label>
+            <input aria-label="Pora zaśnięcia" type="time" value={sleepData.bedtime}
               onChange={(e) => setSleepData({...sleepData, bedtime: e.target.value})}
               className="border rounded p-2 w-full" />
           </div>
@@ -108,27 +109,27 @@ export default function SleepOptimizer() {
               <input type="checkbox" checked={sleepData.back_sleeping}
                 onChange={(e) => setSleepData({...sleepData, back_sleeping: e.target.checked})}
                 className="rounded" />
-              Back sleeping
+              Spanie na plecach
             </label>
             <label className="flex items-center gap-2">
               <input type="checkbox" checked={sleepData.silk_pillow}
                 onChange={(e) => setSleepData({...sleepData, silk_pillow: e.target.checked})}
                 className="rounded" />
-              Silk pillowcase
+              Jedwabna poszewka
             </label>
           </div>
         </div>
         <button onClick={handleAnalyze}
           className="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600">
-          Analyze Sleep
+          Oceń sen
         </button>
 
         {analysis && (
           <div className="mt-4 p-4 bg-gray-50 rounded">
-            <div className="text-2xl font-bold text-indigo-600">Score: {analysis.score}/100</div>
+            <div className="text-2xl font-bold text-indigo-600">Stan: {analysis.status_label ?? '—'}</div>
             {analysis.issues?.length > 0 && (
               <div className="mt-2">
-                <div className="font-semibold text-red-600">Issues:</div>
+                <div className="font-semibold text-red-600">Do poprawy:</div>
                 <ul className="list-disc ml-5">
                   {analysis.issues.map((issue, i) => <li key={i}>{issue}</li>)}
                 </ul>
@@ -136,7 +137,7 @@ export default function SleepOptimizer() {
             )}
             {analysis.recommendations?.length > 0 && (
               <div className="mt-2">
-                <div className="font-semibold text-green-600">Tips:</div>
+                <div className="font-semibold text-green-600">Wskazówki:</div>
                 <ul className="list-disc ml-5">
                   {analysis.recommendations.map((tip, i) => <li key={i}>{tip}</li>)}
                 </ul>
@@ -161,7 +162,7 @@ export default function SleepOptimizer() {
         </div>
         <button onClick={loadEventTips}
           className="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600 mb-4">
-          Get Tips
+          Pokaż wskazówki
         </button>
         {eventTips && (
           <ul className="space-y-2">

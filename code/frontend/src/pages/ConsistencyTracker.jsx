@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { 
   logAdherence, 
   getAdherenceHistory, 
@@ -6,10 +6,20 @@ import {
   getRecommendedDifficulty, 
   getAllProtocolsStatus,
   getConsistencySummary,
-  getMinimumEffectiveProtocol,
   recalculateMetrics,
   getPatternAlert
 } from '../api/client'
+
+// Must match ProtocolType in backend services/consistency_tracker.py. Until 2026-11-02 the page
+// offered skincare/exercise/supplements, which the API rejects (400) - logging skincare never worked.
+const PROTOCOL_PL = {
+  skincare_morning: 'Pielęgnacja rano',
+  skincare_evening: 'Pielęgnacja wieczorem',
+  training: 'Trening',
+  sleep: 'Sen',
+  nutrition: 'Żywienie',
+  stress: 'Stres',
+}
 
 export default function ConsistencyTracker() {
   const [protocols, setProtocols] = useState([])
@@ -25,23 +35,9 @@ export default function ConsistencyTracker() {
   const [difficultyLevel, setDifficultyLevel] = useState('full')
   const [notes, setNotes] = useState('')
 
-  // Available protocol types - should match backend
-  const protocolTypes = [
-    'skincare',
-    'nutrition', 
-    'exercise',
-    'sleep',
-    'supplements'
-  ]
-
-  useEffect(() => {
-    loadAllData()
-  }, [])
-
-  const loadAllData = async () => {
+  const loadAllData = useCallback(async () => {
     try {
-      setLoading(true)
-      
+
       // Load all protocols status
       const statusResponse = await getAllProtocolsStatus()
       // API returns {protocols: {protocol_type: {...}}} - turn it into the list the page renders
@@ -61,7 +57,12 @@ export default function ConsistencyTracker() {
       console.error('Failed to load data:', error)
       setLoading(false)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    // loader sets state only after await; .then keeps it out of the effect body (react-hooks lint)
+    Promise.resolve().then(loadAllData)
+  }, [loadAllData])
 
   const handleLogAdherence = async () => {
     if (!selectedProtocol) return
@@ -116,41 +117,41 @@ export default function ConsistencyTracker() {
   }
 
   if (loading) {
-    return <div className="text-center py-20">Loading consistency tracker...</div>
+    return <div className="text-center py-20">Ładowanie...</div>
   }
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold text-gray-900">Consistency Tracker</h1>
+      <h1 className="text-3xl font-bold text-gray-900">Regularność</h1>
       
       {/* Summary Section */}
       {consistencySummary && (
         <div className="bg-white border rounded-lg p-6">
-          <h3 className="text-lg font-semibold mb-4">Consistency Summary</h3>
+          <h3 className="text-lg font-semibold mb-4">Podsumowanie</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="text-center">
               <p className="text-2xl font-bold text-blue-600">
                 {Math.round((consistencySummary.average_adherence ?? 0) * 100)}%
               </p>
-              <p className="text-sm text-gray-500">Overall Score</p>
+              <p className="text-sm text-gray-500">Średnia regularność</p>
             </div>
             <div className="text-center">
               <p className="text-2xl font-bold text-green-600">
                 {consistencySummary.system_status}
               </p>
-              <p className="text-sm text-gray-500">System Status</p>
+              <p className="text-sm text-gray-500">Stan systemu</p>
             </div>
             <div className="text-center">
               <p className="text-2xl font-bold text-purple-600">
                 {consistencySummary.total_protocols}
               </p>
-              <p className="text-sm text-gray-500">Protocols</p>
+              <p className="text-sm text-gray-500">Protokoły</p>
             </div>
             <div className="text-center">
               <p className="text-2xl font-bold text-orange-600">
                 {consistencySummary.protocols_needing_reduction}
               </p>
-              <p className="text-sm text-gray-500">Need Adjustment</p>
+              <p className="text-sm text-gray-500">Do uproszczenia</p>
             </div>
           </div>
         </div>
@@ -159,7 +160,7 @@ export default function ConsistencyTracker() {
       {/* Pattern Alerts */}
       {patternAlerts.length > 0 && (
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
-          <h3 className="text-lg font-semibold mb-4 text-yellow-800">Pattern Alerts</h3>
+          <h3 className="text-lg font-semibold mb-4 text-yellow-800">Zauważone wzorce</h3>
           <div className="space-y-2">
             {patternAlerts.map((alert, index) => (
               <div key={index} className="bg-yellow-100 border border-yellow-300 rounded p-3">
@@ -173,27 +174,25 @@ export default function ConsistencyTracker() {
 
       {/* Log Adherence Form */}
       <div className="bg-white border rounded-lg p-6">
-        <h3 className="text-lg font-semibold mb-4">Log Adherence</h3>
+        <h3 className="text-lg font-semibold mb-4">Zapisz wykonanie</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label htmlFor="ct-protocol" className="block text-sm font-medium text-gray-700 mb-2">Protocol Type</label>
+            <label htmlFor="ct-protocol" className="block text-sm font-medium text-gray-700 mb-2">Protokół</label>
             <select
               id="ct-protocol"
               value={selectedProtocol}
               onChange={(e) => setSelectedProtocol(e.target.value)}
               className="w-full border rounded-md px-3 py-2"
             >
-              <option value="">Select protocol...</option>
-              {protocolTypes.map((protocol) => (
-                <option key={protocol} value={protocol}>
-                  {protocol.charAt(0).toUpperCase() + protocol.slice(1)}
-                </option>
+              <option value="">Wybierz protokół...</option>
+              {Object.entries(PROTOCOL_PL).map(([protocol, label]) => (
+                <option key={protocol} value={protocol}>{label}</option>
               ))}
             </select>
           </div>
           
           <div>
-            <label htmlFor="ct-date" className="block text-sm font-medium text-gray-700 mb-2">Date</label>
+            <label htmlFor="ct-date" className="block text-sm font-medium text-gray-700 mb-2">Data</label>
             <input
               id="ct-date"
               type="date"
@@ -204,41 +203,41 @@ export default function ConsistencyTracker() {
           </div>
           
           <div>
-            <label htmlFor="ct-completed" className="block text-sm font-medium text-gray-700 mb-2">Completed</label>
+            <label htmlFor="ct-completed" className="block text-sm font-medium text-gray-700 mb-2">Wykonane</label>
             <select
               id="ct-completed"
               value={completed.toString()}
               onChange={(e) => setCompleted(e.target.value === 'true')}
               className="w-full border rounded-md px-3 py-2"
             >
-              <option value="true">Yes</option>
-              <option value="false">No</option>
+              <option value="true">Tak</option>
+              <option value="false">Nie</option>
             </select>
           </div>
           
           <div>
-            <label htmlFor="ct-difficulty" className="block text-sm font-medium text-gray-700 mb-2">Difficulty Level</label>
+            <label htmlFor="ct-difficulty" className="block text-sm font-medium text-gray-700 mb-2">Poziom</label>
             <select
               id="ct-difficulty"
               value={difficultyLevel}
               onChange={(e) => setDifficultyLevel(e.target.value)}
               className="w-full border rounded-md px-3 py-2"
             >
-              <option value="full">Full</option>
-              <option value="reduced">Reduced</option>
+              <option value="full">Pełny</option>
+              <option value="reduced">Skrócony</option>
               <option value="minimum">Minimum</option>
             </select>
           </div>
           
           <div className="md:col-span-2">
-            <label htmlFor="ct-notes" className="block text-sm font-medium text-gray-700 mb-2">Notes</label>
+            <label htmlFor="ct-notes" className="block text-sm font-medium text-gray-700 mb-2">Notatki</label>
             <textarea
               id="ct-notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={3}
               className="w-full border rounded-md px-3 py-2"
-              placeholder="Any additional notes..."
+              placeholder="Dodatkowe uwagi..."
             />
           </div>
         </div>
@@ -248,29 +247,29 @@ export default function ConsistencyTracker() {
           disabled={!selectedProtocol}
           className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
         >
-          Log Adherence
+          Zapisz wykonanie
         </button>
       </div>
 
       {/* Protocol Status Overview */}
       <div className="bg-white border rounded-lg p-6">
-        <h3 className="text-lg font-semibold mb-4">Protocol Status</h3>
+        <h3 className="text-lg font-semibold mb-4">Stan protokołów</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {protocols.map((protocol, index) => (
             <div key={index} className="border rounded-lg p-4">
               <h4 className="font-medium capitalize">{protocol.protocol_type}</h4>
               <div className="mt-2 space-y-1">
                 <p className="text-sm">
-                  <span className="font-medium">Rate:</span> {Math.round(protocol.adherence_rate * 100)}%
+                  <span className="font-medium">Regularność:</span> {Math.round(protocol.adherence_rate * 100)}%
                 </p>
                 <p className="text-sm">
-                  <span className="font-medium">Level:</span> {protocol.adherence_level}
+                  <span className="font-medium">Poziom:</span> {protocol.adherence_level}
                 </p>
                 <p className="text-sm">
-                  <span className="font-medium">Difficulty:</span> {protocol.current_difficulty}
+                  <span className="font-medium">Trudność:</span> {protocol.current_difficulty}
                 </p>
                 <p className="text-sm">
-                  <span className="font-medium">Recommended:</span> {protocol.recommended_difficulty}
+                  <span className="font-medium">Zalecany:</span> {protocol.recommended_difficulty}
                 </p>
               </div>
             </div>
@@ -288,19 +287,19 @@ export default function ConsistencyTracker() {
               onClick={handleLoadHistory}
               className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
             >
-              Load History & Analysis
+              Pokaż historię i analizę
             </button>
           </div>
 
           {adherenceRate && (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-              <h4 className="font-medium text-blue-800">Adherence Analysis</h4>
+              <h4 className="font-medium text-blue-800">Analiza regularności</h4>
               <div className="mt-2 space-y-1">
                 <p className="text-sm">
-                  <span className="font-medium">Rate:</span> {Math.round(adherenceRate.adherence_rate * 100)}%
+                  <span className="font-medium">Regularność:</span> {Math.round(adherenceRate.adherence_rate * 100)}%
                 </p>
                 <p className="text-sm">
-                  <span className="font-medium">Level:</span> {adherenceRate.adherence_level}
+                  <span className="font-medium">Poziom:</span> {adherenceRate.adherence_level}
                 </p>
               </div>
             </div>
@@ -308,16 +307,16 @@ export default function ConsistencyTracker() {
 
           {recommendedDifficulty && (
             <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
-              <h4 className="font-medium text-green-800">Recommendations</h4>
+              <h4 className="font-medium text-green-800">Zalecenia</h4>
               <div className="mt-2 space-y-1">
                 <p className="text-sm">
-                  <span className="font-medium">Recommended Difficulty:</span> {recommendedDifficulty.recommended_difficulty}
+                  <span className="font-medium">Zalecany poziom:</span> {recommendedDifficulty.recommended_difficulty}
                 </p>
                 <p className="text-sm">
-                  <span className="font-medium">Minimum Effective Protocol:</span> {recommendedDifficulty.minimum_effective_protocol}
+                  <span className="font-medium">Minimalny skuteczny protokół:</span> {recommendedDifficulty.minimum_effective_protocol}
                 </p>
                 <p className="text-sm">
-                  <span className="font-medium">Needs Reduction:</span> {recommendedDifficulty.needs_reduction ? 'Yes' : 'No'}
+                  <span className="font-medium">Wymaga uproszczenia:</span> {recommendedDifficulty.needs_reduction ? 'Tak' : 'Nie'}
                 </p>
               </div>
             </div>
@@ -328,13 +327,13 @@ export default function ConsistencyTracker() {
               onClick={handleRecalculate}
               className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
             >
-              Recalculate Metrics
+              Przelicz
             </button>
           </div>
 
           {adherenceHistory.length > 0 && (
             <div>
-              <h4 className="font-medium mb-2">Recent History</h4>
+              <h4 className="font-medium mb-2">Ostatnia historia</h4>
               <div className="space-y-2">
                 {adherenceHistory.map((log, index) => (
                   <div key={index} className="border rounded p-3">
@@ -351,7 +350,7 @@ export default function ConsistencyTracker() {
                             ? 'bg-green-100 text-green-800' 
                             : 'bg-red-100 text-red-800'
                         }`}>
-                          {log.completed ? 'Completed' : 'Missed'}
+                          {log.completed ? 'Wykonane' : 'Pominięte'}
                         </span>
                         <p className="text-xs text-gray-500 mt-1">
                           {log.difficulty_level} difficulty

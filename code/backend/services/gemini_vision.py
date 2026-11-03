@@ -1,3 +1,4 @@
+import logging
 import os
 import json
 import hashlib
@@ -7,12 +8,14 @@ from google.genai import types
 from PIL import Image
 import io
 
+from ..paths import CACHE_DIR
+
+logger = logging.getLogger(__name__)
+
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
 AI_SERVICE = os.getenv("AI_SERVICE", "openrouter").lower()  # gemini, openrouter, ollama
 
-CACHE_DIR = Path(".cache")
-CACHE_DIR.mkdir(exist_ok=True)
 
 # Qualitative analysis prompts — NO numeric attractiveness ratings of the person.
 # Only observable state categories (NEURO_PLAN LC-9: risk of dysmorphia).
@@ -22,16 +25,25 @@ FACE_PROMPT = """Analyze this face photo. Describe observable state only — do 
   "swelling": {"level": "low|medium|high", "areas": ["cheeks"]},
   "muscle_tension": {"level": "low|medium|high", "areas": ["jaw"]},
   "skin_quality": {"status": "good|fair|needs_attention", "issues": ["dryness"]},
+  "face_shape": "oval|round|square|oblong|heart|diamond|unclear",
+  "brows": {"shape": "straight|arched|soft_angled|unclear", "density": "sparse|medium|dense", "symmetry": "symmetric|slight_asymmetry|clear_asymmetry", "unibrow": false},
+  "beard": {"present": false, "density": "none|sparse|medium|full", "evenness": "even|patchy|not_applicable", "neckline": "defined|undefined|not_applicable"},
+  "eye_area": {"dark_circles": "none|mild|marked", "puffiness": "none|mild|marked"},
+  "glasses": false,
+  "skin_undertone": "warm|cool|neutral|unclear",
   "focus_areas": [{"area": "skincare|beauty_technique|posture|sleep|nutrition|stress", "priority": "high|medium|low", "reason": "why"}]
 }
+Describe brows and beard neutrally (shape, density, evenness) - no judgement of looks.
 Respond ONLY with valid JSON."""
 
 BODY_PROMPT = """Analyze this body photo. Describe observable state only — do NOT rate or score the person's attractiveness. Return ONLY valid JSON with:
 {
   "observations": ["short text observations"],
   "asymmetries": [{"part": "shoulders", "severity": "mild|moderate|significant"}],
-  "missing_muscles": [{"muscle": "delts", "priority": "high|medium|low"}],
+  "missing_muscles": [{"muscle": "side_delts|rear_delts|upper_chest|lower_chest|lats_width|biceps_peak|triceps_long|quads|glutes|calves|abs", "priority": "high|medium|low"}],
   "posture_notes": ["e.g. forward head posture visible"],
+  "proportions": {"shoulders_vs_hips": "narrower|balanced|broader|unclear", "torso_vs_legs": "short_torso|balanced|long_torso|unclear"},
+  "posture": {"head_position": "neutral|forward|unclear", "shoulder_position": "neutral|forward|unclear", "pelvic_tilt": "neutral|anterior|posterior|unclear"},
   "focus_areas": [{"area": "training|posture|nutrition", "priority": "high|medium|low", "reason": "why"}]
 }
 Respond ONLY with valid JSON."""
@@ -45,11 +57,34 @@ SKIN_PROMPT = """Analyze this skin photo. Describe observable state only — do 
 }
 Respond ONLY with valid JSON."""
 
-HAIR_PROMPT = """Analyze this hair photo. Describe observable state only — do NOT rate or score the person. Return ONLY valid JSON with:
+HAIR_PROMPT = """Analyze the hair in this front photo. Describe observable state only — do NOT rate or score the person. Return ONLY valid JSON with:
 {
   "hairline_status": "stable|mild_recession|moderate_recession|advanced_recession",
   "density_status": "thin|normal|full",
+  "hair_type": "straight|wavy|curly|coily|unclear",
+  "length": "very_short|short|medium|long",
   "recommendations": ["styling or care suggestions"],
+  "observations": ["short text observations"]
+}
+Respond ONLY with valid JSON."""
+
+
+CROWN_PROMPT = """This photo shows the person from behind. Look only at the top/back of the head (crown).
+Describe observable state only — do NOT rate or score the person. Return ONLY valid JSON with:
+{
+  "crown_density": "normal|thinning|unclear",
+  "observations": ["short text observations"]
+}
+Respond ONLY with valid JSON."""
+
+
+SMILE_PROMPT = """This photo shows a person smiling, teeth visible. Look only at the teeth and gums.
+Describe observable state only — do NOT rate or score the person or their smile. Return ONLY valid JSON with:
+{
+  "teeth_visible": true,
+  "discoloration": "none|mild|marked|unclear",
+  "alignment": "even|slightly_uneven|uneven|unclear",
+  "gums": "normal|redness|receding|unclear",
   "observations": ["short text observations"]
 }
 Respond ONLY with valid JSON."""
@@ -70,6 +105,17 @@ def _save_to_cache(key: str, data: dict):
     Path(key).write_text(json.dumps(data, ensure_ascii=False, indent=2))
 
 
+def forget_image(image_bytes: bytes) -> int:
+    """Remove every cached analysis of this image (called when a photo is deleted)."""
+    removed = 0
+    for prompt in (FACE_PROMPT, BODY_PROMPT, SKIN_PROMPT, HAIR_PROMPT, CROWN_PROMPT, SMILE_PROMPT, LABEL_PROMPT):
+        path = Path(_cache_key(image_bytes, prompt[:50]))
+        if path.exists():
+            path.unlink()
+            removed += 1
+    return removed
+
+
 LABEL_PROMPT = """To zdjęcie etykiety kosmetyku. Przepisz DOKŁADNIE listę składników (INCI) w kolejności z etykiety,
 oddzielając przecinkami, oraz nazwę produktu, jeśli jest widoczna. Nie dodawaj składników, których nie widać.
 Zwróć JSON: {"product_name": "...", "ingredients_text": "Aqua, Glycerin, ..."}.
@@ -84,7 +130,7 @@ class GeminiVisionService:
             try:
                 self.client = genai.Client(api_key=GEMINI_API_KEY)
             except Exception as e:
-                print(f"Gemini init failed: {e}")
+                logger.warning(f"Gemini init failed: {e}")
                 self.client = None
 
     def _image_to_bytes(self, image_bytes: bytes) -> bytes:
@@ -117,7 +163,7 @@ class GeminiVisionService:
             _save_to_cache(cache_key, data)
             return data
         except Exception as e:
-            print(f"Gemini call failed: {e}")
+            logger.warning(f"Gemini call failed: {e}")
             return None
 
     def _analyze(self, image_bytes: bytes, prompt: str, fallback) -> dict:
@@ -154,6 +200,18 @@ class GeminiVisionService:
     def analyze_hair(self, image_bytes: bytes) -> dict:
         return self._analyze(image_bytes, HAIR_PROMPT, self._fallback_hair)
 
+    def analyze_crown(self, image_bytes: bytes) -> dict:
+        return self._analyze(
+            image_bytes, CROWN_PROMPT,
+            lambda b: self._call_openrouter(b, CROWN_PROMPT) or self._get_fallback().analyze_image_fallback(b, "crown"),
+        )
+
+    def analyze_smile(self, image_bytes: bytes) -> dict:
+        return self._analyze(
+            image_bytes, SMILE_PROMPT,
+            lambda b: self._call_openrouter(b, SMILE_PROMPT) or self._get_fallback().analyze_image_fallback(b, "smile"),
+        )
+
     def read_ingredient_label(self, image_bytes: bytes) -> dict:
         """OCR of a cosmetic label: {"product_name", "ingredients_text"} (empty text = unreadable).
 
@@ -177,7 +235,7 @@ class GeminiVisionService:
         try:
             return self._get_openrouter().analyze_image(image_bytes, prompt)
         except Exception as e:
-            print(f"OpenRouter vision call failed: {e}")
+            logger.warning(f"OpenRouter vision call failed: {e}")
             return None
 
     def _fallback_face(self, image_bytes: bytes) -> dict:

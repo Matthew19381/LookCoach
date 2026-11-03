@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import { BrowserRouter } from 'react-router-dom'
+import userEvent from '@testing-library/user-event'
 
 // Mock the API client
 vi.mock('../api/client', () => ({
@@ -13,10 +14,11 @@ vi.mock('../api/client', () => ({
   parseProductText: vi.fn(),
   saveProduct: vi.fn(),
   scanProductLabel: vi.fn(),
+  lookupProductBarcode: vi.fn(),
 }))
 
 import SkincareRoutine from './SkincareRoutine'
-import { getSkincareRoutine } from '../api/client'
+import { getSkincareRoutine, lookupProductBarcode } from '../api/client'
 
 const mockRoutine = {
   skin_type: 'Combination',
@@ -140,5 +142,24 @@ describe('SkincareRoutine', () => {
     await waitFor(() => {
       expect(screen.getByText('Rutyna niedostępna — sprawdź, czy backend działa.')).toBeInTheDocument()
     })
+  })
+
+  it('barcode lookup shows the product report with a pregnancy warning (plan 5.7, LC-8)', async () => {
+    getSkincareRoutine.mockResolvedValue(mockRoutine)
+    lookupProductBarcode.mockResolvedValue({
+      name: 'Night Serum', ingredients: ['Aqua', 'Retinol'], actives: [{ name: 'Retinol 0.25-1%', position: 2, hint: '' }],
+      flags: [], conflicts: [], tolerance_warnings: [], routine_actives: [],
+      health_warnings: ['Zawiera retinoid — przeciwwskazany w ciąży i podczas karmienia.'], source: 'Open Beauty Facts',
+    })
+    const user = userEvent.setup()
+    render(
+      <BrowserRouter>
+        <SkincareRoutine />
+      </BrowserRouter>
+    )
+    await user.type(await screen.findByLabelText('Kod kreskowy'), '5900000000000')
+    await user.click(screen.getByRole('button', { name: 'Szukaj' }))
+    expect(lookupProductBarcode).toHaveBeenCalledWith('5900000000000')
+    expect(await screen.findByRole('alert')).toHaveTextContent('przeciwwskazany w ciąży')
   })
 })

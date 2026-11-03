@@ -217,19 +217,14 @@ def test_system_messages_supportive():
         summary = tracker.get_consistency_summary(28)
         message = summary["message"].lower()
 
-        # No shaming words (but "not failure" is supportive framing)
-        assert "failed" not in message
-        assert "lazy" not in message
-        assert "shame" not in message
-        assert "guilt" not in message
-        assert "punish" not in message
-        assert "bad" not in message
-        # "failure" is allowed only as "not failure" (supportive reframing)
-        if "failure" in message:
-            assert "not failure" in message
+        # No shaming words (messages are Polish since 2026-11-02; "porażka" only as "nie porażka")
+        for word in ("leniw", "wstyd", "wina", "kara", "źle", "zawiodł"):
+            assert word not in message
+        if "porażk" in message:
+            assert "nie porażka" in message
 
         # Supportive language present
-        supportive_words = ["normal", "adaptation", "kind", "showing up", "matters", "focus", "calibrated", "optimize"]
+        supportive_words = ["normalne", "dopasowan", "wyrozumiał", "liczy się", "pomóc", "podstawy", "minimum"]
         assert any(word in message for word in supportive_words), f"Message for {status} lacks supportive language: {message}"
 
 

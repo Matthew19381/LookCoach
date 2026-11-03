@@ -6,7 +6,7 @@ from sqlalchemy import and_
 from typing import Optional
 from datetime import datetime, timedelta
 from ..database import get_db
-from ..services.integration_publisher import IntegrationPublisher
+from ..services import outbox
 from ..services.consistency_tracker import (
     ConsistencyTracker,
     ProtocolType,
@@ -32,18 +32,16 @@ def _tracker(db: Session, user_id: int) -> ConsistencyTracker:
     return ConsistencyTracker(db, user_id)
 
 
-async def _publish_to_hub(user_id: int, protocol_type: str, completed: bool, difficulty_level: str) -> None:
+def _queue_for_hub(db: Session, user_id: int, protocol_type: str, completed: bool, difficulty_level: str) -> None:
     """INT-2: protocol_done / protocol_skipped to System-Glowny (its day plan ticks
-    the routine off, its habit tracker counts it). Until 2026-10-04 the publisher
-    existed but nothing called it. Never raises: logging here must not depend on the hub."""
-    try:
-        await IntegrationPublisher(timeout=3.0).publish(
-            "protocol_done" if completed else "protocol_skipped",
-            str(user_id),
-            {"protocol_id": protocol_type, "difficulty_level": difficulty_level},
-        )
-    except Exception as e:  # no key, hub down, hub rejected - all non-fatal
-        logger.warning("Hub event for %s not published: %s", protocol_type, e)
+    the routine off, its habit tracker counts it). Queued in the outbox (plan 3.1)
+    so a hub that is down gets the event later instead of never."""
+    outbox.enqueue(
+        db,
+        "protocol_done" if completed else "protocol_skipped",
+        {"protocol_id": protocol_type, "difficulty_level": difficulty_level},
+        user_id=user_id,
+    )
 
 
 @router.post("/adherence/log")
@@ -101,7 +99,8 @@ async def log_adherence(
     # plan item, and the hub dedups by timestamp (two protocols of one past
     # day would collide on midnight).
     if parsed_date is None or parsed_date.date() == datetime.now().date():
-        background_tasks.add_task(_publish_to_hub, user_id, protocol_type, completed, difficulty_level)
+        _queue_for_hub(db, user_id, protocol_type, completed, difficulty_level)
+        background_tasks.add_task(outbox.deliver_in_new_session, db.get_bind())
 
     return {"status": "logged", "record": db_record.to_dict()}
 
