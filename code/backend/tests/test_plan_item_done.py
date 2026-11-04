@@ -47,17 +47,17 @@ def module_key(monkeypatch):
 
 @pytest.fixture()
 def published(monkeypatch):
-    """Record every event LookCoach would send to the hub."""
+    """Record every event LookCoach would send to the hub (all of it goes through the outbox)."""
     sent = []
 
-    class Recorder:
-        def __init__(self, *a, **k):
-            pass
+    def enqueue(db, event_type, data, user_id=1):
+        sent.append((event_type, data))
 
-        async def publish(self, event_type, user_id, payload, timestamp=None):
-            sent.append((event_type, payload))
+    async def no_delivery(bind=None):
+        return {}
 
-    monkeypatch.setattr(consistency, "IntegrationPublisher", Recorder)
+    monkeypatch.setattr(consistency.outbox, "enqueue", enqueue)
+    monkeypatch.setattr(consistency.outbox, "deliver_in_new_session", no_delivery)
     return sent
 
 
