@@ -84,3 +84,11 @@ class TestStressEngine:
         stress_data = {"level": "high", "triggers": ["work", "money", "health"]}
         result = StressEngine.analyze_stress(stress_data)
         assert "status" in result and "score" not in result
+
+
+def test_looks_benefit_has_no_unsourced_claims():
+    """2026-11-08 (LC-1): looks claims without a source must be marked [HIPOTEZA]."""
+    from services.stress_engine import StressEngine
+    for tech in StressEngine.RELAXATION_TECHNIQUES.values():
+        text = tech["looks_benefit"]
+        assert "[HIPOTEZA]" in text or "PMID" in text
