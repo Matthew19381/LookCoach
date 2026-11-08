@@ -16,18 +16,17 @@ const mockVideos = [
   {
     id: 'vid1',
     title: 'Gua Sha Tutorial',
-    channel: 'Beauty Channel',
-    duration: '10:30',
     description: 'Learn gua sha basics',
-    url: 'https://youtube.com/watch?v=123',
+    evidence_note: '[HIPOTEZA] brak badań',
+    url: 'https://www.youtube.com/results?search_query=gua+sha',
   },
   {
     id: 'vid2',
     title: 'Skincare Routine',
-    channel: 'Skincare Pro',
-    duration: '15:45',
     description: 'Morning and evening routine',
-    url: 'https://youtube.com/watch?v=456',
+    evidence_note: '[HIPOTEZA] mała próba',
+    study_url: 'https://pubmed.ncbi.nlm.nih.gov/26904154/',
+    url: 'https://www.youtube.com/results?search_query=skincare',
   },
 ]
 
@@ -45,7 +44,7 @@ describe('VideoLearning', () => {
       </BrowserRouter>
     )
 
-    expect(screen.getByText('Ładowanie filmów...')).toBeInTheDocument()
+    expect(screen.getByText('Ładowanie...')).toBeInTheDocument()
   })
 
   it('renders videos after data loaded', async () => {
@@ -78,9 +77,10 @@ describe('VideoLearning', () => {
       expect(screen.getByText('Gua Sha Tutorial')).toBeInTheDocument()
     })
 
-    expect(screen.getByText('Beauty Channel • 10:30')).toBeInTheDocument()
     expect(screen.getByText('Learn gua sha basics')).toBeInTheDocument()
-    expect(screen.getByText('Skincare Pro • 15:45')).toBeInTheDocument()
+    expect(screen.getByText('[HIPOTEZA] brak badań')).toBeInTheDocument()
+    expect(screen.getByText('Badanie')).toHaveAttribute('href', 'https://pubmed.ncbi.nlm.nih.gov/26904154/')
+    expect(screen.queryByText(/•/)).not.toBeInTheDocument()
   })
 
   it('has search form', async () => {
@@ -93,7 +93,7 @@ describe('VideoLearning', () => {
     )
 
     await waitFor(() => {
-      expect(screen.getByPlaceholderText(/Szukaj filmów/)).toBeInTheDocument()
+      expect(screen.getByPlaceholderText(/Szukaj techniki/)).toBeInTheDocument()
     })
 
     expect(screen.getByRole('button', { name: /Szukaj/ })).toBeInTheDocument()
@@ -112,10 +112,10 @@ describe('VideoLearning', () => {
     )
 
     await waitFor(() => {
-      expect(screen.getByPlaceholderText(/Szukaj filmów/)).toBeInTheDocument()
+      expect(screen.getByPlaceholderText(/Szukaj techniki/)).toBeInTheDocument()
     })
 
-    const searchInput = screen.getByPlaceholderText(/Szukaj filmów/)
+    const searchInput = screen.getByPlaceholderText(/Szukaj techniki/)
     await user.type(searchInput, 'gua sha')
 
     const searchButton = screen.getByRole('button', { name: /Szukaj/ })
@@ -137,17 +137,17 @@ describe('VideoLearning', () => {
     )
 
     await waitFor(() => {
-      expect(screen.getByPlaceholderText(/Szukaj filmów/)).toBeInTheDocument()
+      expect(screen.getByPlaceholderText(/Szukaj techniki/)).toBeInTheDocument()
     })
 
-    const searchInput = screen.getByPlaceholderText(/Szukaj filmów/)
+    const searchInput = screen.getByPlaceholderText(/Szukaj techniki/)
     await user.type(searchInput, 'gua sha')
 
     const searchButton = screen.getByRole('button', { name: /Szukaj/ })
     await user.click(searchButton)
 
     await waitFor(() => {
-      expect(screen.getByText(/Found 1 results for "gua sha"/)).toBeInTheDocument()
+      expect(screen.getByText(/Wyniki dla „gua sha”: 1/)).toBeInTheDocument()
     })
 
     expect(screen.getByText('Gua Sha Tutorial')).toBeInTheDocument()
@@ -170,12 +170,12 @@ describe('VideoLearning', () => {
     })
 
     // Perform search
-    const searchInput = screen.getByPlaceholderText(/Szukaj filmów/)
+    const searchInput = screen.getByPlaceholderText(/Szukaj techniki/)
     await user.type(searchInput, 'gua sha')
     await user.click(screen.getByRole('button', { name: /Szukaj/ }))
 
     await waitFor(() => {
-      expect(screen.getByText(/Found.*results/)).toBeInTheDocument()
+      expect(screen.getByText(/Wyniki dla/)).toBeInTheDocument()
     })
 
     // Clear search
@@ -183,7 +183,7 @@ describe('VideoLearning', () => {
     await user.click(clearButton)
 
     await waitFor(() => {
-      expect(screen.queryByText(/Found.*results/)).not.toBeInTheDocument()
+      expect(screen.queryByText(/Wyniki dla/)).not.toBeInTheDocument()
     })
 
     // Should show recommended videos again
@@ -200,11 +200,11 @@ describe('VideoLearning', () => {
     )
 
     await waitFor(() => {
-      expect(screen.getByText(/Nie znaleziono filmów/)).toBeInTheDocument()
+      expect(screen.getByText(/Nie znaleziono techniki/)).toBeInTheDocument()
     })
   })
 
-  it('has YouTube links', async () => {
+  it('links to YouTube search, not to unverified videos', async () => {
     getRecommendedVideos.mockResolvedValue(mockVideos)
 
     render(
@@ -214,10 +214,10 @@ describe('VideoLearning', () => {
     )
 
     await waitFor(() => {
-      const links = screen.getAllByText('Obejrzyj na YouTube')
+      const links = screen.getAllByText('Szukaj na YouTube')
       expect(links).toHaveLength(2)
-      expect(links[0]).toHaveAttribute('href', 'https://youtube.com/watch?v=123')
-      expect(links[1]).toHaveAttribute('href', 'https://youtube.com/watch?v=456')
+      expect(links[0]).toHaveAttribute('href', 'https://www.youtube.com/results?search_query=gua+sha')
+      expect(links[1]).toHaveAttribute('href', 'https://www.youtube.com/results?search_query=skincare')
     })
   })
 })

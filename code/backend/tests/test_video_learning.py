@@ -40,7 +40,7 @@ class TestVideoLearningEngine:
     def test_video_db_has_required_fields(self):
         """Verify video database has required fields."""
         from services.video_learning import VIDEO_DB
-        required_fields = ["id", "title", "technique", "url", "duration", "channel", "description"]
+        required_fields = ["id", "title", "technique", "url", "description", "evidence_level", "evidence_note"]
         for video in VIDEO_DB:
             for field in required_fields:
                 assert field in video, f"Missing field {field} in video {video.get('id', 'unknown')}"
@@ -50,7 +50,7 @@ class TestVideoLearningEngine:
         from services.video_learning import VIDEO_DB
         for video in VIDEO_DB:
             url = video.get("url", "")
-            assert url.startswith("https://") or url.startswith("http://"), f"Invalid URL: {url}"
+            assert url.startswith("https://www.youtube.com/results?search_query="), f"Invalid URL: {url}"
 
     def test_multiple_techniques(self):
         """Test that different techniques return different videos."""
@@ -74,3 +74,29 @@ class TestVideoLearningEngine:
         assert isinstance(VideoLearningEngine.get_videos_for_analysis({}, {}, {}), list)
         assert isinstance(VideoLearningEngine.get_videos_for_technique("gua_sha"), list)
         assert isinstance(VideoLearningEngine.search_videos("test"), list)
+
+
+class TestNoFabricatedVideos:
+    """2026-11-08: VIDEO_DB had invented videos (watch?v=example1.., a music video, fake channels)."""
+
+    def test_no_links_to_specific_unverified_videos(self):
+        from services.video_learning import VIDEO_DB
+        for video in VIDEO_DB:
+            assert "watch?v=" not in video["url"]
+            assert "channel" not in video and "duration" not in video
+
+    def test_every_technique_has_evidence_label(self):
+        from services.video_learning import VIDEO_DB
+        for video in VIDEO_DB:
+            assert video["evidence_level"] in {"hipoteza", "porada_stylistyczna", "rct", "meta"}
+            if video["evidence_level"] == "hipoteza":
+                assert video["evidence_note"].startswith("[HIPOTEZA]")
+            if video["evidence_level"] in {"rct", "meta"}:
+                assert video.get("study_url", "").startswith("https://")
+
+    def test_gua_sha_is_recommended_for_face(self):
+        ids = [v["id"] for v in VideoLearningEngine.get_videos_for_analysis({"x": 1}, {}, {})]
+        assert "gua_sha" in ids
+
+    def test_search_matches_polish_phrase(self):
+        assert [v["id"] for v in VideoLearningEngine.search_videos("drenaż")] == ["lymphatic_drainage"]

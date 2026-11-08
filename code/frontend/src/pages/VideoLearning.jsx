@@ -29,7 +29,7 @@ export default function VideoLearning() {
   const displayVideos = searchResults.length > 0 ? searchResults : videos
 
   if (loading) {
-    return <div className="text-center py-20">Ładowanie filmów...</div>
+    return <div className="text-center py-20">Ładowanie...</div>
   }
 
   return (
@@ -39,11 +39,11 @@ export default function VideoLearning() {
       </div>
 
       <form onSubmit={handleSearch} className="flex gap-2">
-        <input aria-label="Szukaj filmów"
+        <input aria-label="Szukaj techniki"
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Szukaj filmów (gua sha, masaż, pielęgnacja...)"
+          placeholder="Szukaj techniki (gua sha, masaż, włosy...)"
           className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
         <button
@@ -57,7 +57,7 @@ export default function VideoLearning() {
 
       {searchResults.length > 0 && (
         <div className="bg-blue-50 border border-blue-200 rounded-md p-3 text-sm text-blue-800">
-          Found {searchResults.length} results for "{query}"
+          Wyniki dla „{query}”: {searchResults.length}
           <button
             onClick={() => { setSearchResults([]); setQuery('') }}
             className="ml-2 underline"
@@ -67,18 +67,28 @@ export default function VideoLearning() {
         </div>
       )}
 
+      <p className="text-sm text-gray-600">
+        Linki prowadzą do wyników wyszukiwania na YouTube, nie do sprawdzonych filmów. Przy każdej
+        technice jest poziom dowodu: większość to [HIPOTEZA] bez badań klinicznych na wygląd.
+      </p>
+
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {displayVideos.map((video, idx) => (
-          <div key={idx} className="bg-white border rounded-lg overflow-hidden hover:shadow-md transition-shadow">
-            <a href={video.url} target="_blank" rel="noopener noreferrer">
-              <div className="bg-gray-200 h-40 flex items-center justify-center">
-                <Play size={48} className="text-gray-400" />
-              </div>
-            </a>
+        {displayVideos.map((video) => (
+          <div key={video.id} className="bg-white border rounded-lg overflow-hidden hover:shadow-md transition-shadow">
             <div className="p-4">
               <h3 className="font-semibold text-gray-900 mb-1 line-clamp-2">{video.title}</h3>
-              <p className="text-sm text-gray-600 mb-2">{video.channel} • {video.duration}</p>
-              <p className="text-xs text-gray-500 line-clamp-2">{video.description}</p>
+              <p className="text-xs text-gray-500 mb-2">{video.description}</p>
+              <p className="text-xs text-amber-800 bg-amber-50 rounded p-2">
+                {video.evidence_note}
+                {video.study_url && (
+                  <>
+                    {' '}
+                    <a href={video.study_url} target="_blank" rel="noopener noreferrer" className="underline">
+                      Badanie
+                    </a>
+                  </>
+                )}
+              </p>
               <a
                 href={video.url}
                 target="_blank"
@@ -86,7 +96,7 @@ export default function VideoLearning() {
                 className="inline-flex items-center mt-3 text-sm text-blue-600 hover:text-blue-800"
               >
                 <Play size={14} className="mr-1" />
-                Obejrzyj na YouTube
+                Szukaj na YouTube
               </a>
             </div>
           </div>
@@ -95,7 +105,7 @@ export default function VideoLearning() {
 
       {displayVideos.length === 0 && !loading && (
         <div className="text-center py-10 text-gray-500">
-          Nie znaleziono filmów. Spróbuj innej frazy.
+          Nie znaleziono techniki. Spróbuj innej frazy.
         </div>
       )}
     </div>
