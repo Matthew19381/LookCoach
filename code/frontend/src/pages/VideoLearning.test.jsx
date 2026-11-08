@@ -6,11 +6,12 @@ import { BrowserRouter } from 'react-router-dom'
 // Mock the API client
 vi.mock('../api/client', () => ({
   getRecommendedVideos: vi.fn(),
+  getAllVideos: vi.fn(),
   searchVideos: vi.fn(),
 }))
 
 import VideoLearning from './VideoLearning'
-import { getRecommendedVideos, searchVideos } from '../api/client'
+import { getAllVideos, getRecommendedVideos, searchVideos } from '../api/client'
 
 const mockVideos = [
   {
@@ -33,6 +34,7 @@ const mockVideos = [
 describe('VideoLearning', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    getAllVideos.mockResolvedValue([])
   })
 
   it('renders loading state initially', () => {
@@ -219,5 +221,21 @@ describe('VideoLearning', () => {
       expect(links[0]).toHaveAttribute('href', 'https://www.youtube.com/results?search_query=gua+sha')
       expect(links[1]).toHaveAttribute('href', 'https://www.youtube.com/results?search_query=skincare')
     })
+  })
+
+  it('shows every technique when there is no analysis yet', async () => {
+    getRecommendedVideos.mockResolvedValue([])
+    getAllVideos.mockResolvedValue(mockVideos)
+
+    render(
+      <BrowserRouter>
+        <VideoLearning />
+      </BrowserRouter>
+    )
+
+    await waitFor(() => {
+      expect(screen.getByText('Gua Sha Tutorial')).toBeInTheDocument()
+    })
+    expect(screen.getByText(/Brak analizy zdjęcia/)).toBeInTheDocument()
   })
 })

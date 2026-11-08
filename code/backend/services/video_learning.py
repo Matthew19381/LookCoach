@@ -58,7 +58,7 @@ VIDEO_DB = [
             "pełniejsze policzki w ocenie dermatologów (Alam 2018, JAMA Dermatol). U mężczyzn brak danych."
         ),
         "study_url": "https://pubmed.ncbi.nlm.nih.gov/29299598/",
-        "description": "Ćwiczenia napinania mięśni twarzy, ok. 30 minut dziennie w badaniu.",
+        "description": "Ćwiczenia napinania mięśni twarzy; w badaniu 30 minut dziennie przez 8 tygodni, potem co drugi dzień.",
     },
     {
         "id": "hair_styling",
@@ -90,6 +90,10 @@ for _v in VIDEO_DB:
 
 
 class VideoLearningEngine:
+    @staticmethod
+    def all_techniques() -> list:
+        return list(VIDEO_DB)
+
     @staticmethod
     def get_videos_for_technique(technique: str) -> list:
         """Techniques with the given technique key."""

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Play, Search } from 'lucide-react'
-import { getRecommendedVideos, searchVideos } from '../api/client'
+import { getAllVideos, getRecommendedVideos, searchVideos } from '../api/client'
 
 export default function VideoLearning() {
   const [videos, setVideos] = useState([])
@@ -8,11 +8,22 @@ export default function VideoLearning() {
   const [query, setQuery] = useState('')
   const [searchResults, setSearchResults] = useState([])
 
+  const [fromAnalysis, setFromAnalysis] = useState(true)
+
   useEffect(() => {
-    getRecommendedVideos().then((data) => {
-      setVideos(data)
-      setLoading(false)
-    }).catch(() => setLoading(false))
+    // Without a photo analysis there is nothing to recommend; show every technique instead
+    // of an empty page that says "nothing found".
+    getRecommendedVideos()
+      .then(async (data) => {
+        if (data && data.length > 0) {
+          setVideos(data)
+        } else {
+          setFromAnalysis(false)
+          setVideos((await getAllVideos()) || [])
+        }
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false))
   }, [])
 
   const handleSearch = async (e) => {
@@ -65,6 +76,10 @@ export default function VideoLearning() {
             Wyczyść
           </button>
         </div>
+      )}
+
+      {!fromAnalysis && searchResults.length === 0 && (
+        <p className="text-sm text-gray-600">Brak analizy zdjęcia, więc pokazuję wszystkie techniki.</p>
       )}
 
       <p className="text-sm text-gray-600">

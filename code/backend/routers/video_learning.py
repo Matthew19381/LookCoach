@@ -13,7 +13,8 @@ async def get_all_videos(technique: str = None, query: str = None):
         return VideoLearningEngine.get_videos_for_technique(technique)
     if query:
         return VideoLearningEngine.search_videos(query)
-    return VideoLearningEngine.get_videos_for_analysis({}, {}, {})
+    # No filter: every technique (the page shows them when there is no analysis yet).
+    return VideoLearningEngine.all_techniques()
 
 
 @router.get("/videos/recommended")

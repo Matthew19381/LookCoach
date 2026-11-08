@@ -100,3 +100,8 @@ class TestNoFabricatedVideos:
 
     def test_search_matches_polish_phrase(self):
         assert [v["id"] for v in VideoLearningEngine.search_videos("drenaż")] == ["lymphatic_drainage"]
+
+
+def test_all_techniques_lists_every_entry():
+    from services.video_learning import VIDEO_DB
+    assert len(VideoLearningEngine.all_techniques()) == len(VIDEO_DB) == 6

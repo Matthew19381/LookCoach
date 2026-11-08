@@ -70,6 +70,8 @@ export const getSkincareRoutine = () =>
 export const getRecommendedVideos = () =>
   api.get(`/api/v1/video-learning/videos/recommended?user_id=${getUserId()}`);
 
+export const getAllVideos = () => api.get('/api/v1/video-learning/videos');
+
 export const searchVideos = (query) =>
   api.get(`/api/v1/video-learning/videos?query=${encodeURIComponent(query)}`);
 
