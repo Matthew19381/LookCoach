@@ -1,102 +1,123 @@
+"""Strona "Wideo": techniki z uczciwym linkiem do wyszukiwania na YouTube.
 
-YOUTUBE_API_KEY = None  # Set in .env
+Do 2026-11-08 VIDEO_DB zawierał 6 zmyślonych filmów: jeden link prowadził do
+teledysku (watch?v=dQw4w9WgXcQ), pięć do nieistniejących `watch?v=example1..5`,
+a kanały ("Skincare Pro", "Beauty Master"...) i długości były wymyślone.
+Technika gua sha była zapisana jako "gua sha", a filtr szukał "gua_sha", więc
+nigdy nie była polecana.
 
-# Video database for beauty techniques
+Teraz każda pozycja to technika z linkiem do WYNIKÓW wyszukiwania YouTube (nie do
+konkretnego filmu, którego nikt nie sprawdził) i z poziomem dowodu wg LC-1:
+- techniki pielęgnacyjne bez badań klinicznych na wygląd są oznaczone `[HIPOTEZA]`,
+- porady fryzjerskie są oznaczone jako porada stylistyczna (nie twierdzenie naukowe).
+Źródła sprawdzone 2026-11-08 (PubMed).
+"""
+from urllib.parse import quote_plus
+
+
+def _search_url(phrase: str) -> str:
+    return "https://www.youtube.com/results?search_query=" + quote_plus(phrase)
+
+
 VIDEO_DB = [
     {
-        "id": "gua_sha_1",
-        "title": "Gua Sha Facial Massage Tutorial",
-        "technique": "gua sha",
-        "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-        "duration": "12:34",
-        "channel": "Skincare Pro",
-        "description": "Learn proper gua sha technique for facial drainage and sculpting",
+        "id": "gua_sha",
+        "title": "Gua sha (masaż twarzy płytką)",
+        "technique": "gua_sha",
+        "search_phrase": "gua sha twarz instrukcja",
+        "evidence_level": "hipoteza",
+        "evidence_note": "[HIPOTEZA] Brak badań klinicznych pokazujących wpływ na wygląd twarzy.",
+        "description": "Technika masażu płytką. Traktuj jako przyjemny rytuał, nie sposób na zmianę rysów.",
     },
     {
-        "id": "lymphatic_1",
-        "title": "Lymphatic Drainage for Face Sculpting",
+        "id": "lymphatic_drainage",
+        "title": "Drenaż limfatyczny twarzy",
         "technique": "lymphatic_drainage",
-        "url": "https://www.youtube.com/watch?v=example1",
-        "duration": "15:20",
-        "channel": "Beauty Master",
-        "description": "Step-by-step lymphatic drainage massage for reducing facial puffiness",
+        "search_phrase": "drenaż limfatyczny twarzy instrukcja",
+        "evidence_level": "hipoteza",
+        "evidence_note": "[HIPOTEZA] Brak badań z grupą kontrolną na poranny obrzęk twarzy u zdrowych osób.",
+        "description": "Delikatny masaż w kierunku węzłów chłonnych. Sen i mniej soli mają lepiej opisany wpływ na obrzęk.",
     },
     {
-        "id": "cold_water_1",
-        "title": "Cold Water Therapy for Skin Tightening",
+        "id": "cold_water",
+        "title": "Zimna woda na twarz",
         "technique": "cold_water",
-        "url": "https://www.youtube.com/watch?v=example2",
-        "duration": "8:45",
-        "channel": "Natural Beauty",
-        "description": "How cold water exposure improves skin tone and reduces inflammation",
+        "search_phrase": "zimna woda na twarz rano",
+        "evidence_level": "hipoteza",
+        "evidence_note": "[HIPOTEZA] Brak badań klinicznych na napięcie skóry.",
+        "description": "Prosty nawyk poranny. Nie zastępuje kremu z filtrem.",
     },
     {
-        "id": "muscle_tension_1",
-        "title": "Release Facial Muscle Tension",
+        "id": "facial_exercise",
+        "title": "Ćwiczenia mięśni twarzy",
         "technique": "muscle_tension",
-        "url": "https://www.youtube.com/watch?v=example3",
-        "duration": "10:15",
-        "channel": "Face Yoga",
-        "description": "Exercises to release jaw, forehead and eye area tension",
+        "search_phrase": "ćwiczenia mięśni twarzy",
+        "evidence_level": "hipoteza",
+        "evidence_note": (
+            "[HIPOTEZA] Jedna mała próba bez grupy kontrolnej: 16 kobiet 40–65 lat, 20 tygodni, "
+            "pełniejsze policzki w ocenie dermatologów (Alam 2018, JAMA Dermatol). U mężczyzn brak danych."
+        ),
+        "study_url": "https://pubmed.ncbi.nlm.nih.gov/29299598/",
+        "description": "Ćwiczenia napinania mięśni twarzy; w badaniu 30 minut dziennie przez 8 tygodni, potem co drugi dzień.",
     },
     {
-        "id": "hair_volume_1",
-        "title": "Hair Styling for Maximum Volume",
+        "id": "hair_styling",
+        "title": "Układanie włosów (objętość)",
         "technique": "hair_styling",
-        "url": "https://www.youtube.com/watch?v=example4",
-        "duration": "14:30",
-        "channel": "Hair Art",
-        "description": "Techniques for adding volume and style to thin hair",
+        "search_phrase": "męskie włosy układanie objętość",
+        "evidence_level": "porada_stylistyczna",
+        "evidence_note": "Porada stylistyczna, nie twierdzenie naukowe.",
+        "description": "Suszarka, kierunek suszenia i lekki produkt do stylizacji.",
     },
     {
-        "id": "hair_care_1",
-        "title": "Scalp Massage for Hair Growth",
+        "id": "scalp_massage",
+        "title": "Masaż skóry głowy",
         "technique": "hair_care",
-        "url": "https://www.youtube.com/watch?v=example5",
-        "duration": "11:20",
-        "channel": "Healthy Hair",
-        "description": "Daily scalp massage routine to stimulate hair growth",
+        "search_phrase": "masaż skóry głowy instrukcja",
+        "evidence_level": "hipoteza",
+        "evidence_note": (
+            "[HIPOTEZA] Mała próba: 9 mężczyzn, 4 minuty dziennie przez 24 tygodnie, grubsze włosy "
+            "(Koyama 2016, Eplasty). Bez grupy kontrolnej; wymaga potwierdzenia."
+        ),
+        "study_url": "https://pubmed.ncbi.nlm.nih.gov/26904154/",
+        "description": "Ugniatanie i rozciąganie skóry głowy palcami.",
     },
 ]
+
+for _v in VIDEO_DB:
+    _v["url"] = _search_url(_v["search_phrase"])
+    _v["kind"] = "youtube_search"
 
 
 class VideoLearningEngine:
     @staticmethod
+    def all_techniques() -> list:
+        return list(VIDEO_DB)
+
+    @staticmethod
     def get_videos_for_technique(technique: str) -> list:
-        """Get videos for a specific beauty technique."""
+        """Techniques with the given technique key."""
         return [v for v in VIDEO_DB if v["technique"] == technique]
 
     @staticmethod
     def get_videos_for_analysis(face_data: dict, skin_data: dict, hair_data: dict) -> list:
-        """Get recommended videos based on analysis results."""
-        recommended = []
-
-        # Face: gua sha, lymphatic drainage, muscle tension
+        """Techniques matching the parts present in the latest analysis."""
+        wanted: list[str] = []
         if face_data:
-            recommended.extend([v for v in VIDEO_DB if v["technique"] in ["gua_sha", "lymphatic_drainage", "muscle_tension"]])
-
-        # Skin: cold water therapy
+            wanted += ["gua_sha", "lymphatic_drainage", "muscle_tension"]
         if skin_data:
-            recommended.extend([v for v in VIDEO_DB if v["technique"] == "cold_water"])
-
-        # Hair: styling and care
+            wanted += ["cold_water"]
         if hair_data:
-            recommended.extend([v for v in VIDEO_DB if v["technique"] in ["hair_styling", "hair_care"]])
-
-        # Remove duplicates
-        seen = set()
-        unique = []
-        for v in recommended:
-            if v["id"] not in seen:
-                seen.add(v["id"])
-                unique.append(v)
-        return unique
+            wanted += ["hair_styling", "hair_care"]
+        return [v for v in VIDEO_DB if v["technique"] in wanted]
 
     @staticmethod
     def search_videos(query: str) -> list:
-        """Search videos by query string."""
-        query_lower = query.lower()
+        """Search techniques by title, description or search phrase."""
+        q = query.lower().strip()
+        if not q:
+            return []
         return [
             v for v in VIDEO_DB
-            if query_lower in v["title"].lower() or query_lower in v["description"].lower()
+            if q in v["title"].lower() or q in v["description"].lower() or q in v["search_phrase"].lower()
         ]

@@ -2,6 +2,17 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
+// Backend :8010. 127.0.0.1, not localhost: on Windows Node can resolve localhost to ::1
+// while start-ekosystem.ps1 binds the backend to 127.0.0.1 only (same fix as ForgeBody).
+const API_TARGET = process.env.VITE_API_TARGET || 'http://127.0.0.1:8010'
+const proxy = {
+  '/api': { target: API_TARGET, changeOrigin: true },
+  '/uploads': { target: API_TARGET, changeOrigin: true },
+}
+// The phone opens the page through `tailscale serve` (Host: desktop-h6abdhd.tail081a9d.ts.net).
+// Vite rejects unknown Host headers, so allow only Mateusz's tailnet, not every *.ts.net name.
+const TAILNET_HOSTS = ['.tail081a9d.ts.net']
+
 export default defineConfig({
   plugins: [react(), VitePWA({
     registerType: 'autoUpdate',
@@ -55,15 +66,9 @@ export default defineConfig({
   server: {
     port: 5175,
     host: true,
-    proxy: {
-      '/api': {
-        target: 'http://localhost:8010',
-        changeOrigin: true,
-      },
-      '/uploads': {
-        target: 'http://localhost:8010',
-        changeOrigin: true,
-      },
-    },
+    allowedHosts: TAILNET_HOSTS,
+    proxy,
   },
+  // start-ekosystem.ps1 serves the built dist with `vite preview` on 5175.
+  preview: { port: 5175, strictPort: true, allowedHosts: TAILNET_HOSTS, proxy },
 })

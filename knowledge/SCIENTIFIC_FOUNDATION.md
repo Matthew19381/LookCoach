@@ -20,7 +20,7 @@ pokazujemy kategorię potencjału (High/Moderate/Exploratory) i widełki, nie li
 | Niacinamide 5–10% | skincare | RCT | Bissett 2005, Dermatol Surg (PMID 16029679) |
 | Vitamin C 10–20% | skincare | RCT | Traikovich 1999, Arch Otolaryngol (PMID 10522500) |
 | High Protein (1.6 g/kg) | nutrition | meta | Morton 2018, Br J Sports Med (PMID 28698222) |
-| Meditation 10min | stress | meta | Goyal 2014, JAMA Intern Med (PMID 24395196) |
+| Program medytacji uważności (ok. 8 tyg.) | stress | meta | Goyal 2014, JAMA Intern Med (PMID 24395196) — metaanaliza **programów** (zwykle 8 tyg.); dawka „10 min dziennie” nie była badana `[HIPOTEZA]` (poprawione 2026-11-08) |
 | Minoxidil 5% | hair | RCT | Olsen 2002, J Am Acad Dermatol (PMID 12196747) |
 | Rosemary Oil | hair | RCT (małe, wymaga replikacji) | Panahi 2015, SKINmed (PMID 25842469) |
 | Water 3L/day | nutrition | observational | Palma 2015, Clin Cosmet Investig Dermatol (PMID 26345226) |

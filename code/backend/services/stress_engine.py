@@ -22,26 +22,31 @@ class StressEngine:
         },
     }
 
+    # 2026-11-08: "looks_benefit" podawał efekty na skórę jako fakt (np. "zapobiega trądzikowi"),
+    # bez źródła (LC-1). Teraz efekt na wygląd jest oznaczony [HIPOTEZA].
     RELAXATION_TECHNIQUES = {
         "box_breathing": {
             "name": "Oddech pudełkowy",
             "duration": "5 min",
-            "looks_benefit": "Obniża kortyzol, zapobiega trądzikowi ze stresu",
+            "looks_benefit": "[HIPOTEZA] Wpływ na wygląd skóry niezbadany; technika na chwilowe uspokojenie.",
         },
         "progressive_relaxation": {
             "name": "Progresywna relaksacja mięśni",
             "duration": "10 min",
-            "looks_benefit": "Rozluźnia twarz, łagodzi rysy",
+            "looks_benefit": "[HIPOTEZA] Wpływ na wygląd twarzy niezbadany.",
         },
         "meditation": {
             "name": "Medytacja uważności",
             "duration": "15 min",
-            "looks_benefit": "Obniża kortyzol, skóra wygląda świeżej",
+            "looks_benefit": (
+                "Programy uważności (zwykle ok. 8 tygodni z instruktorem) umiarkowanie zmniejszają lęk "
+                "(metaanaliza Goyal 2014, PMID 24395196). Wpływ na wygląd skóry: [HIPOTEZA]."
+            ),
         },
         "face_massage": {
             "name": "Masaż twarzy na stres",
             "duration": "5 min",
-            "looks_benefit": "Rozluźnia żuchwę, zmniejsza opuchliznę",
+            "looks_benefit": "[HIPOTEZA] Wpływ na opuchliznę i żuchwę niezbadany.",
         },
     }
 
